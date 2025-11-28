@@ -16,8 +16,10 @@ fn compute(
   let x = global_id.x;
   let y = global_id.y;
 
-  var pixel_out = vec3f(0.7);
+  let delta_x = f32(i32(x) - i32(in_screen_info.width / 2));
+  let delta_y = f32(i32(y) - i32(in_screen_info.height / 2));
 
+  let pixel_out = select(vec3f(1.0), vec3f(1.0, 0.0, 0.0), delta_x * sin(delta_x * delta_x) + delta_y * cos(delta_y * delta_y) < 10.0);
   if x < in_screen_info.width && y < in_screen_info.height {
     textureStore(out_framebuffer, global_id.xy, vec4f(pixel_out, 1.0));
   }

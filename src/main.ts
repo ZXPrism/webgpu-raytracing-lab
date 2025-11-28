@@ -83,19 +83,25 @@ function init_kernels() {
 }
 
 function render() {
-    const framebuffer_bind_group = new BindGroupBuilder(g_device, 'framebuffer bind group')
-        .add_buffer('out_framebuffer', 0, g_context.getCurrentTexture().createView())
-        .build(g_render_kernel, 1);
+    function _render(_time: DOMHighResTimeStamp) {
+        const framebuffer_bind_group = new BindGroupBuilder(g_device, 'framebuffer bind group')
+            .add_buffer('out_framebuffer', 0, g_context.getCurrentTexture().createView())
+            .build(g_render_kernel, 1);
 
-    const command_encoder = g_device.createCommandEncoder();
-    {
-        g_render_kernel.dispatch_multiple_bind_group(command_encoder, [g_render_kernel_bind_group, framebuffer_bind_group],
-            Math.ceil(g_canvas_width / 32),
-            Math.ceil(g_canvas_height / 32),
-            1);
+        const command_encoder = g_device.createCommandEncoder();
+        {
+            g_render_kernel.dispatch_multiple_bind_group(command_encoder, [g_render_kernel_bind_group, framebuffer_bind_group],
+                Math.ceil(g_canvas_width / 32),
+                Math.ceil(g_canvas_height / 32),
+                1);
 
-        g_device.queue.submit([command_encoder.finish()]);
+            g_device.queue.submit([command_encoder.finish()]);
+        }
+
+        window.requestAnimationFrame(_render);
     }
+
+    window.requestAnimationFrame(_render);
 }
 
 async function main() {
