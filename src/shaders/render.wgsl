@@ -15,7 +15,11 @@ fn compute(
 ) {
   let x = global_id.x;
   let y = global_id.y;
-  let pixel_out = vec3f(0.3);
+
+  var pixel_out = vec3f(0.7);
+  if x > 300 {
+    pixel_out = vec3f(1.0, 0.0, 0.0);
+  }
 
   if x < in_screen_info.width && y < in_screen_info.height {
     textureStore(out_framebuffer, global_id.xy, vec4f(pixel_out, 1.0));

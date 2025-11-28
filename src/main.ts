@@ -77,7 +77,6 @@ function init_kernels() {
     g_render_kernel_bind_group = new BindGroupBuilder(g_device, 'render bind group')
         .add_buffer('in_screen_info', 0, screen_info_buffer)
         .build(g_render_kernel);
-
 }
 
 function render() {
@@ -87,6 +86,7 @@ function render() {
 
     const command_encoder = g_device.createCommandEncoder();
     {
+        console.log(g_canvas_width, g_canvas_height); // BUG: always 300x150!!
         g_render_kernel.dispatch_multiple_bind_group(command_encoder, [g_render_kernel_bind_group, framebuffer_bind_group],
             Math.ceil(g_canvas_width / 32),
             Math.ceil(g_canvas_height / 32),
