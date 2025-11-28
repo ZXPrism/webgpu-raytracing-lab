@@ -58,9 +58,12 @@ async function init_webgpu() {
             | GPUTextureUsage.STORAGE_BINDING
             | GPUTextureUsage.RENDER_ATTACHMENT,
     });
+    g_context = context;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     g_canvas_width = canvas.width;
     g_canvas_height = canvas.height;
-    g_context = context;
 
     console.info("successfully initialized WebGPU 🎉");
 }
@@ -86,7 +89,6 @@ function render() {
 
     const command_encoder = g_device.createCommandEncoder();
     {
-        console.log(g_canvas_width, g_canvas_height); // BUG: always 300x150!!
         g_render_kernel.dispatch_multiple_bind_group(command_encoder, [g_render_kernel_bind_group, framebuffer_bind_group],
             Math.ceil(g_canvas_width / 32),
             Math.ceil(g_canvas_height / 32),
