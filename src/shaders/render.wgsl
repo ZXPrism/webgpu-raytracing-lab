@@ -1,24 +1,7 @@
-struct ScreenInfo { // 8
-  width: u32, // 0 -> 4
-  height: u32 // 4 -> 4
-}
-
-struct CameraInfo { // 40
-  eye: vec3f, // 0 -> 16 (12 + 4)
-  center: vec3f, // 16 -> 12
-  focal_length: f32, // 28 -> 4
-  fov_y: f32, // 32 -> 4
-  aspect_ratio: f32 // 36 -> 4
-}
-
-struct Ray { // 28
-  source: vec3f, // 0 -> 16
-  direction: vec3f, // 16 -> 12; not necessarily normalized
-}
-
 @group(0) @binding(0) var<uniform> in_screen_info: ScreenInfo;
 @group(0) @binding(1) var<uniform> in_camera_info: CameraInfo;
 @group(0) @binding(2) var<storage, read_write> out_test_buffer: array<vec4f>;
+@group(0) @binding(3) var<storage, read> in_sphere_array: array<Sphere>;
 
 // todo: should set format according to actual presentation format acquired from canvas..
 @group(1) @binding(0) var out_framebuffer : texture_storage_2d<bgra8unorm, write>;
@@ -52,16 +35,27 @@ fn compute(
   let viewport_v = camera_down_norm * viewport_height;
   let viewport_u_base = viewport_u / f32(width);
   let viewport_v_base = viewport_v / f32(height);
-  let viewport_upper_left = camera_info.eye + camera_gaze_norm * camera_info.focal_length - (viewport_u + viewport_v) / 2.0;
-  let pixel00 = viewport_upper_left + 0.5 * (viewport_u_base + viewport_v_base); // default sample point is the center of each pixel
+  let viewport_top_left = camera_info.eye + (camera_gaze_norm * camera_info.focal_length) - (viewport_u + viewport_v) / 2.0;
+  let pixel00 = viewport_top_left + (0.5 * (viewport_u_base + viewport_v_base)); // default sample point is the center of each pixel
 
   // ================
   //  ray generation
   // ================
-  let ray = Ray(camera_info.eye, pixel00 + viewport_u_base * f32(x) + viewport_v_base * f32(y) - camera_info.eye);
-  let ray_direction_norm = normalize(ray.direction);
+  let primary_ray = Ray(camera_info.eye, pixel00 + (viewport_u_base * f32(x) + viewport_v_base * f32(y)) - camera_info.eye);
 
-  let pixel_out = abs(ray_direction_norm);
+  // ==========
+  //  hit test
+  // ==========
+  var pixel_out = vec3f(143.0, 233.0, 255.0) / 255.0;
+  let sphere_array_length = i32(arrayLength(&in_sphere_array));
+  for(var i = 0; i < sphere_array_length; i++) {
+    let t = hit_test_sphere(primary_ray, in_sphere_array[i]);
+    if t <= 0.0 {
+      continue;
+    }
+    pixel_out = vec3f(0.3);
+  }
+
   if x < width && y < height {
     textureStore(out_framebuffer, global_id.xy, vec4f(pixel_out, 1.0));
   }
