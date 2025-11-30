@@ -32,7 +32,7 @@ fn compute(
   if x < width && y < height {
     let pixel_offset = vec2f(f32(x), f32(y)) + rand_unit_square(f32(out_frame_index) * 114514.1919810 + f32(ray_array_offset));
     let target_pixel = pixel00 + (viewport_u_base * pixel_offset.x + viewport_v_base * pixel_offset.y);
-    let primary_ray = Ray(eye, target_pixel - eye, ray_array_offset);
+    let primary_ray = Ray(eye, target_pixel - eye, ray_array_offset, vec3f(1.0));
     out_ray_array[ray_array_offset] = primary_ray;
   }
 }

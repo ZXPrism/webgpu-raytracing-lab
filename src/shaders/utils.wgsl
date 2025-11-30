@@ -10,15 +10,22 @@ struct SceneInfo { // 64
   eye: vec3f // 48 -> 16 (12 + 4)
 }
 
-struct Ray { // 32
-  origin: vec3f, // 0 -> 16
+struct Ray { // 48
+  origin: vec3f, // 0 -> 16 (12 + 4)
   direction: vec3f, // 16 -> 12; not necessarily normalized
-  pixel_offset: u32, // 28 -> 32
+  pixel_offset: u32, // 28 -> 4
+  weight: vec3f, // 32 -> 16 (12 + 4)
 }
 
 struct Sphere { // 16
   center: vec3f, // 0 -> 12
   radius: f32, // 12 -> 4
+}
+
+struct IndirectArgs { // 12
+  dispatch_x: u32, // 0 -> 4
+  dispatch_y: u32, // 4 -> 8
+  dispatch_z: u32, // 8 -> 12
 }
 
 // ========
@@ -54,7 +61,7 @@ fn rand_unit_square(seed: f32) -> vec2f {
 
 // }
 
-// fn rand_unit_semi_sphere(seed: f32, normal: vec3f) -> vec3f {
+// fn rand_unit_hemi_sphere(seed: f32, normal: vec3f) -> vec3f {
 
 // }
 
@@ -81,4 +88,12 @@ fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
   }
 
   return -1.0; // if miss, return a negative value
+}
+
+
+// ===================
+//  evaluate material
+// ===================
+fn evaluate_diffuse() {
+
 }
