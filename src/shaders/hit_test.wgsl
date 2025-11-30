@@ -2,6 +2,8 @@
 @group(0) @binding(1) var<storage, read> in_ray_array: array<Ray>;
 @group(0) @binding(2) var<storage, read> in_sphere_array: array<Sphere>;
 @group(0) @binding(3) var<storage, read_write> out_color_buffer: array<vec4f>;
+@group(0) @binding(4) var<storage, read_write> out_ray_array_length: u32;
+@group(0) @binding(5) var<storage, read_write> out_ray_array: array<Ray>;
 
 const WG_DIM_X = 128u;
 
@@ -28,5 +30,5 @@ fn compute(
     pixel_out = vec3f(0.3);
   }
 
-  out_color_buffer[ray.pixel_offset] = vec4f(pixel_out, 1.0);
+  out_color_buffer[ray.pixel_offset] += vec4f(pixel_out, 1.0);
 }

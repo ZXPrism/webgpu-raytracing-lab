@@ -5,6 +5,8 @@ import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
 import { createGPUBuffer } from "./kernel_utils";
+import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_elem_size_struct_ray, config_max_bounce } from "./config";
+
 
 import shader_utils from "./shaders/utils.wgsl?raw";
 import shader_gen_ray from "./shaders/gen_ray.wgsl?raw";
@@ -23,10 +25,14 @@ let g_pixel_cnt!: number;
 
 let g_gen_ray_kernel!: Kernel;
 let g_gen_ray_kernel_bind_group!: BindGroup;
+
 let g_hit_test_kernel!: Kernel;
-let g_hit_test_kernel_bind_group!: BindGroup;
+let g_hit_test_kernel_bind_group_initial!: BindGroup;
+let g_hit_test_kernel_bind_group_pingpong!: BindGroup[];
+
 let g_filter_kernel!: Kernel;
 let g_filter_kernel_bind_group!: BindGroup;
+
 let g_blit_pipeline!: GPURenderPipeline;
 let g_blit_bind_group!: BindGroup;
 
@@ -85,20 +91,25 @@ async function init_webgpu() {
 }
 
 function init_kernels() {
+    // ===============
+    //  check configs
+    // ===============
+    if (config_max_bounce < 2) {
+        console.error(`bad config: "config_max_bounce" should be at least 2! (given: ${config_max_bounce})`);
+        return;
+    }
+
+
     // ========
     //  camera
     // ========
     // let camera_gaze_norm = normalize(camera_info.center - camera_info.eye);
     // let camera_right_norm = normalize(cross(camera_gaze_norm, vec3f(0.0, 1.0, 0.0)));
     // let camera_down_norm = cross(camera_gaze_norm, camera_right_norm);
-    const camera_fov_y = 90.0 / 180.0 * Math.PI;
-    const camera_focal_length = 1.0;
     const camera_aspect_ratio = g_canvas_width / g_canvas_height;
-    const camera_eye = vec3.fromValues(0.0, 0.0, 1.0);
-    const camera_center = vec3.fromValues(0.0, 0.0, 0.0);
 
     const camera_gaze_norm = vec3.create();
-    vec3.sub(camera_gaze_norm, camera_center, camera_eye);
+    vec3.sub(camera_gaze_norm, config_camera_center, config_camera_eye);
     vec3.normalize(camera_gaze_norm, camera_gaze_norm);
 
     const camera_right_norm = vec3.create();
@@ -120,7 +131,7 @@ function init_kernels() {
     // let viewport_v_base = viewport_v / f32(height);
     // let viewport_top_left = camera_info.eye + (camera_gaze_norm * camera_info.focal_length) - (viewport_u + viewport_v) / 2.0;
     // let pixel00 = viewport_top_left + (0.5 * (viewport_u_base + viewport_v_base)); // default sample point is the center of each pixel
-    const viewport_height = 2.0 * Math.tan(camera_fov_y / 2.0) * camera_focal_length;
+    const viewport_height = 2.0 * Math.tan(config_camera_fov_y / 2.0) * config_camera_focal_length;
     const viewport_width = viewport_height * camera_aspect_ratio;
 
     const viewport_u = vec3.create();
@@ -137,8 +148,8 @@ function init_kernels() {
 
     const viewport_top_left = vec3.create();
     const temp = vec3.create();
-    vec3.scale(temp, camera_gaze_norm, camera_focal_length);
-    vec3.add(viewport_top_left, camera_eye, temp);
+    vec3.scale(temp, camera_gaze_norm, config_camera_focal_length);
+    vec3.add(viewport_top_left, config_camera_eye, temp);
     vec3.add(temp, viewport_u, viewport_v);
     vec3.scale(temp, temp, 0.5);
     vec3.sub(viewport_top_left, viewport_top_left, temp);
@@ -161,7 +172,7 @@ function init_kernels() {
     scene_info_data_f32_view.set(viewport_u_base, 4);
     scene_info_data_u32_view[7] = g_canvas_height;
     scene_info_data_f32_view.set(viewport_v_base, 8);
-    scene_info_data_f32_view.set(camera_eye, 12);
+    scene_info_data_f32_view.set(config_camera_eye, 12);
     const scene_info_buffer = createGPUBuffer(g_device, "scene info", GPUBufferUsage.UNIFORM, 64);
     g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
 
@@ -191,25 +202,50 @@ function init_kernels() {
         .build();
     g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
         .add_buffer("in_scene_info", 0, scene_info_buffer)
-        .create_then_add_buffer("out_ray_array", 1, GPUBufferUsage.STORAGE, 32 * g_canvas_width * g_canvas_height)
+        .create_then_add_buffer("out_ray_array", 1, GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height)
         .create_then_add_buffer("out_ray_array_length", 2, GPUBufferUsage.STORAGE, 4)
         .create_then_add_buffer_init_u32("out_frame_index", 3, GPUBufferUsage.STORAGE, 0)
         .build(g_gen_ray_kernel);
 
-    const ray_array = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array");
-    const ray_array_length = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array_length");
+    const ray_array_initial = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array");
+    const ray_array_length_initial = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array_length");
     const frame_index = g_gen_ray_kernel_bind_group.get_buffer("out_frame_index");
+
+    const ray_array_length_ping = createGPUBuffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, 4);
+    const ray_array_ping = createGPUBuffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_length_pong = createGPUBuffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, 4);
+    const ray_array_pong = createGPUBuffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
 
     g_hit_test_kernel = new KernelBuilder(g_device, "hit test kernel", shader_utils + shader_hit_test, "compute")
         .build();
-    g_hit_test_kernel_bind_group = new BindGroupBuilder(g_device, "hit test kernel bind group")
-        .add_buffer("in_ray_array_length", 0, ray_array_length)
-        .add_buffer("in_ray_array", 1, ray_array)
+    g_hit_test_kernel_bind_group_initial = new BindGroupBuilder(g_device, "hit test kernel bind group")
+        .add_buffer("in_ray_array_length", 0, ray_array_length_initial)
+        .add_buffer("in_ray_array", 1, ray_array_initial)
         .add_buffer("in_sphere_array", 2, sphere_array_buffer)
         .create_then_add_buffer("out_color_buffer", 3, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
+        .add_buffer("out_ray_array_length", 4, ray_array_length_ping)
+        .add_buffer("out_ray_array", 5, ray_array_ping)
         .build(g_hit_test_kernel);
 
-    const color_buffer = g_hit_test_kernel_bind_group.get_buffer("out_color_buffer");
+    const color_buffer = g_hit_test_kernel_bind_group_initial.get_buffer("out_color_buffer");
+
+    const hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "hit test kernel bind group")
+        .add_buffer("in_ray_array_length", 0, ray_array_length_ping)
+        .add_buffer("in_ray_array", 1, ray_array_ping)
+        .add_buffer("in_sphere_array", 2, sphere_array_buffer)
+        .add_buffer("out_color_buffer", 3, color_buffer)
+        .add_buffer("out_ray_array_length", 4, ray_array_length_pong)
+        .add_buffer("out_ray_array", 5, ray_array_pong)
+        .build(g_hit_test_kernel);
+    const hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "hit test kernel bind group")
+        .add_buffer("in_ray_array_length", 0, ray_array_length_pong)
+        .add_buffer("in_ray_array", 1, ray_array_pong)
+        .add_buffer("in_sphere_array", 2, sphere_array_buffer)
+        .add_buffer("out_color_buffer", 3, color_buffer)
+        .add_buffer("out_ray_array_length", 4, ray_array_length_ping)
+        .add_buffer("out_ray_array", 5, ray_array_ping)
+        .build(g_hit_test_kernel);
+    g_hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 
     g_filter_kernel = new KernelBuilder(g_device, "filter kernel", shader_utils + shader_filter, "compute")
         .build();
@@ -276,14 +312,24 @@ function render() {
     function _render(_time: DOMHighResTimeStamp) {
         const command_encoder = g_device.createCommandEncoder();
         {
+            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_initial.get_buffer("out_color_buffer"));
+
             g_gen_ray_kernel.dispatch(command_encoder, g_gen_ray_kernel_bind_group,
                 Math.ceil(g_canvas_width / 16),
                 Math.ceil(g_canvas_height / 16),
                 1);
-            g_hit_test_kernel.dispatch(command_encoder, g_hit_test_kernel_bind_group,
+
+            g_hit_test_kernel.dispatch(command_encoder, g_hit_test_kernel_bind_group_initial,
                 Math.ceil(g_pixel_cnt / 128),
                 1,
                 1);
+            for (let i = 0; i < config_max_bounce; i++) {
+                g_hit_test_kernel.dispatch(command_encoder, g_hit_test_kernel_bind_group_pingpong[i & 1],
+                    Math.ceil(g_pixel_cnt / 128), // FIXME!!! indirect!
+                    1,
+                    1);
+            }
+
             g_filter_kernel.dispatch(command_encoder, g_filter_kernel_bind_group,
                 Math.ceil(g_pixel_cnt / 128),
                 1,
