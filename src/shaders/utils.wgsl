@@ -12,7 +12,8 @@ struct SceneInfo { // 64
 
 struct Ray { // 32
   origin: vec3f, // 0 -> 16
-  direction: vec3f, // 16 -> 16 (12 + 4); not necessarily normalized
+  direction: vec3f, // 16 -> 12; not necessarily normalized
+  pixel_offset: u32, // 28 -> 32
 }
 
 struct Sphere { // 16
@@ -45,7 +46,8 @@ fn rand(seed: f32) -> f32 {
 }
 
 fn rand_unit_square(seed: f32) -> vec2f {
-  return vec2f(rand(seed), rand(seed * 2.0)) - 0.5;
+  let x = rand(seed);
+  return vec2f(x, rand(x)) - 0.5;
 }
 
 // fn rand_unit_sphere(seed: f32) -> vec3f {

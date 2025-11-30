@@ -8,16 +8,25 @@ import { createGPUBuffer } from "./kernel_utils";
 
 import shader_utils from "./shaders/utils.wgsl?raw";
 import shader_gen_ray from "./shaders/gen_ray.wgsl?raw";
-import shader_render from "./shaders/render.wgsl?raw";
+import shader_hit_test from "./shaders/hit_test.wgsl?raw";
+import shader_blit from "./shaders/blit.wgsl?raw";
 
 import { vec3 } from "gl-matrix";
 
 let g_device!: GPUDevice;
 let g_context!: GPUCanvasContext;
-let g_render_kernel!: Kernel;
-let g_render_kernel_bind_group!: BindGroup;
+let g_presentation_format!: GPUTextureFormat;
 let g_canvas_width!: number;
 let g_canvas_height!: number;
+
+let g_gen_ray_kernel!: Kernel;
+let g_gen_ray_kernel_bind_group!: BindGroup;
+let g_hit_test_kernel!: Kernel;
+let g_hit_test_kernel_bind_group!: BindGroup;
+let g_blit_pipeline!: GPURenderPipeline;
+let g_blit_bind_group!: BindGroup;
+
+
 
 async function init_webgpu() {
     const adapter = await navigator.gpu.requestAdapter();
@@ -48,6 +57,7 @@ async function init_webgpu() {
     const presentation_format = has_bgra8unorm_storage
         ? navigator.gpu.getPreferredCanvasFormat()
         : "rgba8unorm";
+    g_presentation_format = presentation_format;
 
     const canvas = document.querySelector("canvas")!;
     const context = canvas.getContext("webgpu");
@@ -60,7 +70,6 @@ async function init_webgpu() {
         device: g_device,
         format: presentation_format,
         usage: GPUTextureUsage.TEXTURE_BINDING
-            | GPUTextureUsage.STORAGE_BINDING
             | GPUTextureUsage.RENDER_ATTACHMENT,
     });
     g_context = context;
@@ -176,27 +185,106 @@ function init_kernels() {
     // =========
     //  kernels
     // =========
-    g_render_kernel = new KernelBuilder(g_device, "render_kernel", shader_utils + shader_render, "compute")
+    g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", shader_utils + shader_gen_ray, "compute")
         .build();
-    g_render_kernel_bind_group = new BindGroupBuilder(g_device, "render bind group")
+    g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
         .add_buffer("in_scene_info", 0, scene_info_buffer)
-        .create_then_add_buffer("test_buffer", 1, GPUBufferUsage.STORAGE, g_canvas_width * g_canvas_height * 16)
+        .create_then_add_buffer("out_ray_array", 1, GPUBufferUsage.STORAGE, 32 * g_canvas_width * g_canvas_height)
+        .create_then_add_buffer("out_ray_array_length", 2, GPUBufferUsage.STORAGE, 4)
+        .build(g_gen_ray_kernel);
+
+    const ray_array = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array");
+    const ray_array_length = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array_length");
+
+    g_hit_test_kernel = new KernelBuilder(g_device, "hit test kernel", shader_utils + shader_hit_test, "compute")
+        .build();
+    g_hit_test_kernel_bind_group = new BindGroupBuilder(g_device, "hit test kernel bind group")
+        .add_buffer("in_ray_array_length", 0, ray_array_length)
+        .add_buffer("in_ray_array", 1, ray_array)
         .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-        .build(g_render_kernel);
+        .create_then_add_buffer("out_color_buffer", 3, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
+        .build(g_hit_test_kernel);
+
+    const color_buffer = g_hit_test_kernel_bind_group.get_buffer("out_color_buffer");
+
+    const blit_bind_group_layout = g_device.createBindGroupLayout({
+        entries: [
+            {
+                binding: 0,
+                visibility: GPUShaderStage.FRAGMENT,
+                buffer: {
+                    type: "uniform"
+                }
+            },
+            {
+                binding: 1,
+                visibility: GPUShaderStage.FRAGMENT,
+                buffer: {
+                    type: "read-only-storage"
+                }
+            }
+        ]
+    });
+    const blit_pipeline_layout = g_device.createPipelineLayout({
+        bindGroupLayouts: [blit_bind_group_layout]
+    });
+    g_blit_pipeline = g_device.createRenderPipeline({
+        layout: blit_pipeline_layout,
+        vertex: {
+            module: g_device.createShaderModule({
+                code: shader_utils + shader_blit,
+            }),
+            entryPoint: "vertex"
+        },
+        fragment: {
+            module: g_device.createShaderModule({
+                code: shader_utils + shader_blit,
+            }),
+            entryPoint: "fragment",
+            targets: [
+                {
+                    format: g_presentation_format,
+                    writeMask: GPUColorWrite.ALL
+                }
+            ]
+        },
+        primitive: {
+            topology: "triangle-strip"
+        },
+    });
+    g_blit_bind_group = new BindGroupBuilder(g_device, "blit bind group")
+        .add_buffer("in_scene_info", 0, scene_info_buffer)
+        .add_buffer("in_color_buffer", 1, color_buffer)
+        .build_raw(g_blit_pipeline);
 }
 
 function render() {
     function _render(_time: DOMHighResTimeStamp) {
-        const framebuffer_bind_group = new BindGroupBuilder(g_device, "framebuffer bind group")
-            .add_buffer("out_framebuffer", 0, g_context.getCurrentTexture().createView())
-            .build(g_render_kernel, 1);
-
         const command_encoder = g_device.createCommandEncoder();
         {
-            g_render_kernel.dispatch_multiple_bind_group(command_encoder, [g_render_kernel_bind_group, framebuffer_bind_group],
+            g_gen_ray_kernel.dispatch(command_encoder, g_gen_ray_kernel_bind_group,
                 Math.ceil(g_canvas_width / 16),
                 Math.ceil(g_canvas_height / 16),
                 1);
+            g_hit_test_kernel.dispatch(command_encoder, g_hit_test_kernel_bind_group,
+                Math.ceil(g_canvas_width * g_canvas_height / 128),
+                1,
+                1);
+
+            const blit_render_pass = command_encoder.beginRenderPass({
+                colorAttachments: [
+                    {
+                        view: g_context.getCurrentTexture().createView(),
+                        clearValue: { r: 0, g: 0, b: 0, a: 1 },
+                        loadOp: 'clear' as GPULoadOp,
+                        storeOp: 'store' as GPUStoreOp,
+                    },
+                ],
+            });
+            blit_render_pass.setBindGroup(0, g_blit_bind_group.bind_group_object);
+            blit_render_pass.setPipeline(g_blit_pipeline);
+            blit_render_pass.draw(4, 1);
+            blit_render_pass.end();
 
             g_device.queue.submit([command_encoder.finish()]);
         }
