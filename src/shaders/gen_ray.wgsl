@@ -15,10 +15,6 @@ fn compute(
   let x = workgroup_id.x * WG_DIM_X + local_id.x;
   let y = workgroup_id.y * WG_DIM_Y + local_id.y;
 
-  if x == 0u && y == 0u {
-    out_frame_index++;
-  }
-
   let scene_info = in_scene_info;
   let pixel00 = scene_info.pixel00;
   let viewport_u_base = scene_info.viewport_u_base;
@@ -30,6 +26,7 @@ fn compute(
   let ray_array_offset = y * width + x;
   if ray_array_offset == 0u {
     out_ray_array_length = width * height;
+    out_frame_index++;
   }
 
   if x < width && y < height {

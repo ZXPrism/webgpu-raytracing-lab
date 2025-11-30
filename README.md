@@ -18,7 +18,7 @@ It should obey the basic rules of raytracing, but is probably not the common pra
 ### Procedure
 In one frame:
 
-1. gen ray, each pixel `config_spp` rays
+1. gen ray for each pixel
 2. hit test for `config_max_bounce` times
 3. filter using previous frame's output (running average)
 4. blit to screen
