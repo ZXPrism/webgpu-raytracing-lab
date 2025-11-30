@@ -15,6 +15,7 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "gl-matrix": "^3.4.4",
     "tweakpane": "^4.0.5"
   }
 }

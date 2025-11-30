@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      gl-matrix:
+        specifier: ^3.4.4
+        version: 3.4.4
       tweakpane:
         specifier: ^4.0.5
         version: 4.0.5
@@ -321,6 +324,9 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  gl-matrix@3.4.4:
+    resolution: {integrity: sha512-latSnyDNt/8zYUB6VIJ6PCh2jBjJX6gnDsoCZ7LyW7GkqrD51EWwa9qCoGixj8YqBtETQK/xY7OmpTF8xz1DdQ==}
+
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -585,6 +591,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  gl-matrix@3.4.4: {}
 
   nanoid@3.3.11: {}
 

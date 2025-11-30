@@ -1,7 +1,6 @@
-@group(0) @binding(0) var<uniform> in_screen_info: ScreenInfo;
-@group(0) @binding(1) var<uniform> in_camera_info: CameraInfo;
-@group(0) @binding(2) var<storage, read_write> out_test_buffer: array<vec4f>;
-@group(0) @binding(3) var<storage, read> in_sphere_array: array<Sphere>;
+@group(0) @binding(0) var<uniform> in_scene_info: SceneInfo;
+@group(0) @binding(1) var<storage, read_write> out_test_buffer: array<vec4f>;
+@group(0) @binding(2) var<storage, read> in_sphere_array: array<Sphere>;
 
 // todo: should set format according to actual presentation format acquired from canvas..
 @group(1) @binding(0) var out_framebuffer : texture_storage_2d<bgra8unorm, write>;
@@ -14,34 +13,17 @@ fn compute(
   let x = global_id.x;
   let y = global_id.y;
 
-  let width = in_screen_info.width;
-  let height = in_screen_info.height;
-  let offset = y * width + x;
-
-  // ========
-  //  camera
-  // ========
-  let camera_info = in_camera_info;
-  let camera_gaze_norm = normalize(camera_info.center - camera_info.eye);
-  let camera_right_norm = normalize(cross(camera_gaze_norm, vec3f(0.0, 1.0, 0.0)));
-  let camera_down_norm = cross(camera_gaze_norm, camera_right_norm);
-
-  // =============================
-  //  viewport (origin: top left)
-  // =============================
-  let viewport_height = 2 * tan(camera_info.fov_y / 2.0) * camera_info.focal_length;
-  let viewport_width = viewport_height * camera_info.aspect_ratio;
-  let viewport_u = camera_right_norm * viewport_width;
-  let viewport_v = camera_down_norm * viewport_height;
-  let viewport_u_base = viewport_u / f32(width);
-  let viewport_v_base = viewport_v / f32(height);
-  let viewport_top_left = camera_info.eye + (camera_gaze_norm * camera_info.focal_length) - (viewport_u + viewport_v) / 2.0;
-  let pixel00 = viewport_top_left + (0.5 * (viewport_u_base + viewport_v_base)); // default sample point is the center of each pixel
+  let width = in_scene_info.width;
+  let height = in_scene_info.height;
+  let pixel00 = in_scene_info.pixel00;
+  let viewport_u_base = in_scene_info.viewport_u_base;
+  let viewport_v_base = in_scene_info.viewport_v_base;
+  let eye = in_scene_info.eye;
 
   // ================
   //  ray generation
   // ================
-  let primary_ray = Ray(camera_info.eye, pixel00 + (viewport_u_base * f32(x) + viewport_v_base * f32(y)) - camera_info.eye);
+  let primary_ray = Ray(eye, pixel00 + (viewport_u_base * f32(x) + viewport_v_base * f32(y)) - eye);
 
   // ==========
   //  hit test

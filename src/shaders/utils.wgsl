@@ -1,22 +1,18 @@
 // =========
 //  structs
 // =========
-struct ScreenInfo { // 8
-  width: u32, // 0 -> 4
-  height: u32 // 4 -> 4
+struct SceneInfo { // 64
+  pixel00: vec3f, // 0 -> 12
+  width: u32, // 12 -> 4
+  viewport_u_base: vec3f, // 16 -> 12
+  height: u32, // 28 -> 4
+  viewport_v_base: vec3f, // 32 -> 16 (12 + 4)
+  eye: vec3f // 48 -> 16 (12 + 4)
 }
 
-struct CameraInfo { // 48 (40 + 8)
-  eye: vec3f, // 0 -> 16 (12 + 4)
-  center: vec3f, // 16 -> 12
-  focal_length: f32, // 28 -> 4
-  fov_y: f32, // 32 -> 4
-  aspect_ratio: f32 // 36 -> 4
-}
-
-struct Ray { // 32 (28 + 4)
+struct Ray { // 32
   origin: vec3f, // 0 -> 16
-  direction: vec3f, // 16 -> 12; not necessarily normalized
+  direction: vec3f, // 16 -> 16 (12 + 4); not necessarily normalized
 }
 
 struct Sphere { // 16
@@ -52,13 +48,13 @@ fn rand_unit_square(seed: f32) -> vec2f {
   return vec2f(rand(seed), rand(seed * 2.0)) - 0.5;
 }
 
-fn rand_unit_sphere(seed: f32) -> vec3f {
+// fn rand_unit_sphere(seed: f32) -> vec3f {
 
-}
+// }
 
-fn rand_unit_semi_sphere(seed: f32, normal: vec3f) -> vec3f {
+// fn rand_unit_semi_sphere(seed: f32, normal: vec3f) -> vec3f {
 
-}
+// }
 
 // ==========
 //  hit test
