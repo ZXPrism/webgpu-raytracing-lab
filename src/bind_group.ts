@@ -10,6 +10,9 @@ export class BindGroup {
     }
 
     public get_buffer(name: string): GPUBuffer {
+        if (!this.map_buffer_name_to_buffer_object.has(name)) {
+            console.error(`buffer :"${name}" does not exist in this bind group!`);
+        }
         return this.map_buffer_name_to_buffer_object.get(name)!;
     }
 

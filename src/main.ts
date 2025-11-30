@@ -9,6 +9,7 @@ import { createGPUBuffer } from "./kernel_utils";
 import shader_utils from "./shaders/utils.wgsl?raw";
 import shader_gen_ray from "./shaders/gen_ray.wgsl?raw";
 import shader_hit_test from "./shaders/hit_test.wgsl?raw";
+import shader_filter from "./shaders/filter.wgsl?raw";
 import shader_blit from "./shaders/blit.wgsl?raw";
 
 import { vec3 } from "gl-matrix";
@@ -18,15 +19,16 @@ let g_context!: GPUCanvasContext;
 let g_presentation_format!: GPUTextureFormat;
 let g_canvas_width!: number;
 let g_canvas_height!: number;
+let g_pixel_cnt!: number;
 
 let g_gen_ray_kernel!: Kernel;
 let g_gen_ray_kernel_bind_group!: BindGroup;
 let g_hit_test_kernel!: Kernel;
 let g_hit_test_kernel_bind_group!: BindGroup;
+let g_filter_kernel!: Kernel;
+let g_filter_kernel_bind_group!: BindGroup;
 let g_blit_pipeline!: GPURenderPipeline;
 let g_blit_bind_group!: BindGroup;
-
-
 
 async function init_webgpu() {
     const adapter = await navigator.gpu.requestAdapter();
@@ -69,8 +71,7 @@ async function init_webgpu() {
     context.configure({
         device: g_device,
         format: presentation_format,
-        usage: GPUTextureUsage.TEXTURE_BINDING
-            | GPUTextureUsage.RENDER_ATTACHMENT,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
     g_context = context;
 
@@ -78,6 +79,7 @@ async function init_webgpu() {
     canvas.height = window.innerHeight;
     g_canvas_width = canvas.width;
     g_canvas_height = canvas.height;
+    g_pixel_cnt = g_canvas_width * g_canvas_height;
 
     console.info("successfully initialized WebGPU 🎉");
 }
@@ -191,10 +193,12 @@ function init_kernels() {
         .add_buffer("in_scene_info", 0, scene_info_buffer)
         .create_then_add_buffer("out_ray_array", 1, GPUBufferUsage.STORAGE, 32 * g_canvas_width * g_canvas_height)
         .create_then_add_buffer("out_ray_array_length", 2, GPUBufferUsage.STORAGE, 4)
+        .create_then_add_buffer_init_u32("out_frame_index", 3, GPUBufferUsage.STORAGE, 0)
         .build(g_gen_ray_kernel);
 
     const ray_array = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array");
     const ray_array_length = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array_length");
+    const frame_index = g_gen_ray_kernel_bind_group.get_buffer("out_frame_index");
 
     g_hit_test_kernel = new KernelBuilder(g_device, "hit test kernel", shader_utils + shader_hit_test, "compute")
         .build();
@@ -206,6 +210,16 @@ function init_kernels() {
         .build(g_hit_test_kernel);
 
     const color_buffer = g_hit_test_kernel_bind_group.get_buffer("out_color_buffer");
+
+    g_filter_kernel = new KernelBuilder(g_device, "filter kernel", shader_utils + shader_filter, "compute")
+        .build();
+    g_filter_kernel_bind_group = new BindGroupBuilder(g_device, "filter kernel bind group")
+        .add_buffer("in_frame_index", 0, frame_index)
+        .add_buffer("in_color_buffer", 1, color_buffer)
+        .create_then_add_buffer("out_filtered_color_buffer", 2, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
+        .build(g_filter_kernel);
+
+    const filtered_color_buffer = g_filter_kernel_bind_group.get_buffer("out_filtered_color_buffer");
 
     const blit_bind_group_layout = g_device.createBindGroupLayout({
         entries: [
@@ -254,7 +268,7 @@ function init_kernels() {
     });
     g_blit_bind_group = new BindGroupBuilder(g_device, "blit bind group")
         .add_buffer("in_scene_info", 0, scene_info_buffer)
-        .add_buffer("in_color_buffer", 1, color_buffer)
+        .add_buffer("in_filtered_color_buffer", 1, filtered_color_buffer)
         .build_raw(g_blit_pipeline);
 }
 
@@ -267,7 +281,11 @@ function render() {
                 Math.ceil(g_canvas_height / 16),
                 1);
             g_hit_test_kernel.dispatch(command_encoder, g_hit_test_kernel_bind_group,
-                Math.ceil(g_canvas_width * g_canvas_height / 128),
+                Math.ceil(g_pixel_cnt / 128),
+                1,
+                1);
+            g_filter_kernel.dispatch(command_encoder, g_filter_kernel_bind_group,
+                Math.ceil(g_pixel_cnt / 128),
                 1,
                 1);
 

@@ -18,16 +18,7 @@ It should obey the basic rules of raytracing, but is probably not the common pra
 ### Procedure
 In one frame:
 
-1. gen ray
+1. gen ray, each pixel `config_spp` rays
 2. hit test for `config_max_bounce` times
-3. blit
-
-Repeat the procedure above for `config_spp` times, then do a filtering on the final output.
-
----
-
-That is, we need `config_spp` frames to fully render one scene.
-
-But we can actually do faster, if we put everything in one frame. The reason why I split them to multiple frames is for aesthetic considerations.
-
-Also, the result often needs less iterations to converge, but convergence checking requires CPU readback, which should be avoided for most circumstances. That's why I used iterations of fixed times.
+3. filter using previous frame's output (running average)
+4. blit to screen

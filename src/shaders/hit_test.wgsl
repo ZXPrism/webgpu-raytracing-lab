@@ -3,16 +3,20 @@
 @group(0) @binding(2) var<storage, read> in_sphere_array: array<Sphere>;
 @group(0) @binding(3) var<storage, read_write> out_color_buffer: array<vec4f>;
 
+const WG_DIM_X = 128u;
+
 @compute
-@workgroup_size(128, 1, 1)
+@workgroup_size(WG_DIM_X, 1, 1)
 fn compute(
-  @builtin(global_invocation_id) global_id : vec3u
+  @builtin(workgroup_id) workgroup_id : vec3u,
+  @builtin(local_invocation_id) local_id: vec3u
 ) {
-  if global_id.x >= in_ray_array_length {
+  let id = workgroup_id.x * WG_DIM_X + local_id.x;
+  if id >= in_ray_array_length {
     return;
   }
 
-  let ray = in_ray_array[global_id.x];
+  let ray = in_ray_array[id];
 
   var pixel_out = vec3f(143.0, 233.0, 255.0) / 255.0;
   let sphere_array_length = i32(arrayLength(&in_sphere_array));
