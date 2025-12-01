@@ -183,7 +183,7 @@ function init_kernels() {
     const sphere_cnt = 2;
     const sphere_array_data = new Float32Array(sphere_cnt * 4);
     sphere_array_data[0] = 0.0;
-    sphere_array_data[1] = 0.0;
+    sphere_array_data[1] = 0.5;
     sphere_array_data[2] = -2.0;
     sphere_array_data[3] = 0.5;
 
@@ -193,6 +193,23 @@ function init_kernels() {
     sphere_array_data[7] = 1000.0;
     const sphere_array_buffer = createGPUBuffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
+
+
+    // ===============
+    //  material buffer
+    // ===============
+    const diffuse_material_array_data = new Float32Array(sphere_cnt * 4);
+    diffuse_material_array_data[0] = 0.6;
+    diffuse_material_array_data[1] = 0.6;
+    diffuse_material_array_data[2] = 0.6;
+    diffuse_material_array_data[3] = 0.0;
+
+    diffuse_material_array_data[4] = 0.0;
+    diffuse_material_array_data[5] = 0.0;
+    diffuse_material_array_data[6] = 0.0;
+    diffuse_material_array_data[7] = 0.0;
+    const diffuse_material_array_buffer = createGPUBuffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
+    g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
 
 
     // =========
@@ -224,10 +241,11 @@ function init_kernels() {
         .add_buffer("in_ray_array_length", 0, ray_array_length_initial)
         .add_buffer("in_ray_array", 1, ray_array_initial)
         .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-        .create_then_add_buffer("out_color_buffer", 3, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
-        .add_buffer("out_ray_array_length", 4, ray_array_length_ping)
-        .add_buffer("out_ray_array", 5, ray_array_ping)
-        .add_buffer("out_indirect_args", 6, hit_test_indirect_args_ping)
+        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
+        .create_then_add_buffer("out_color_buffer", 4, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
+        .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
+        .add_buffer("out_ray_array", 6, ray_array_ping)
+        .add_buffer("out_indirect_args", 7, hit_test_indirect_args_ping)
         .build(g_hit_test_kernel);
 
     const color_buffer = g_hit_test_kernel_bind_group_initial.get_buffer("out_color_buffer");
@@ -236,19 +254,21 @@ function init_kernels() {
         .add_buffer("in_ray_array_length", 0, ray_array_length_ping)
         .add_buffer("in_ray_array", 1, ray_array_ping)
         .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-        .add_buffer("out_color_buffer", 3, color_buffer)
-        .add_buffer("out_ray_array_length", 4, ray_array_length_pong)
-        .add_buffer("out_ray_array", 5, ray_array_pong)
-        .add_buffer("out_indirect_args", 6, hit_test_indirect_args_pong)
+        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
+        .add_buffer("out_color_buffer", 4, color_buffer)
+        .add_buffer("out_ray_array_length", 5, ray_array_length_pong)
+        .add_buffer("out_ray_array", 6, ray_array_pong)
+        .add_buffer("out_indirect_args", 7, hit_test_indirect_args_pong)
         .build(g_hit_test_kernel);
     const hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "hit test kernel bind group")
         .add_buffer("in_ray_array_length", 0, ray_array_length_pong)
         .add_buffer("in_ray_array", 1, ray_array_pong)
         .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-        .add_buffer("out_color_buffer", 3, color_buffer)
-        .add_buffer("out_ray_array_length", 4, ray_array_length_ping)
-        .add_buffer("out_ray_array", 5, ray_array_ping)
-        .add_buffer("out_indirect_args", 6, hit_test_indirect_args_ping)
+        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
+        .add_buffer("out_color_buffer", 4, color_buffer)
+        .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
+        .add_buffer("out_ray_array", 6, ray_array_ping)
+        .add_buffer("out_indirect_args", 7, hit_test_indirect_args_ping)
         .build(g_hit_test_kernel);
     g_hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 
@@ -318,6 +338,8 @@ function render() {
         const command_encoder = g_device.createCommandEncoder();
         {
             command_encoder.clearBuffer(g_hit_test_kernel_bind_group_initial.get_buffer("out_color_buffer"));
+            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_pingpong[0].get_buffer("in_ray_array_length"));
+            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_pingpong[1].get_buffer("in_ray_array_length"));
 
             g_gen_ray_kernel.dispatch(command_encoder, g_gen_ray_kernel_bind_group,
                 Math.ceil(g_canvas_width / 16),

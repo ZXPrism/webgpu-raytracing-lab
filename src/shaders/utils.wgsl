@@ -28,6 +28,10 @@ struct IndirectArgs { // 12
   dispatch_z: u32, // 8 -> 12
 }
 
+struct DiffuseMaterial { // 16
+  albedo: vec3f // 0 -> 16 (12 + 4)
+}
+
 // ========
 //  random
 // ========
@@ -57,13 +61,12 @@ fn rand_unit_square(seed: f32) -> vec2f {
   return vec2f(x, rand(x)) - 0.5;
 }
 
-// fn rand_unit_sphere(seed: f32) -> vec3f {
-
-// }
-
-// fn rand_unit_hemi_sphere(seed: f32, normal: vec3f) -> vec3f {
-
-// }
+fn rand_unit_sphere(seed: f32) -> vec3f {
+  let theta = rand(seed);
+  let phi = rand(theta);
+  let sin_theta = sin(theta);
+  return vec3f(sin_theta * cos(phi), cos(theta), sin_theta * sin(phi));
+}
 
 // ==========
 //  hit test
@@ -90,10 +93,14 @@ fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
   return -1.0; // if miss, return a negative value
 }
 
+fn get_hit_point(ray: Ray, t: f32) -> vec3f {
+  return ray.origin + ray.direction * t;
+}
+
 
 // ===================
 //  evaluate material
 // ===================
-fn evaluate_diffuse() {
+fn evaluate_diffuse(material: DiffuseMaterial, normal: vec3f, hit_point: vec3f) -> Ray {
 
 }
