@@ -338,6 +338,7 @@ function render() {
         const command_encoder = g_device.createCommandEncoder();
         {
             command_encoder.clearBuffer(g_hit_test_kernel_bind_group_initial.get_buffer("out_color_buffer"));
+            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_initial.get_buffer("out_ray_array_length"))
             command_encoder.clearBuffer(g_hit_test_kernel_bind_group_pingpong[0].get_buffer("in_ray_array_length"));
             command_encoder.clearBuffer(g_hit_test_kernel_bind_group_pingpong[1].get_buffer("in_ray_array_length"));
 

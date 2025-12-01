@@ -101,6 +101,6 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 // ===================
 //  evaluate material
 // ===================
-fn evaluate_diffuse(material: DiffuseMaterial, normal: vec3f, hit_point: vec3f) -> Ray {
+// fn evaluate_diffuse(material: DiffuseMaterial, normal: vec3f, hit_point: vec3f) -> Ray {
 
-}
+// }
