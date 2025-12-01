@@ -7,9 +7,9 @@ import { BindGroupBuilder } from "./bind_group_builder";
 import { createGPUBuffer } from "./kernel_utils";
 import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_elem_size_struct_ray, config_max_bounce } from "./config";
 
-
 import shader_utils from "./shaders/utils.wgsl?raw";
 import shader_gen_ray from "./shaders/gen_ray.wgsl?raw";
+import shader_prep_hit_test from "./shaders/prep_hit_test.wgsl?raw";
 import shader_hit_test from "./shaders/hit_test.wgsl?raw";
 import shader_filter from "./shaders/filter.wgsl?raw";
 import shader_blit from "./shaders/blit.wgsl?raw";
@@ -26,8 +26,10 @@ let g_pixel_cnt!: number;
 let g_gen_ray_kernel!: Kernel;
 let g_gen_ray_kernel_bind_group!: BindGroup;
 
+let g_prep_hit_test_kernel!: Kernel;
+let g_prep_hit_test_kernel_bind_group_pingpong!: BindGroup[];
+
 let g_hit_test_kernel!: Kernel;
-let g_hit_test_kernel_bind_group_initial!: BindGroup;
 let g_hit_test_kernel_bind_group_pingpong!: BindGroup[];
 
 let g_filter_kernel!: Kernel;
@@ -94,8 +96,8 @@ function init_kernels() {
     // ===============
     //  check configs
     // ===============
-    if (config_max_bounce < 2) {
-        console.error(`bad config: "config_max_bounce" should be at least 2! (given: ${config_max_bounce})`);
+    if (config_max_bounce < 1) {
+        console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
         return;
     }
 
@@ -184,13 +186,13 @@ function init_kernels() {
     const sphere_array_data = new Float32Array(sphere_cnt * 4);
     sphere_array_data[0] = 0.0;
     sphere_array_data[1] = 0.5;
-    sphere_array_data[2] = -2.0;
+    sphere_array_data[2] = 0.0;
     sphere_array_data[3] = 0.5;
 
     sphere_array_data[4] = 0.0;
-    sphere_array_data[5] = -1000.0;
-    sphere_array_data[6] = -2.0;
-    sphere_array_data[7] = 1000.0;
+    sphere_array_data[5] = -100.0;
+    sphere_array_data[6] = 0.0;
+    sphere_array_data[7] = 100.0;
     const sphere_array_buffer = createGPUBuffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 
@@ -199,14 +201,14 @@ function init_kernels() {
     //  material buffer
     // ===============
     const diffuse_material_array_data = new Float32Array(sphere_cnt * 4);
-    diffuse_material_array_data[0] = 0.6;
-    diffuse_material_array_data[1] = 0.6;
-    diffuse_material_array_data[2] = 0.6;
+    diffuse_material_array_data[0] = 1.0;
+    diffuse_material_array_data[1] = 0.0;
+    diffuse_material_array_data[2] = 0.0;
     diffuse_material_array_data[3] = 0.0;
 
-    diffuse_material_array_data[4] = 0.0;
-    diffuse_material_array_data[5] = 0.0;
-    diffuse_material_array_data[6] = 0.0;
+    diffuse_material_array_data[4] = 0.5;
+    diffuse_material_array_data[5] = 0.5;
+    diffuse_material_array_data[6] = 0.5;
     diffuse_material_array_data[7] = 0.0;
     const diffuse_material_array_buffer = createGPUBuffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
@@ -215,42 +217,39 @@ function init_kernels() {
     // =========
     //  kernels
     // =========
-    g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", shader_utils + shader_gen_ray, "compute")
-        .build();
-    g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
-        .add_buffer("in_scene_info", 0, scene_info_buffer)
-        .create_then_add_buffer("out_ray_array", 1, GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height)
-        .create_then_add_buffer("out_ray_array_length", 2, GPUBufferUsage.STORAGE, 4)
-        .create_then_add_buffer_init_u32("out_frame_index", 3, GPUBufferUsage.STORAGE, 0)
-        .build(g_gen_ray_kernel);
-
-    const ray_array_initial = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array");
-    const ray_array_length_initial = g_gen_ray_kernel_bind_group.get_buffer("out_ray_array_length");
-    const frame_index = g_gen_ray_kernel_bind_group.get_buffer("out_frame_index");
-
+    const color_buffer = createGPUBuffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
     const ray_array_length_ping = createGPUBuffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
     const ray_array_ping = createGPUBuffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
     const ray_array_length_pong = createGPUBuffer(g_device, "ray array length pong", GPUBufferUsage.STORAGE, 4);
     const ray_array_pong = createGPUBuffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-    const hit_test_indirect_args_ping = createGPUBuffer(g_device, "hit test indirect args ping", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
-    const hit_test_indirect_args_pong = createGPUBuffer(g_device, "hit test indirect args pong", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
+    const hit_test_indirect_arg = createGPUBuffer(g_device, "hit test indirect arg", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
+
+    g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", shader_utils + shader_gen_ray, "compute")
+        .build();
+    g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
+        .add_buffer("in_scene_info", 0, scene_info_buffer)
+        .add_buffer("out_ray_array_length", 1, ray_array_length_ping)
+        .add_buffer("out_ray_array", 2, ray_array_ping)
+        .create_then_add_buffer_init_u32("out_frame_index", 3, GPUBufferUsage.STORAGE, 0)
+        .build(g_gen_ray_kernel);
+
+    g_prep_hit_test_kernel = new KernelBuilder(g_device, "prep hit test kernel", shader_utils + shader_prep_hit_test, "compute")
+        .build();
+    const prep_hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "prep hit test kernel bind group ping")
+        .add_buffer("in_next_ray_array_length", 0, ray_array_length_ping)
+        .add_buffer("out_prev_ray_array_length", 1, ray_array_length_pong)
+        .add_buffer("out_indirect_args", 2, hit_test_indirect_arg)
+        .build(g_prep_hit_test_kernel);
+    const prep_hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "prep hit test kernel bind group pong")
+        .add_buffer("in_next_ray_array_length", 0, ray_array_length_pong)
+        .add_buffer("out_prev_ray_array_length", 1, ray_array_length_ping)
+        .add_buffer("out_indirect_args", 2, hit_test_indirect_arg)
+        .build(g_prep_hit_test_kernel);
+    g_prep_hit_test_kernel_bind_group_pingpong = [prep_hit_test_kernel_bind_group_ping, prep_hit_test_kernel_bind_group_pong];
 
     g_hit_test_kernel = new KernelBuilder(g_device, "hit test kernel", shader_utils + shader_hit_test, "compute")
         .build();
-    g_hit_test_kernel_bind_group_initial = new BindGroupBuilder(g_device, "hit test kernel bind group")
-        .add_buffer("in_ray_array_length", 0, ray_array_length_initial)
-        .add_buffer("in_ray_array", 1, ray_array_initial)
-        .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
-        .create_then_add_buffer("out_color_buffer", 4, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
-        .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
-        .add_buffer("out_ray_array", 6, ray_array_ping)
-        .add_buffer("out_indirect_args", 7, hit_test_indirect_args_ping)
-        .build(g_hit_test_kernel);
-
-    const color_buffer = g_hit_test_kernel_bind_group_initial.get_buffer("out_color_buffer");
-
-    const hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "hit test kernel bind group")
+    const hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "hit test kernel bind group ping")
         .add_buffer("in_ray_array_length", 0, ray_array_length_ping)
         .add_buffer("in_ray_array", 1, ray_array_ping)
         .add_buffer("in_sphere_array", 2, sphere_array_buffer)
@@ -258,9 +257,8 @@ function init_kernels() {
         .add_buffer("out_color_buffer", 4, color_buffer)
         .add_buffer("out_ray_array_length", 5, ray_array_length_pong)
         .add_buffer("out_ray_array", 6, ray_array_pong)
-        .add_buffer("out_indirect_args", 7, hit_test_indirect_args_pong)
         .build(g_hit_test_kernel);
-    const hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "hit test kernel bind group")
+    const hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "hit test kernel bind group pong")
         .add_buffer("in_ray_array_length", 0, ray_array_length_pong)
         .add_buffer("in_ray_array", 1, ray_array_pong)
         .add_buffer("in_sphere_array", 2, sphere_array_buffer)
@@ -268,19 +266,16 @@ function init_kernels() {
         .add_buffer("out_color_buffer", 4, color_buffer)
         .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
         .add_buffer("out_ray_array", 6, ray_array_ping)
-        .add_buffer("out_indirect_args", 7, hit_test_indirect_args_ping)
         .build(g_hit_test_kernel);
     g_hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 
     g_filter_kernel = new KernelBuilder(g_device, "filter kernel", shader_utils + shader_filter, "compute")
         .build();
     g_filter_kernel_bind_group = new BindGroupBuilder(g_device, "filter kernel bind group")
-        .add_buffer("in_frame_index", 0, frame_index)
+        .add_buffer("in_frame_index", 0, g_gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
         .add_buffer("in_color_buffer", 1, color_buffer)
         .create_then_add_buffer("out_filtered_color_buffer", 2, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
         .build(g_filter_kernel);
-
-    const filtered_color_buffer = g_filter_kernel_bind_group.get_buffer("out_filtered_color_buffer");
 
     const blit_bind_group_layout = g_device.createBindGroupLayout({
         entries: [
@@ -329,39 +324,45 @@ function init_kernels() {
     });
     g_blit_bind_group = new BindGroupBuilder(g_device, "blit bind group")
         .add_buffer("in_scene_info", 0, scene_info_buffer)
-        .add_buffer("in_filtered_color_buffer", 1, filtered_color_buffer)
+        .add_buffer("in_filtered_color_buffer", 1, g_filter_kernel_bind_group.get_buffer("out_filtered_color_buffer"))
         .build_raw(g_blit_pipeline);
 }
 
 function render() {
     function _render(_time: DOMHighResTimeStamp) {
+        let hit_test_indirect_arg = g_prep_hit_test_kernel_bind_group_pingpong[0].get_buffer("out_indirect_args");
+
         const command_encoder = g_device.createCommandEncoder();
         {
-            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_initial.get_buffer("out_color_buffer"));
-            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_initial.get_buffer("out_ray_array_length"))
-            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_pingpong[0].get_buffer("in_ray_array_length"));
-            command_encoder.clearBuffer(g_hit_test_kernel_bind_group_pingpong[1].get_buffer("in_ray_array_length"));
+            command_encoder.clearBuffer(g_filter_kernel_bind_group.get_buffer("in_color_buffer"));
 
+            command_encoder.pushDebugGroup("frame");
+
+            command_encoder.pushDebugGroup("ray generation");
             g_gen_ray_kernel.dispatch(command_encoder, g_gen_ray_kernel_bind_group,
                 Math.ceil(g_canvas_width / 16),
                 Math.ceil(g_canvas_height / 16),
                 1);
+            command_encoder.popDebugGroup();
 
-            g_hit_test_kernel.dispatch(command_encoder, g_hit_test_kernel_bind_group_initial,
-                Math.ceil(g_pixel_cnt / 128),
-                1,
-                1);
+            command_encoder.pushDebugGroup("hit test");
             for (let i = 0; i < config_max_bounce; i++) {
-                let curr_bind_group = g_hit_test_kernel_bind_group_pingpong[i & 1];
-                let next_bind_group = g_hit_test_kernel_bind_group_pingpong[(i + 1) & 1];
-                g_hit_test_kernel.dispatch_indirect(command_encoder, curr_bind_group, next_bind_group.get_buffer("out_indirect_args"));
+                g_prep_hit_test_kernel.dispatch(command_encoder, g_prep_hit_test_kernel_bind_group_pingpong[i & 1],
+                    1,
+                    1,
+                    1);
+                g_hit_test_kernel.dispatch_indirect(command_encoder, g_hit_test_kernel_bind_group_pingpong[i & 1], hit_test_indirect_arg);
             }
+            command_encoder.popDebugGroup();
 
+            command_encoder.pushDebugGroup("filtering");
             g_filter_kernel.dispatch(command_encoder, g_filter_kernel_bind_group,
                 Math.ceil(g_pixel_cnt / 128),
                 1,
                 1);
+            command_encoder.popDebugGroup();
 
+            command_encoder.pushDebugGroup("blit");
             const blit_render_pass = command_encoder.beginRenderPass({
                 colorAttachments: [
                     {
@@ -376,6 +377,9 @@ function render() {
             blit_render_pass.setPipeline(g_blit_pipeline);
             blit_render_pass.draw(4, 1);
             blit_render_pass.end();
+            command_encoder.popDebugGroup();
+
+            command_encoder.popDebugGroup();
 
             g_device.queue.submit([command_encoder.finish()]);
         }

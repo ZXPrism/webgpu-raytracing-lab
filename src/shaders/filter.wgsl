@@ -8,9 +8,9 @@ const WG_DIM_X = 128u;
 @workgroup_size(WG_DIM_X, 1, 1)
 fn compute(
   @builtin(workgroup_id) workgroup_id : vec3u,
-  @builtin(local_invocation_id) local_id: vec3u
+  @builtin(local_invocation_index) thread_id: u32
 ) {
-  let id = workgroup_id.x * WG_DIM_X + local_id.x;
+  let id = workgroup_id.x * WG_DIM_X + thread_id;
   let n = arrayLength(&in_color_buffer);
   if id < n {
     let curr = in_color_buffer[id];

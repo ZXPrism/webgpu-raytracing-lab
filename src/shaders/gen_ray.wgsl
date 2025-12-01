@@ -1,6 +1,6 @@
 @group(0) @binding(0) var<uniform> in_scene_info: SceneInfo;
-@group(0) @binding(1) var<storage, read_write> out_ray_array: array<Ray>;
-@group(0) @binding(2) var<storage, read_write> out_ray_array_length: u32;
+@group(0) @binding(1) var<storage, read_write> out_ray_array_length: u32;
+@group(0) @binding(2) var<storage, read_write> out_ray_array: array<Ray>;
 @group(0) @binding(3) var<storage, read_write> out_frame_index: u32;
 
 const WG_DIM_X = 16u;
@@ -12,8 +12,8 @@ fn compute(
   @builtin(workgroup_id) workgroup_id : vec3u,
   @builtin(local_invocation_id) local_id: vec3u
 ) {
-  let x = workgroup_id.x * WG_DIM_X + local_id.x;
-  let y = workgroup_id.y * WG_DIM_Y + local_id.y;
+  let x = (workgroup_id.x * WG_DIM_X) + local_id.x;
+  let y = (workgroup_id.y * WG_DIM_Y) + local_id.y;
 
   let scene_info = in_scene_info;
   let pixel00 = scene_info.pixel00;

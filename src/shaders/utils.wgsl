@@ -1,3 +1,9 @@
+// ===========
+//  constants
+// ===========
+const EPS = 1e-5;
+const SKY_COLOR = vec3f(143.0, 233.0, 255.0) / 255.0;
+
 // =========
 //  structs
 // =========
@@ -72,10 +78,10 @@ fn rand_unit_sphere(seed: f32) -> vec3f {
 //  hit test
 // ==========
 fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
-  let origin_vec = sphere.center - ray.origin;
+  let delta = sphere.center - ray.origin;
   let a = dot(ray.direction, ray.direction);
-  let b = -2.0 * dot(ray.direction, origin_vec);
-  let c = dot(origin_vec, origin_vec) - (sphere.radius * sphere.radius);
+  let b = -2.0 * dot(ray.direction, delta);
+  let c = dot(delta, delta) - (sphere.radius * sphere.radius);
 
   let det = b * b - 4.0 * a * c;
   if det >= 0.0 {
@@ -97,10 +103,19 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
   return ray.origin + ray.direction * t;
 }
 
+// ============
+//  get normal
+// ============
+fn get_normal_sphere(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
+  let delta = hit_point - sphere.center;
+  return select(-delta, delta, dot(delta, ray.direction) <= 0.0);
+}
 
 // ===================
 //  evaluate material
 // ===================
-// fn evaluate_diffuse(material: DiffuseMaterial, normal: vec3f, hit_point: vec3f) -> Ray {
-
-// }
+fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+  let normal_norm = normalize(normal);
+  let res_ray_direction = normal_norm + rand_unit_sphere(seed);
+  return select(res_ray_direction, normal, dot(res_ray_direction, res_ray_direction) <= EPS);
+}
