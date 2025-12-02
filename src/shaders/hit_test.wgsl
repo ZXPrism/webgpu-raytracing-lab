@@ -29,8 +29,8 @@ fn compute(
       let theta = 0.02 * f32(in_frame_index);
       let x = sphere.center.x;
       let z = sphere.center.z;
-      sphere.center.x = cos(theta) * sphere.center.x - sin(theta) * sphere.center.z;
-      sphere.center.z = sin(theta) * sphere.center.x + cos(theta) * sphere.center.z;
+      sphere.center.x = cos(theta) * x - sin(theta) * z;
+      sphere.center.z = sin(theta) * x + cos(theta) * z;
       let t = hit_test_sphere(ray, sphere);
       if t <= EPS {
         continue;
