@@ -5,6 +5,7 @@
 @group(0) @binding(4) var<storage, read_write> out_color_buffer: array<vec4f>;
 @group(0) @binding(5) var<storage, read_write> out_ray_array_length: atomic<u32>;
 @group(0) @binding(6) var<storage, read_write> out_ray_array: array<Ray>;
+@group(0) @binding(7) var<storage, read> in_frame_index: u32;
 
 const WG_DIM_X = 128u;
 
@@ -24,7 +25,13 @@ fn compute(
 
     let sphere_array_length = i32(arrayLength(&in_sphere_array));
     for(var i = 0; i < sphere_array_length; i++) {
-      let t = hit_test_sphere(ray, in_sphere_array[i]);
+      var sphere = in_sphere_array[i];
+      let theta = 0.02 * f32(in_frame_index);
+      let x = sphere.center.x;
+      let z = sphere.center.z;
+      sphere.center.x = cos(theta) * sphere.center.x - sin(theta) * sphere.center.z;
+      sphere.center.z = sin(theta) * sphere.center.x + cos(theta) * sphere.center.z;
+      let t = hit_test_sphere(ray, sphere);
       if t <= EPS {
         continue;
       }

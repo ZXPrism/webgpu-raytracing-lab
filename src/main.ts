@@ -277,6 +277,7 @@ function init_kernels() {
         .add_buffer("out_color_buffer", 4, color_buffer)
         .add_buffer("out_ray_array_length", 5, ray_array_length_pong)
         .add_buffer("out_ray_array", 6, ray_array_pong)
+        .add_buffer("in_frame_index", 7, g_gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
         .build(g_hit_test_kernel);
     const hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "hit test kernel bind group pong")
         .add_buffer("in_ray_array_length", 0, ray_array_length_pong)
@@ -286,6 +287,7 @@ function init_kernels() {
         .add_buffer("out_color_buffer", 4, color_buffer)
         .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
         .add_buffer("out_ray_array", 6, ray_array_ping)
+        .add_buffer("in_frame_index", 7, g_gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
         .build(g_hit_test_kernel);
     g_hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 

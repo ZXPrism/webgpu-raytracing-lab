@@ -15,6 +15,6 @@ fn compute(
   if id < n {
     let curr = in_color_buffer[id];
     let prev = out_filtered_color_buffer[id];
-    out_filtered_color_buffer[id] = mix(prev, curr, 1.0 / f32(in_frame_index));
+    out_filtered_color_buffer[id] = curr;
   }
 }

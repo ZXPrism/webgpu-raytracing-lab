@@ -1,7 +1,7 @@
 // ===========
 //  constants
 // ===========
-const EPS = 0.0001;
+const EPS = 0.000001;
 const PI = 3.141592653;
 const SKY_COLOR = vec3f(143.0, 233.0, 255.0) / 255.0;
 
