@@ -41,9 +41,10 @@ fn compute(
       let write_idx = atomicAdd(&out_ray_array_length, 1u);
       let hit_point = get_hit_point(ray, min_t);
       let normal = get_normal_sphere(ray, sphere, hit_point);
-      let diffuse_ray_direction = evaluate_diffuse(ray.direction, normal, hit_point, f32(write_idx));
+      let normal_norm = normalize(normal);
+      let diffuse_ray_direction_norm = evaluate_diffuse(normal, hit_point, f32(write_idx));
 
-      out_ray_array[write_idx] = Ray(hit_point, diffuse_ray_direction, ray.pixel_offset, ray.weight * material.albedo);
+      out_ray_array[write_idx] = Ray(hit_point + EPS * normal_norm, diffuse_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
     } else {
       out_color_buffer[ray.pixel_offset] += vec4f(SKY_COLOR * ray.weight, 1.0);
     }

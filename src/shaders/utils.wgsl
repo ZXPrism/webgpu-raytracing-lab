@@ -1,7 +1,8 @@
 // ===========
 //  constants
 // ===========
-const EPS = 1e-3;
+const EPS = 0.0001;
+const PI = 3.141592653;
 const SKY_COLOR = vec3f(143.0, 233.0, 255.0) / 255.0;
 
 // =========
@@ -18,7 +19,7 @@ struct SceneInfo { // 64
 
 struct Ray { // 48
   origin: vec3f, // 0 -> 16 (12 + 4)
-  direction: vec3f, // 16 -> 12; not necessarily normalized
+  direction_norm: vec3f, // 16 -> 12;
   pixel_offset: u32, // 28 -> 4
   weight: vec3f, // 32 -> 16 (12 + 4)
 }
@@ -62,16 +63,19 @@ fn rand(seed: f32) -> f32 {
   return res - 1.0;                  // Range [0:1]
 }
 
+// uniform [-0.5, 0.5]^2
 fn rand_unit_square(seed: f32) -> vec2f {
   let x = rand(seed);
   return vec2f(x, rand(x)) - 0.5;
 }
 
-fn rand_unit_sphere(seed: f32) -> vec3f {
-  let theta = rand(seed);
-  let phi = rand(theta);
-  let sin_theta = sin(theta);
-  return vec3f(sin_theta * cos(phi), cos(theta), sin_theta * sin(phi));
+// NOTE: uniform on the unit sphere's shell (not uniform inside the the unit sphere volume)
+// That is, the result is always an unit vector
+fn rand_unit_sphere_shell(seed: f32) -> vec3f {
+  let y = 2.0 * rand(seed) - 1.0;
+  let phi = 2.0 * PI * rand(seed + 1.0);
+  let r = sqrt(1.0 - y * y);
+  return vec3f(r * cos(phi), y, r * sin(phi));
 }
 
 // ==========
@@ -79,8 +83,8 @@ fn rand_unit_sphere(seed: f32) -> vec3f {
 // ==========
 fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
   let delta = sphere.center - ray.origin;
-  let a = dot(ray.direction, ray.direction);
-  let b = -2.0 * dot(ray.direction, delta);
+  let a = dot(ray.direction_norm, ray.direction_norm);
+  let b = -2.0 * dot(ray.direction_norm, delta);
   let c = dot(delta, delta) - (sphere.radius * sphere.radius);
 
   let det = b * b - 4.0 * a * c;
@@ -100,24 +104,23 @@ fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
 }
 
 fn get_hit_point(ray: Ray, t: f32) -> vec3f {
-  return ray.origin + ray.direction * t;
+  return ray.origin + (ray.direction_norm * t);
 }
 
 // ============
 //  get normal
 // ============
-// TODO: force normal to be unidirection, and let evaluation shader decide
 fn get_normal_sphere(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
-  return select(-delta, delta, dot(delta, ray.direction) <= 0.0);
+  return select(-delta, delta, dot(delta, ray.direction_norm) <= 0.0);
 }
 
 // ===================
 //  evaluate material
 // ===================
-fn evaluate_diffuse(in_ray_direction: vec3f, normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
-  let res_ray_direction = rand_unit_sphere(seed);
-  return select(-res_ray_direction, res_ray_direction, dot(in_ray_direction, normal) <= EPS);
+fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+  let res_ray_direction = rand_unit_sphere_shell(seed);
+  return select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal) >= 0.0);
 }
 
 // fn evaluate_metal(in_ray_dirction: vec3f, normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {

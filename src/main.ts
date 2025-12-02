@@ -182,17 +182,27 @@ function init_kernels() {
     // ===============
     //  object buffer
     // ===============
-    const sphere_cnt = 2;
+    const sphere_cnt = 4;
     const sphere_array_data = new Float32Array(sphere_cnt * 4);
     sphere_array_data[0] = 0.0;
-    sphere_array_data[1] = 1.0;
-    sphere_array_data[2] = 0.0;
+    sphere_array_data[1] = 0.5;
+    sphere_array_data[2] = 1.0 - 1.5 * Math.sqrt(3);
     sphere_array_data[3] = 0.5;
 
     sphere_array_data[4] = 0.0;
-    sphere_array_data[5] = -1000.0;
+    sphere_array_data[5] = -10000.0;
     sphere_array_data[6] = 0.0;
-    sphere_array_data[7] = 1000.0;
+    sphere_array_data[7] = 10000.0;
+
+    sphere_array_data[8] = 1.5;
+    sphere_array_data[9] = 0.5;
+    sphere_array_data[10] = 1.0;
+    sphere_array_data[11] = 0.5;
+
+    sphere_array_data[12] = -1.5;
+    sphere_array_data[13] = 0.5;
+    sphere_array_data[14] = 1.0;
+    sphere_array_data[15] = 0.5;
     const sphere_array_buffer = createGPUBuffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 
@@ -210,6 +220,16 @@ function init_kernels() {
     diffuse_material_array_data[5] = 0.5;
     diffuse_material_array_data[6] = 0.5;
     diffuse_material_array_data[7] = 0.0;
+
+    diffuse_material_array_data[8] = 0.0;
+    diffuse_material_array_data[9] = 1.0;
+    diffuse_material_array_data[10] = 0.0;
+    diffuse_material_array_data[11] = 0.0;
+
+    diffuse_material_array_data[12] = 0.0;
+    diffuse_material_array_data[13] = 0.0;
+    diffuse_material_array_data[14] = 1.0;
+    diffuse_material_array_data[15] = 0.0;
     const diffuse_material_array_buffer = createGPUBuffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
 
