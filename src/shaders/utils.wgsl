@@ -106,6 +106,7 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 // ============
 //  get normal
 // ============
+// TODO: force normal to be unidirection, and let evaluation shader decide
 fn get_normal_sphere(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
   return select(-delta, delta, dot(delta, ray.direction) <= 0.0);
