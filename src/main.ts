@@ -355,8 +355,9 @@ function init_kernels() {
 }
 
 function render() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function _render(_time: DOMHighResTimeStamp) {
-        let hit_test_indirect_arg = g_prep_hit_test_kernel_bind_group_pingpong[0].get_buffer("out_indirect_args");
+        const hit_test_indirect_arg = g_prep_hit_test_kernel_bind_group_pingpong[0].get_buffer("out_indirect_args");
 
         const command_encoder = g_device.createCommandEncoder();
         {
