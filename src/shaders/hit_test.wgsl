@@ -25,7 +25,7 @@ fn compute(
     let sphere_array_length = i32(arrayLength(&in_sphere_array));
     for(var i = 0; i < sphere_array_length; i++) {
       let t = hit_test_sphere(ray, in_sphere_array[i]);
-      if t <= 0.0 {
+      if t <= EPS {
         continue;
       }
       if t < min_t {
@@ -41,7 +41,7 @@ fn compute(
       let write_idx = atomicAdd(&out_ray_array_length, 1u);
       let hit_point = get_hit_point(ray, min_t);
       let normal = get_normal_sphere(ray, sphere, hit_point);
-      let diffuse_ray_direction = evaluate_diffuse(normal, hit_point, f32(write_idx));
+      let diffuse_ray_direction = evaluate_diffuse(ray.direction, normal, hit_point, f32(write_idx));
 
       out_ray_array[write_idx] = Ray(hit_point, diffuse_ray_direction, ray.pixel_offset, ray.weight * material.albedo);
     } else {

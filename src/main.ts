@@ -185,14 +185,14 @@ function init_kernels() {
     const sphere_cnt = 2;
     const sphere_array_data = new Float32Array(sphere_cnt * 4);
     sphere_array_data[0] = 0.0;
-    sphere_array_data[1] = 0.5;
+    sphere_array_data[1] = 1.0;
     sphere_array_data[2] = 0.0;
     sphere_array_data[3] = 0.5;
 
     sphere_array_data[4] = 0.0;
-    sphere_array_data[5] = -100.0;
+    sphere_array_data[5] = -1000.0;
     sphere_array_data[6] = 0.0;
-    sphere_array_data[7] = 100.0;
+    sphere_array_data[7] = 1000.0;
     const sphere_array_buffer = createGPUBuffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 

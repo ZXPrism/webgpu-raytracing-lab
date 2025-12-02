@@ -1,7 +1,7 @@
 // ===========
 //  constants
 // ===========
-const EPS = 1e-5;
+const EPS = 1e-3;
 const SKY_COLOR = vec3f(143.0, 233.0, 255.0) / 255.0;
 
 // =========
@@ -114,8 +114,13 @@ fn get_normal_sphere(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // ===================
 //  evaluate material
 // ===================
-fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
-  let normal_norm = normalize(normal);
-  let res_ray_direction = normal_norm + rand_unit_sphere(seed);
-  return select(res_ray_direction, normal, dot(res_ray_direction, res_ray_direction) <= EPS);
+fn evaluate_diffuse(in_ray_direction: vec3f, normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+  let res_ray_direction = rand_unit_sphere(seed);
+  return select(-res_ray_direction, res_ray_direction, dot(in_ray_direction, normal) <= EPS);
 }
+
+// fn evaluate_metal(in_ray_dirction: vec3f, normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+//   let normal_norm = normalize(normal);
+//   let res_ray_direction = reflect(in_ray_dirction, normal_norm);
+//   return select(res_ray_direction, normal, dot(res_ray_direction, res_ray_direction) <= EPS);
+// }
