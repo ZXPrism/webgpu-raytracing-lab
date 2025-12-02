@@ -42,7 +42,7 @@ fn compute(
       let hit_point = get_hit_point(ray, min_t);
       let normal = get_normal_sphere(ray, sphere, hit_point);
       let normal_norm = normalize(normal);
-      let diffuse_ray_direction_norm = evaluate_diffuse(normal, hit_point, f32(write_idx));
+      let diffuse_ray_direction_norm = evaluate_diffuse(normal, hit_point, f32(write_idx) * min_t);
 
       out_ray_array[write_idx] = Ray(hit_point + EPS * normal_norm, diffuse_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
     } else {

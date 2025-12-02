@@ -1,7 +1,7 @@
 // ===========
 //  constants
 // ===========
-const EPS = 0.0001;
+const EPS = 0.001;
 const PI = 3.141592653;
 const SKY_COLOR = vec3f(143.0, 233.0, 255.0) / 255.0;
 
@@ -42,6 +42,7 @@ struct DiffuseMaterial { // 16
 // ========
 //  random
 // ========
+
 // from: https://marktension.nl/blog/my_favorite_wgsl_random_func_so_far/
 fn rand(seed: f32) -> f32 {
   var x = bitcast<u32>(seed);
@@ -81,6 +82,7 @@ fn rand_unit_sphere_shell(seed: f32) -> vec3f {
 // ==========
 //  hit test
 // ==========
+
 fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
   let delta = sphere.center - ray.origin;
   let a = dot(ray.direction_norm, ray.direction_norm);
@@ -110,6 +112,7 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 // ============
 //  get normal
 // ============
+
 fn get_normal_sphere(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
   return select(-delta, delta, dot(delta, ray.direction_norm) <= 0.0);
@@ -118,13 +121,14 @@ fn get_normal_sphere(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // ===================
 //  evaluate material
 // ===================
+// NOTE: each function returns new ray's direction, which should be normalized
+
 fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
   let res_ray_direction = rand_unit_sphere_shell(seed);
   return select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal) >= 0.0);
 }
 
-// fn evaluate_metal(in_ray_dirction: vec3f, normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
-//   let normal_norm = normalize(normal);
+// fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
 //   let res_ray_direction = reflect(in_ray_dirction, normal_norm);
-//   return select(res_ray_direction, normal, dot(res_ray_direction, res_ray_direction) <= EPS);
+//   return normalize(res_ray_direction);
 // }

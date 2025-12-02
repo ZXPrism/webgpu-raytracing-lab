@@ -96,6 +96,7 @@ function init_kernels() {
     // ===============
     //  check configs
     // ===============
+
     if (config_max_bounce < 1) {
         console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
         return;
@@ -133,6 +134,7 @@ function init_kernels() {
     // let viewport_v_base = viewport_v / f32(height);
     // let viewport_top_left = camera_info.eye + (camera_gaze_norm * camera_info.focal_length) - (viewport_u + viewport_v) / 2.0;
     // let pixel00 = viewport_top_left + (0.5 * (viewport_u_base + viewport_v_base)); // default sample point is the center of each pixel
+
     const viewport_height = 2.0 * Math.tan(config_camera_fov_y / 2.0) * config_camera_focal_length;
     const viewport_width = viewport_height * camera_aspect_ratio;
 
@@ -166,6 +168,7 @@ function init_kernels() {
     //  scene info buffer
     // ===================
     // see `struct SceneInfo` in `utils.wgsl`
+
     const scene_info_data = new ArrayBuffer(64);
     const scene_info_data_f32_view = new Float32Array(scene_info_data);
     const scene_info_data_u32_view = new Uint32Array(scene_info_data);
@@ -182,6 +185,7 @@ function init_kernels() {
     // ===============
     //  object buffer
     // ===============
+
     const sphere_cnt = 4;
     const sphere_array_data = new Float32Array(sphere_cnt * 4);
     sphere_array_data[0] = 0.0;
@@ -207,9 +211,10 @@ function init_kernels() {
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 
 
-    // ===============
+    // =================
     //  material buffer
-    // ===============
+    // =================
+
     const diffuse_material_array_data = new Float32Array(sphere_cnt * 4);
     diffuse_material_array_data[0] = 1.0;
     diffuse_material_array_data[1] = 0.0;
@@ -237,6 +242,7 @@ function init_kernels() {
     // =========
     //  kernels
     // =========
+
     const color_buffer = createGPUBuffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
     const ray_array_length_ping = createGPUBuffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
     const ray_array_ping = createGPUBuffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
