@@ -43,9 +43,11 @@ struct DiffuseMaterial { // 16
 //  random
 // ========
 
+var<private> seed_bias = 0.0;
+
 // from: https://marktension.nl/blog/my_favorite_wgsl_random_func_so_far/
 fn rand(seed: f32) -> f32 {
-  var x = bitcast<u32>(seed);
+  var x = bitcast<u32>(seed_bias + seed);
 
   // A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm for u32.
   x += (x << 10u);
@@ -61,7 +63,8 @@ fn rand(seed: f32) -> f32 {
   x |= ieee_one;                     // Add fractional part to 1.0
 
   let res = bitcast<f32>(x);         // Range [1:2]
-  return res - 1.0;                  // Range [0:1]
+  seed_bias = res - 1.0;             // Range [0:1]
+  return seed_bias;
 }
 
 // uniform [-0.5, 0.5]^2
