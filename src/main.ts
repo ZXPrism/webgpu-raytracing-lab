@@ -5,7 +5,7 @@ import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
 import { create_gpu_buffer } from "./kernel_utils";
-import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_elem_size_struct_ray, config_max_bounce } from "./config";
+import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_max_bounce } from "./config";
 
 import shader_utils from "./shaders/utils.wgsl?raw";
 import shader_gen_ray from "./shaders/gen_ray.wgsl?raw";
@@ -15,6 +15,13 @@ import shader_filter from "./shaders/filter.wgsl?raw";
 import shader_blit from "./shaders/blit.wgsl?raw";
 
 import { vec3 } from "gl-matrix";
+import { Pane } from "tweakpane";
+
+// ==================
+//  global variables
+// ==================
+
+const c_elem_size_struct_ray = 48;
 
 let g_device!: GPUDevice;
 let g_context!: GPUCanvasContext;
@@ -39,6 +46,8 @@ let g_blit_pipeline!: GPURenderPipeline;
 let g_blit_bind_group!: BindGroup;
 
 let g_task_list!: Array<() => void>;
+
+let g_pane = new Pane();
 
 async function init_webgpu() {
     const adapter = await navigator.gpu.requestAdapter();
@@ -256,9 +265,9 @@ function init_kernels() {
 
     const color_buffer = create_gpu_buffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
     const ray_array_length_ping = create_gpu_buffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
-    const ray_array_ping = create_gpu_buffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_ping = create_gpu_buffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
     const ray_array_length_pong = create_gpu_buffer(g_device, "ray array length pong", GPUBufferUsage.STORAGE, 4);
-    const ray_array_pong = create_gpu_buffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_pong = create_gpu_buffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
     const hit_test_indirect_arg = create_gpu_buffer(g_device, "hit test indirect arg", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
 
     g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", shader_utils + shader_gen_ray, "compute")
@@ -390,8 +399,8 @@ function init_callbacks() {
 
                 g_filter_kernel_bind_group.set_buffer_size("in_color_buffer", 16 * g_canvas_width * g_canvas_height);
                 g_filter_kernel_bind_group.set_buffer_size("out_filtered_color_buffer", 16 * g_canvas_width * g_canvas_height);
-                g_hit_test_kernel_bind_group_pingpong[0].set_buffer_size("in_ray_array", config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-                g_hit_test_kernel_bind_group_pingpong[1].set_buffer_size("in_ray_array", config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+                g_hit_test_kernel_bind_group_pingpong[0].set_buffer_size("in_ray_array", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+                g_hit_test_kernel_bind_group_pingpong[1].set_buffer_size("in_ray_array", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
             })
         }, 100);
     });
