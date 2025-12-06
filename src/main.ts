@@ -38,6 +38,8 @@ let g_filter_kernel_bind_group!: BindGroup;
 let g_blit_pipeline!: GPURenderPipeline;
 let g_blit_bind_group!: BindGroup;
 
+let g_task_list!: Array<() => void>;
+
 async function init_webgpu() {
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
@@ -92,17 +94,7 @@ async function init_webgpu() {
     console.info("successfully initialized WebGPU 🎉");
 }
 
-function init_kernels() {
-    // ===============
-    //  check configs
-    // ===============
-
-    if (config_max_bounce < 1) {
-        console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
-        return;
-    }
-
-
+function prepare_scene_info_data(): ArrayBuffer {
     // ========
     //  camera
     // ========
@@ -164,9 +156,9 @@ function init_kernels() {
     vec3.add(pixel00, viewport_top_left, temp);
 
 
-    // ===================
-    //  scene info buffer
-    // ===================
+    // =================
+    //  fill scene info
+    // =================
     // see `struct SceneInfo` in `utils.wgsl`
 
     const scene_info_data = new ArrayBuffer(64);
@@ -178,6 +170,25 @@ function init_kernels() {
     scene_info_data_u32_view[7] = g_canvas_height;
     scene_info_data_f32_view.set(viewport_v_base, 8);
     scene_info_data_f32_view.set(config_camera_eye, 12);
+
+    return scene_info_data;
+}
+
+function init_kernels() {
+    // ===============
+    //  check configs
+    // ===============
+
+    if (config_max_bounce < 1) {
+        console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
+        return;
+    }
+
+    // ============
+    //  scene info
+    // ============
+
+    const scene_info_data = prepare_scene_info_data();
     const scene_info_buffer = create_gpu_buffer(g_device, "scene info", GPUBufferUsage.UNIFORM, 64);
     g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
 
@@ -355,12 +366,52 @@ function init_kernels() {
 }
 
 function init_callbacks() {
+    let resize_callback: number;
+    addEventListener("resize", () => {
+        if (resize_callback) {
+            clearTimeout(resize_callback);
+        }
+        resize_callback = setTimeout(() => {
+            g_task_list.push(() => {
+                const canvas = document.querySelector("canvas")!;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                g_canvas_width = canvas.width;
+                g_canvas_height = canvas.height;
 
+                const scene_info_data = prepare_scene_info_data();
+                const scene_info_buffer = g_gen_ray_kernel_bind_group.get_buffer("in_scene_info");
+                g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
+
+                const frame_index_buffer = g_gen_ray_kernel_bind_group.get_buffer("out_frame_index");
+                const frame_index_data = new Uint32Array(1);
+                frame_index_data[0] = 0;
+                g_device.queue.writeBuffer(frame_index_buffer, 0, frame_index_data);
+
+                g_filter_kernel_bind_group.set_buffer_size("in_color_buffer", 16 * g_canvas_width * g_canvas_height);
+                g_filter_kernel_bind_group.set_buffer_size("out_filtered_color_buffer", 16 * g_canvas_width * g_canvas_height);
+                g_hit_test_kernel_bind_group_pingpong[0].set_buffer_size("in_ray_array", config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+                g_hit_test_kernel_bind_group_pingpong[1].set_buffer_size("in_ray_array", config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+            })
+        }, 100);
+    });
+}
+
+function init_others() {
+    g_task_list = [];
 }
 
 function render() {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function _render(_time: DOMHighResTimeStamp) {
+    let last_timestamp: DOMHighResTimeStamp = 0;
+    function _render(time: DOMHighResTimeStamp) {
+        const delta_time = time - last_timestamp;
+        last_timestamp = time;
+
+        for (const task of g_task_list) {
+            task();
+        }
+        g_task_list = [];
+
         const hit_test_indirect_arg = g_prep_hit_test_kernel_bind_group_pingpong[0].get_buffer("out_indirect_args");
 
         const command_encoder = g_device.createCommandEncoder();
@@ -425,6 +476,7 @@ async function main() {
     await init_webgpu();
     init_kernels();
     init_callbacks();
+    init_others();
     render();
 }
 

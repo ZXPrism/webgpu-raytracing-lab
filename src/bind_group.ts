@@ -1,3 +1,5 @@
+import { create_gpu_buffer } from "./kernel_utils";
+
 export class BindGroup {
     public bind_group_object: GPUBindGroup | undefined;
     public map_buffer_name_to_buffer_object: Map<string, GPUBuffer> = new Map<string, GPUBuffer>();
@@ -12,5 +14,17 @@ export class BindGroup {
             console.error(`buffer :"${name}" does not exist in this bind group!`);
         }
         return this.map_buffer_name_to_buffer_object.get(name)!;
+    }
+
+    public set_buffer_size(name: string, new_buffer_size_bytes: number) {
+        // if the new size is larger than the current size, expand the buffer to the new size
+        // otherwise, do nothing
+        let buffer = this.get_buffer(name);
+        const curr_buffer_size = buffer.size;
+        if (new_buffer_size_bytes > curr_buffer_size) {
+            const new_buffer = create_gpu_buffer(this.device, buffer.label, buffer.usage, new_buffer_size_bytes);
+            buffer.destroy();
+            buffer = new_buffer;
+        }
     }
 }
