@@ -4,7 +4,7 @@ import type { BindGroup } from "./bind_group";
 import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
-import { createGPUBuffer } from "./kernel_utils";
+import { create_gpu_buffer } from "./kernel_utils";
 import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_elem_size_struct_ray, config_max_bounce } from "./config";
 
 import shader_utils from "./shaders/utils.wgsl?raw";
@@ -178,7 +178,7 @@ function init_kernels() {
     scene_info_data_u32_view[7] = g_canvas_height;
     scene_info_data_f32_view.set(viewport_v_base, 8);
     scene_info_data_f32_view.set(config_camera_eye, 12);
-    const scene_info_buffer = createGPUBuffer(g_device, "scene info", GPUBufferUsage.UNIFORM, 64);
+    const scene_info_buffer = create_gpu_buffer(g_device, "scene info", GPUBufferUsage.UNIFORM, 64);
     g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
 
 
@@ -207,7 +207,7 @@ function init_kernels() {
     sphere_array_data[13] = 0.5;
     sphere_array_data[14] = 1.0;
     sphere_array_data[15] = 0.5;
-    const sphere_array_buffer = createGPUBuffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
+    const sphere_array_buffer = create_gpu_buffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 
 
@@ -235,7 +235,7 @@ function init_kernels() {
     diffuse_material_array_data[13] = 0.0;
     diffuse_material_array_data[14] = 1.0;
     diffuse_material_array_data[15] = 0.0;
-    const diffuse_material_array_buffer = createGPUBuffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
+    const diffuse_material_array_buffer = create_gpu_buffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
 
 
@@ -243,12 +243,12 @@ function init_kernels() {
     //  kernels
     // =========
 
-    const color_buffer = createGPUBuffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
-    const ray_array_length_ping = createGPUBuffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
-    const ray_array_ping = createGPUBuffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-    const ray_array_length_pong = createGPUBuffer(g_device, "ray array length pong", GPUBufferUsage.STORAGE, 4);
-    const ray_array_pong = createGPUBuffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-    const hit_test_indirect_arg = createGPUBuffer(g_device, "hit test indirect arg", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
+    const color_buffer = create_gpu_buffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
+    const ray_array_length_ping = create_gpu_buffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
+    const ray_array_ping = create_gpu_buffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_length_pong = create_gpu_buffer(g_device, "ray array length pong", GPUBufferUsage.STORAGE, 4);
+    const ray_array_pong = create_gpu_buffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, config_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const hit_test_indirect_arg = create_gpu_buffer(g_device, "hit test indirect arg", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
 
     g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", shader_utils + shader_gen_ray, "compute")
         .build();
@@ -354,6 +354,10 @@ function init_kernels() {
         .build_raw(g_blit_pipeline);
 }
 
+function init_callbacks() {
+
+}
+
 function render() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function _render(_time: DOMHighResTimeStamp) {
@@ -420,6 +424,7 @@ function render() {
 async function main() {
     await init_webgpu();
     init_kernels();
+    init_callbacks();
     render();
 }
 

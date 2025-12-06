@@ -1,6 +1,6 @@
 import { BindGroup } from './bind_group';
 import { Kernel } from './kernel';
-import { createGPUBuffer, createGPUBufferU32 } from './kernel_utils';
+import { create_gpu_buffer, create_gpu_buffer_u32 } from './kernel_utils';
 
 interface BufferEntry {
     name: string;
@@ -19,7 +19,7 @@ export class BindGroupBuilder {
     }
 
     public create_then_add_buffer(buffer_name: string, binding_point: number, extra_buffer_usage: GPUFlagsConstant, n_bytes: number): BindGroupBuilder {
-        const buffer = createGPUBuffer(this.device, buffer_name, extra_buffer_usage, n_bytes);
+        const buffer = create_gpu_buffer(this.device, buffer_name, extra_buffer_usage, n_bytes);
 
         this.buffer_entries.push({
             name: buffer_name,
@@ -31,7 +31,7 @@ export class BindGroupBuilder {
     }
 
     public create_then_add_buffer_init_u32(buffer_name: string, binding_point: number, extra_buffer_usage: GPUFlagsConstant, value_u32: number): BindGroupBuilder {
-        const buffer = createGPUBufferU32(this.device, buffer_name, extra_buffer_usage, value_u32);
+        const buffer = create_gpu_buffer_u32(this.device, buffer_name, extra_buffer_usage, value_u32);
 
         this.buffer_entries.push({
             name: buffer_name,
@@ -67,7 +67,6 @@ export class BindGroupBuilder {
             }
             binding_point_set.add(buffer_entry.binding_point);
 
-            // note: normally we only need to print storage buffers
             if (buffer_entry.buffer instanceof GPUBuffer) {
                 bind_group.map_buffer_name_to_buffer_object.set(buffer_entry.name, buffer_entry.buffer);
             }
