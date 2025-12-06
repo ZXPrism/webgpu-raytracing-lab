@@ -4,6 +4,8 @@
 const EPS = 0.001;
 const PI = 3.141592653;
 const SKY_COLOR = vec3f(143.0, 233.0, 255.0) / 255.0;
+const RAY_NEAR_THRESHOLD = EPS;
+const RAY_FAR_THRESHOLD = 100.0;
 
 // =========
 //  structs

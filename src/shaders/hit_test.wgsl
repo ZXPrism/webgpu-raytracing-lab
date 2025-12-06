@@ -25,7 +25,7 @@ fn compute(
     let sphere_array_length = i32(arrayLength(&in_sphere_array));
     for(var i = 0; i < sphere_array_length; i++) {
       let t = hit_test_sphere(ray, in_sphere_array[i]);
-      if t <= EPS {
+      if t < RAY_NEAR_THRESHOLD || t > RAY_FAR_THRESHOLD {
         continue;
       }
       if t < min_t {
