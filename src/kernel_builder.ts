@@ -1,10 +1,10 @@
 import { Kernel } from './kernel';
+import { ShaderReflector } from './shader_reflector/shader_reflector';
 
 export class KernelBuilder {
     private shader_module: GPUShaderModule | undefined;
     private pipeline_layout: GPUPipelineLayout | undefined;
     private bind_group_layout_list: GPUBindGroupLayout[] = [];
-    private map_bind_group_index_to_bind_group_layout_entry_list = new Map<number, GPUBindGroupLayoutEntry[]>();
     private map_constant_name_to_value = new Map<string, number>();
 
     private device: GPUDevice;
@@ -38,72 +38,13 @@ export class KernelBuilder {
             label: `${this.kernel_name}ShaderModule`,
             code: this.shader_source,
         });
-
-        // extract bind group layout from shader source
-        // the reason why I don't use auto deduced layout is that if so we can't share bind groups between pipelines, which is inconvenient
-
-        // 1. extract storage buffer bindings
-        const bind_group_entry_storage_regexp = /^\s*@group\((\d)\)\s*@binding\((\d+)\)\s*var<([\w,\s]+)>/gm;
-        let match: RegExpExecArray | null;
-        while ((match = bind_group_entry_storage_regexp.exec(this.shader_source)) !== null) {
-            const bind_group_index = +match[1];
-            const binding_point = +match[2];
-            const buffer_type_raw = match[3];
-
-            // determine buffer type
-            let buffer_type: GPUBufferBindingType;
-            if (buffer_type_raw.includes('uniform')) {
-                buffer_type = 'uniform';
-            } else if (buffer_type_raw.includes('read_write')) {
-                buffer_type = 'storage';
-            } else {
-                buffer_type = 'read-only-storage';
-            }
-
-            const bind_group_layout_entry_list = this.map_bind_group_index_to_bind_group_layout_entry_list.get(bind_group_index) ?? [];
-            bind_group_layout_entry_list.push({
-                binding: binding_point,
-                visibility: GPUShaderStage.COMPUTE,
-                buffer: {
-                    type: buffer_type
-                }
-            });
-            this.map_bind_group_index_to_bind_group_layout_entry_list.set(bind_group_index, bind_group_layout_entry_list);
-        }
-
-        // 2. extract storage texture bindings
-        const bind_group_entry_storage_texture_regexp = /@group\((\d)\)\s*@binding\((\d+)\)\s*var\s+\w+\s*:\s*texture_storage_2d<(\w+)\s*,\s*[\w+]+>/gm;
-        while ((match = bind_group_entry_storage_texture_regexp.exec(this.shader_source)) !== null) {
-            const bind_group_index = +match[1];
-            const binding_point = +match[2];
-            const texture_format_raw = match[3];
-
-            // determine buffer type
-            let texture_format: GPUTextureFormat;
-            if (texture_format_raw.includes('bgra8unorm')) {
-                texture_format = 'bgra8unorm';
-            } else {
-                texture_format = 'rgba8unorm'; // otherwise use rgba8uorm --- just for simplicity, may cause problems..
-            }
-
-            const bind_group_layout_entry_list = this.map_bind_group_index_to_bind_group_layout_entry_list.get(bind_group_index) ?? [];
-            bind_group_layout_entry_list.push({
-                binding: binding_point,
-                visibility: GPUShaderStage.COMPUTE,
-                storageTexture: {
-                    format: texture_format,
-                    access: 'write-only', // for simplicity, force the texture to be write-only
-                    viewDimension: '2d'
-                }
-            });
-            this.map_bind_group_index_to_bind_group_layout_entry_list.set(bind_group_index, bind_group_layout_entry_list);
-        }
     }
 
     private _init_bind_group_layout(): void {
         const bind_group_index_list: number[] = [];
 
-        this.map_bind_group_index_to_bind_group_layout_entry_list.forEach((bind_group_layout_entry_list, bind_group_index) => {
+        const shader_reflector = new ShaderReflector(this.shader_source);
+        shader_reflector.map_bind_group_index_to_bind_group_layout_entry_list.forEach((bind_group_layout_entry_list, bind_group_index) => {
             bind_group_index_list.push(bind_group_index);
 
             this.bind_group_layout_list.push(

@@ -10,10 +10,11 @@ export class BindGroup {
     }
 
     public get_buffer(name: string): GPUBuffer {
-        if (!this.map_buffer_name_to_buffer_object.has(name)) {
-            console.error(`buffer :"${name}" does not exist in this bind group!`);
+        const buffer = this.map_buffer_name_to_buffer_object.get(name);
+        if (!buffer) {
+            console.error(`BindGroup: buffer "${name}" does not exist in this bind group!`);
         }
-        return this.map_buffer_name_to_buffer_object.get(name)!;
+        return buffer!;
     }
 
     public set_buffer_size(name: string, new_buffer_size_bytes: number) {

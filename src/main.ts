@@ -16,6 +16,7 @@ import shader_blit from "./shaders/blit.wgsl?raw";
 
 import { vec3 } from "gl-matrix";
 import { Pane } from "tweakpane";
+import { ShaderReflector } from "./shader_reflector/shader_reflector";
 
 // ==================
 //  global variables
@@ -46,6 +47,8 @@ let g_blit_pipeline!: GPURenderPipeline;
 let g_blit_bind_group!: BindGroup;
 
 let g_task_list!: Array<() => void>;
+
+let g_utils_shader_reflector!: ShaderReflector;
 
 let g_pane = new Pane();
 
@@ -103,6 +106,10 @@ async function init_webgpu() {
     console.info("successfully initialized WebGPU 🎉");
 }
 
+function pre_init() {
+    g_utils_shader_reflector = new ShaderReflector(shader_utils);
+}
+
 function prepare_scene_info_data(): ArrayBuffer {
     // ========
     //  camera
@@ -110,6 +117,7 @@ function prepare_scene_info_data(): ArrayBuffer {
     // let camera_gaze_norm = normalize(camera_info.center - camera_info.eye);
     // let camera_right_norm = normalize(cross(camera_gaze_norm, vec3f(0.0, 1.0, 0.0)));
     // let camera_down_norm = cross(camera_gaze_norm, camera_right_norm);
+
     const camera_aspect_ratio = g_canvas_width / g_canvas_height;
 
     const camera_gaze_norm = vec3.create();
@@ -170,17 +178,16 @@ function prepare_scene_info_data(): ArrayBuffer {
     // =================
     // see `struct SceneInfo` in `utils.wgsl`
 
-    const scene_info_data = new ArrayBuffer(64);
-    const scene_info_data_f32_view = new Float32Array(scene_info_data);
-    const scene_info_data_u32_view = new Uint32Array(scene_info_data);
-    scene_info_data_f32_view.set(pixel00, 0);
-    scene_info_data_u32_view[3] = g_canvas_width;
-    scene_info_data_f32_view.set(viewport_u_base, 4);
-    scene_info_data_u32_view[7] = g_canvas_height;
-    scene_info_data_f32_view.set(viewport_v_base, 8);
-    scene_info_data_f32_view.set(config_camera_eye, 12);
+    const scene_info_struct = g_utils_shader_reflector.get_struct("SceneInfo");
+    scene_info_struct
+        .set_field("pixel00", pixel00)
+        .set_field("width", g_canvas_width)
+        .set_field("height", g_canvas_height)
+        .set_field("viewport_u_base", viewport_u_base)
+        .set_field("viewport_v_base", viewport_v_base)
+        .set_field("eye", config_camera_eye);
 
-    return scene_info_data;
+    return scene_info_struct.data;
 }
 
 function init_kernels() {
@@ -192,6 +199,7 @@ function init_kernels() {
         console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
         return;
     }
+
 
     // ============
     //  scene info
@@ -207,26 +215,16 @@ function init_kernels() {
     // ===============
 
     const sphere_cnt = 4;
-    const sphere_array_data = new Float32Array(sphere_cnt * 4);
-    sphere_array_data[0] = 0.0;
-    sphere_array_data[1] = 0.5;
-    sphere_array_data[2] = 1.0 - 1.5 * Math.sqrt(3);
-    sphere_array_data[3] = 0.5;
-
-    sphere_array_data[4] = 0.0;
-    sphere_array_data[5] = -10000.0;
-    sphere_array_data[6] = 0.0;
-    sphere_array_data[7] = 10000.0;
-
-    sphere_array_data[8] = 1.5;
-    sphere_array_data[9] = 0.5;
-    sphere_array_data[10] = 1.0;
-    sphere_array_data[11] = 0.5;
-
-    sphere_array_data[12] = -1.5;
-    sphere_array_data[13] = 0.5;
-    sphere_array_data[14] = 1.0;
-    sphere_array_data[15] = 0.5;
+    const sphere_array = g_utils_shader_reflector.get_struct_array("Sphere", sphere_cnt)
+        .set_field(0, "center", [0.0, 0.5, 1.0 - 1.5 * Math.sqrt(3)])
+        .set_field(0, "radius", 0.5)
+        .set_field(1, "center", [0.0, -10000.0, 0.0])
+        .set_field(1, "radius", 10000.0)
+        .set_field(2, "center", [1.5, 0.5, 1.0])
+        .set_field(2, "radius", 0.5)
+        .set_field(3, "center", [-1.5, 0.5, 1.0])
+        .set_field(3, "radius", 0.5);
+    const sphere_array_data = sphere_array.data;
     const sphere_array_buffer = create_gpu_buffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 
@@ -235,26 +233,12 @@ function init_kernels() {
     //  material buffer
     // =================
 
-    const diffuse_material_array_data = new Float32Array(sphere_cnt * 4);
-    diffuse_material_array_data[0] = 1.0;
-    diffuse_material_array_data[1] = 0.0;
-    diffuse_material_array_data[2] = 0.0;
-    diffuse_material_array_data[3] = 0.0;
-
-    diffuse_material_array_data[4] = 0.5;
-    diffuse_material_array_data[5] = 0.5;
-    diffuse_material_array_data[6] = 0.5;
-    diffuse_material_array_data[7] = 0.0;
-
-    diffuse_material_array_data[8] = 0.0;
-    diffuse_material_array_data[9] = 1.0;
-    diffuse_material_array_data[10] = 0.0;
-    diffuse_material_array_data[11] = 0.0;
-
-    diffuse_material_array_data[12] = 0.0;
-    diffuse_material_array_data[13] = 0.0;
-    diffuse_material_array_data[14] = 1.0;
-    diffuse_material_array_data[15] = 0.0;
+    const diffuse_material_array = g_utils_shader_reflector.get_struct_array("DiffuseMaterial", sphere_cnt)
+        .set_field(0, "albedo", [1.0, 0.0, 0.0])
+        .set_field(1, "albedo", [0.5, 0.5, 0.5])
+        .set_field(2, "albedo", [0.0, 1.0, 0.0])
+        .set_field(3, "albedo", [0.0, 0.0, 1.0]);
+    const diffuse_material_array_data = diffuse_material_array.data;
     const diffuse_material_array_buffer = create_gpu_buffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
     g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
 
@@ -428,49 +412,62 @@ function render() {
             command_encoder.clearBuffer(g_filter_kernel_bind_group.get_buffer("in_color_buffer"));
 
             command_encoder.pushDebugGroup("frame");
+            {
+                command_encoder.pushDebugGroup("ray generation");
+                {
+                    g_gen_ray_kernel.dispatch(command_encoder, g_gen_ray_kernel_bind_group,
+                        Math.ceil(g_canvas_width / 16),
+                        Math.ceil(g_canvas_height / 16),
+                        1);
 
-            command_encoder.pushDebugGroup("ray generation");
-            g_gen_ray_kernel.dispatch(command_encoder, g_gen_ray_kernel_bind_group,
-                Math.ceil(g_canvas_width / 16),
-                Math.ceil(g_canvas_height / 16),
-                1);
-            command_encoder.popDebugGroup();
+                    command_encoder.popDebugGroup();
+                }
 
-            command_encoder.pushDebugGroup("hit test");
-            for (let i = 0; i < config_max_bounce; i++) {
-                g_prep_hit_test_kernel.dispatch(command_encoder, g_prep_hit_test_kernel_bind_group_pingpong[i & 1],
-                    1,
-                    1,
-                    1);
-                g_hit_test_kernel.dispatch_indirect(command_encoder, g_hit_test_kernel_bind_group_pingpong[i & 1], hit_test_indirect_arg);
+                command_encoder.pushDebugGroup("hit test");
+                {
+                    for (let i = 0; i < config_max_bounce; i++) {
+                        g_prep_hit_test_kernel.dispatch(command_encoder, g_prep_hit_test_kernel_bind_group_pingpong[i & 1],
+                            1,
+                            1,
+                            1);
+                        g_hit_test_kernel.dispatch_indirect(command_encoder, g_hit_test_kernel_bind_group_pingpong[i & 1], hit_test_indirect_arg);
+                    }
+
+                    command_encoder.popDebugGroup();
+                }
+
+                command_encoder.pushDebugGroup("filtering");
+                {
+                    g_filter_kernel.dispatch(command_encoder, g_filter_kernel_bind_group,
+                        Math.ceil(g_pixel_cnt / 128),
+                        1,
+                        1);
+
+                    command_encoder.popDebugGroup();
+                }
+
+                command_encoder.pushDebugGroup("blit");
+                {
+                    const blit_render_pass = command_encoder.beginRenderPass({
+                        colorAttachments: [
+                            {
+                                view: g_context.getCurrentTexture().createView(),
+                                clearValue: { r: 0, g: 0, b: 0, a: 1 },
+                                loadOp: 'clear' as GPULoadOp,
+                                storeOp: 'store' as GPUStoreOp,
+                            },
+                        ],
+                    });
+                    blit_render_pass.setBindGroup(0, g_blit_bind_group.bind_group_object);
+                    blit_render_pass.setPipeline(g_blit_pipeline);
+                    blit_render_pass.draw(4, 1);
+                    blit_render_pass.end();
+
+                    command_encoder.popDebugGroup();
+                }
+
+                command_encoder.popDebugGroup();
             }
-            command_encoder.popDebugGroup();
-
-            command_encoder.pushDebugGroup("filtering");
-            g_filter_kernel.dispatch(command_encoder, g_filter_kernel_bind_group,
-                Math.ceil(g_pixel_cnt / 128),
-                1,
-                1);
-            command_encoder.popDebugGroup();
-
-            command_encoder.pushDebugGroup("blit");
-            const blit_render_pass = command_encoder.beginRenderPass({
-                colorAttachments: [
-                    {
-                        view: g_context.getCurrentTexture().createView(),
-                        clearValue: { r: 0, g: 0, b: 0, a: 1 },
-                        loadOp: 'clear' as GPULoadOp,
-                        storeOp: 'store' as GPUStoreOp,
-                    },
-                ],
-            });
-            blit_render_pass.setBindGroup(0, g_blit_bind_group.bind_group_object);
-            blit_render_pass.setPipeline(g_blit_pipeline);
-            blit_render_pass.draw(4, 1);
-            blit_render_pass.end();
-            command_encoder.popDebugGroup();
-
-            command_encoder.popDebugGroup();
 
             g_device.queue.submit([command_encoder.finish()]);
         }
@@ -483,6 +480,7 @@ function render() {
 
 async function main() {
     await init_webgpu();
+    pre_init();
     init_kernels();
     init_callbacks();
     init_others();
