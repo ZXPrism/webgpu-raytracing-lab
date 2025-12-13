@@ -97,8 +97,9 @@ async function init_webgpu() {
     });
     g_context = context;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio;
+    canvas.width = dpr * window.innerWidth;
+    canvas.height = dpr * window.innerHeight;
     g_canvas_width = canvas.width;
     g_canvas_height = canvas.height;
     g_pixel_cnt = g_canvas_width * g_canvas_height;
@@ -375,10 +376,12 @@ function init_callbacks() {
         resize_callback = setTimeout(() => {
             g_task_list.push(() => {
                 const canvas = document.querySelector("canvas")!;
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                const dpr = window.devicePixelRatio;
+                canvas.width = dpr * window.innerWidth;
+                canvas.height = dpr * window.innerHeight;
                 g_canvas_width = canvas.width;
                 g_canvas_height = canvas.height;
+                g_pixel_cnt = g_canvas_width * g_canvas_height;
 
                 init_bind_groups();
             })
