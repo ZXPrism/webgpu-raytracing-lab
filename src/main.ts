@@ -16,12 +16,13 @@ import shader_blit from "./shaders/blit.wgsl?raw";
 
 import { vec3 } from "gl-matrix";
 import { ShaderReflector } from "./shader_reflector/shader_reflector";
+import { EventBus } from "./event_bus";
 
 // ==================
 //  global variables
 // ==================
 
-const c_elem_size_struct_ray = 48;
+let g_event_bus!: EventBus;
 
 let g_device!: GPUDevice;
 let g_context!: GPUCanvasContext;
@@ -44,8 +45,6 @@ let g_filter_kernel_bind_group!: BindGroup;
 
 let g_blit_pipeline!: GPURenderPipeline;
 let g_blit_bind_group!: BindGroup;
-
-let g_task_list!: Array<() => void>;
 
 let g_utils_shader_reflector!: ShaderReflector;
 
@@ -107,7 +106,12 @@ function pre_init(): boolean {
         return false;
     }
 
+    // =============
+    //  other inits
+    // =============
+
     g_utils_shader_reflector = new ShaderReflector(shader_utils);
+    g_event_bus = new EventBus();
 
     return true;
 }
@@ -309,11 +313,12 @@ function init_bind_groups() {
     const diffuse_material_array_buffer = create_gpu_storage_buffer(g_device, "diffuse material array", sphere_cnt * 16);
     g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
 
+    const elem_size_struct_ray = g_utils_shader_reflector.get_struct("Ray").size_bytes;
     const color_buffer = create_gpu_storage_buffer(g_device, "color buffer", 16 * g_canvas_width * g_canvas_height);
     const ray_array_length_ping = create_gpu_storage_buffer(g_device, "ray array length ping", 4);
-    const ray_array_ping = create_gpu_storage_buffer(g_device, "ray array ping", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_ping = create_gpu_storage_buffer(g_device, "ray array ping", elem_size_struct_ray * g_canvas_width * g_canvas_height);
     const ray_array_length_pong = create_gpu_storage_buffer(g_device, "ray array length pong", 4);
-    const ray_array_pong = create_gpu_storage_buffer(g_device, "ray array pong", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_pong = create_gpu_storage_buffer(g_device, "ray array pong", elem_size_struct_ray * g_canvas_width * g_canvas_height);
     const hit_test_indirect_arg = create_gpu_indirect_buffer(g_device, "hit test indirect arg", 12);
 
     g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
@@ -368,22 +373,20 @@ function init_bind_groups() {
 }
 
 function init_callbacks() {
+    g_event_bus.listen("canvas-size-changed", () => {
+        init_canvas_size();
+        init_bind_groups();
+    });
+
     let resize_callback: number;
     addEventListener("resize", () => {
         if (resize_callback) {
             clearTimeout(resize_callback);
         }
         resize_callback = setTimeout(() => {
-            g_task_list.push(() => {
-                init_canvas_size();
-                init_bind_groups();
-            })
+            g_event_bus.emit("canvas-size-changed");
         }, 100);
     });
-}
-
-function init_others() {
-    g_task_list = [];
 }
 
 function render() {
@@ -392,10 +395,7 @@ function render() {
         // const _delta_time = time - last_timestamp;
         // last_timestamp = time;
 
-        for (const task of g_task_list) {
-            task();
-        }
-        g_task_list = [];
+        g_event_bus.process();
 
         const hit_test_indirect_arg = g_prep_hit_test_kernel_bind_group_pingpong[0].get_buffer("out_indirect_args");
 
@@ -477,7 +477,6 @@ async function main() {
         init_kernels();
         init_bind_groups();
         init_callbacks();
-        init_others();
         render();
     }
 }
