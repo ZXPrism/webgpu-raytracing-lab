@@ -106,8 +106,19 @@ async function init_webgpu() {
     console.info("successfully initialized WebGPU 🎉");
 }
 
-function pre_init() {
+function pre_init(): boolean {
+    // ===============
+    //  check configs
+    // ===============
+
+    if (config_max_bounce < 1) {
+        console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
+        return false;
+    }
+
     g_utils_shader_reflector = new ShaderReflector(shader_utils);
+
+    return true;
 }
 
 function prepare_scene_info_data(): ArrayBuffer {
@@ -191,121 +202,21 @@ function prepare_scene_info_data(): ArrayBuffer {
 }
 
 function init_kernels() {
-    // ===============
-    //  check configs
-    // ===============
-
-    if (config_max_bounce < 1) {
-        console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
-        return;
-    }
-
-
-    // ============
-    //  scene info
-    // ============
-
-    const scene_info_data = prepare_scene_info_data();
-    const scene_info_buffer = create_gpu_buffer(g_device, "scene info", GPUBufferUsage.UNIFORM, 64);
-    g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
-
-
-    // ===============
-    //  object buffer
-    // ===============
-
-    const sphere_cnt = 4;
-    const sphere_array = g_utils_shader_reflector.get_struct_array("Sphere", sphere_cnt)
-        .set_field(0, "center", [0.0, 0.5, 1.0 - 1.5 * Math.sqrt(3)])
-        .set_field(0, "radius", 0.5)
-        .set_field(1, "center", [0.0, -10000.0, 0.0])
-        .set_field(1, "radius", 10000.0)
-        .set_field(2, "center", [1.5, 0.5, 1.0])
-        .set_field(2, "radius", 0.5)
-        .set_field(3, "center", [-1.5, 0.5, 1.0])
-        .set_field(3, "radius", 0.5);
-    const sphere_array_data = sphere_array.data;
-    const sphere_array_buffer = create_gpu_buffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
-    g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
-
-
-    // =================
-    //  material buffer
-    // =================
-
-    const diffuse_material_array = g_utils_shader_reflector.get_struct_array("DiffuseMaterial", sphere_cnt)
-        .set_field(0, "albedo", [1.0, 0.0, 0.0])
-        .set_field(1, "albedo", [0.5, 0.5, 0.5])
-        .set_field(2, "albedo", [0.0, 1.0, 0.0])
-        .set_field(3, "albedo", [0.0, 0.0, 1.0]);
-    const diffuse_material_array_data = diffuse_material_array.data;
-    const diffuse_material_array_buffer = create_gpu_buffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
-    g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
-
-
     // =========
     //  kernels
     // =========
-
-    const color_buffer = create_gpu_buffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
-    const ray_array_length_ping = create_gpu_buffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
-    const ray_array_ping = create_gpu_buffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-    const ray_array_length_pong = create_gpu_buffer(g_device, "ray array length pong", GPUBufferUsage.STORAGE, 4);
-    const ray_array_pong = create_gpu_buffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-    const hit_test_indirect_arg = create_gpu_buffer(g_device, "hit test indirect arg", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
-
     g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", shader_utils + shader_gen_ray, "compute")
         .build();
-    g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
-        .add_buffer("in_scene_info", 0, scene_info_buffer)
-        .add_buffer("out_ray_array_length", 1, ray_array_length_ping)
-        .add_buffer("out_ray_array", 2, ray_array_ping)
-        .create_then_add_buffer_init_u32("out_frame_index", 3, GPUBufferUsage.STORAGE, 0)
-        .build(g_gen_ray_kernel);
 
     g_prep_hit_test_kernel = new KernelBuilder(g_device, "prep hit test kernel", shader_utils + shader_prep_hit_test, "compute")
         .build();
-    const prep_hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "prep hit test kernel bind group ping")
-        .add_buffer("in_next_ray_array_length", 0, ray_array_length_ping)
-        .add_buffer("out_prev_ray_array_length", 1, ray_array_length_pong)
-        .add_buffer("out_indirect_args", 2, hit_test_indirect_arg)
-        .build(g_prep_hit_test_kernel);
-    const prep_hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "prep hit test kernel bind group pong")
-        .add_buffer("in_next_ray_array_length", 0, ray_array_length_pong)
-        .add_buffer("out_prev_ray_array_length", 1, ray_array_length_ping)
-        .add_buffer("out_indirect_args", 2, hit_test_indirect_arg)
-        .build(g_prep_hit_test_kernel);
-    g_prep_hit_test_kernel_bind_group_pingpong = [prep_hit_test_kernel_bind_group_ping, prep_hit_test_kernel_bind_group_pong];
 
     g_hit_test_kernel = new KernelBuilder(g_device, "hit test kernel", shader_utils + shader_hit_test, "compute")
         .build();
-    const hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "hit test kernel bind group ping")
-        .add_buffer("in_ray_array_length", 0, ray_array_length_ping)
-        .add_buffer("in_ray_array", 1, ray_array_ping)
-        .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
-        .add_buffer("out_color_buffer", 4, color_buffer)
-        .add_buffer("out_ray_array_length", 5, ray_array_length_pong)
-        .add_buffer("out_ray_array", 6, ray_array_pong)
-        .build(g_hit_test_kernel);
-    const hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "hit test kernel bind group pong")
-        .add_buffer("in_ray_array_length", 0, ray_array_length_pong)
-        .add_buffer("in_ray_array", 1, ray_array_pong)
-        .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
-        .add_buffer("out_color_buffer", 4, color_buffer)
-        .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
-        .add_buffer("out_ray_array", 6, ray_array_ping)
-        .build(g_hit_test_kernel);
-    g_hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
+
 
     g_filter_kernel = new KernelBuilder(g_device, "filter kernel", shader_utils + shader_filter, "compute")
         .build();
-    g_filter_kernel_bind_group = new BindGroupBuilder(g_device, "filter kernel bind group")
-        .add_buffer("in_frame_index", 0, g_gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
-        .add_buffer("in_color_buffer", 1, color_buffer)
-        .create_then_add_buffer("out_filtered_color_buffer", 2, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
-        .build(g_filter_kernel);
 
     const blit_bind_group_layout = g_device.createBindGroupLayout({
         entries: [
@@ -352,6 +263,103 @@ function init_kernels() {
             topology: "triangle-strip"
         },
     });
+
+}
+
+function init_bind_groups() {
+    // ============
+    //  scene info
+    // ============
+
+    const scene_info_data = prepare_scene_info_data();
+    const scene_info_buffer = create_gpu_buffer(g_device, "scene info", GPUBufferUsage.UNIFORM, 64);
+    g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
+
+
+    // ===============
+    //  object buffer
+    // ===============
+
+    const sphere_cnt = 4;
+    const sphere_array = g_utils_shader_reflector.get_struct_array("Sphere", sphere_cnt)
+        .set_field(0, "center", [0.0, 0.5, 1.0 - 1.5 * Math.sqrt(3)])
+        .set_field(0, "radius", 0.5)
+        .set_field(1, "center", [0.0, -10000.0, 0.0])
+        .set_field(1, "radius", 10000.0)
+        .set_field(2, "center", [1.5, 0.5, 1.0])
+        .set_field(2, "radius", 0.5)
+        .set_field(3, "center", [-1.5, 0.5, 1.0])
+        .set_field(3, "radius", 0.5);
+    const sphere_array_data = sphere_array.data;
+    const sphere_array_buffer = create_gpu_buffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
+    g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
+
+
+    // =================
+    //  material buffer
+    // =================
+
+    const diffuse_material_array = g_utils_shader_reflector.get_struct_array("DiffuseMaterial", sphere_cnt)
+        .set_field(0, "albedo", [1.0, 0.0, 0.0])
+        .set_field(1, "albedo", [0.5, 0.5, 0.5])
+        .set_field(2, "albedo", [0.0, 1.0, 0.0])
+        .set_field(3, "albedo", [0.0, 0.0, 1.0]);
+    const diffuse_material_array_data = diffuse_material_array.data;
+    const diffuse_material_array_buffer = create_gpu_buffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
+    g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
+
+    const color_buffer = create_gpu_buffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
+    const ray_array_length_ping = create_gpu_buffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
+    const ray_array_ping = create_gpu_buffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_length_pong = create_gpu_buffer(g_device, "ray array length pong", GPUBufferUsage.STORAGE, 4);
+    const ray_array_pong = create_gpu_buffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const hit_test_indirect_arg = create_gpu_buffer(g_device, "hit test indirect arg", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
+
+    g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
+        .add_buffer("in_scene_info", 0, scene_info_buffer)
+        .add_buffer("out_ray_array_length", 1, ray_array_length_ping)
+        .add_buffer("out_ray_array", 2, ray_array_ping)
+        .create_then_add_buffer_init_u32("out_frame_index", 3, GPUBufferUsage.STORAGE, 0)
+        .build(g_gen_ray_kernel);
+
+    const prep_hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "prep hit test kernel bind group ping")
+        .add_buffer("in_next_ray_array_length", 0, ray_array_length_ping)
+        .add_buffer("out_prev_ray_array_length", 1, ray_array_length_pong)
+        .add_buffer("out_indirect_args", 2, hit_test_indirect_arg)
+        .build(g_prep_hit_test_kernel);
+    const prep_hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "prep hit test kernel bind group pong")
+        .add_buffer("in_next_ray_array_length", 0, ray_array_length_pong)
+        .add_buffer("out_prev_ray_array_length", 1, ray_array_length_ping)
+        .add_buffer("out_indirect_args", 2, hit_test_indirect_arg)
+        .build(g_prep_hit_test_kernel);
+    g_prep_hit_test_kernel_bind_group_pingpong = [prep_hit_test_kernel_bind_group_ping, prep_hit_test_kernel_bind_group_pong];
+
+    const hit_test_kernel_bind_group_ping = new BindGroupBuilder(g_device, "hit test kernel bind group ping")
+        .add_buffer("in_ray_array_length", 0, ray_array_length_ping)
+        .add_buffer("in_ray_array", 1, ray_array_ping)
+        .add_buffer("in_sphere_array", 2, sphere_array_buffer)
+        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
+        .add_buffer("out_color_buffer", 4, color_buffer)
+        .add_buffer("out_ray_array_length", 5, ray_array_length_pong)
+        .add_buffer("out_ray_array", 6, ray_array_pong)
+        .build(g_hit_test_kernel);
+    const hit_test_kernel_bind_group_pong = new BindGroupBuilder(g_device, "hit test kernel bind group pong")
+        .add_buffer("in_ray_array_length", 0, ray_array_length_pong)
+        .add_buffer("in_ray_array", 1, ray_array_pong)
+        .add_buffer("in_sphere_array", 2, sphere_array_buffer)
+        .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
+        .add_buffer("out_color_buffer", 4, color_buffer)
+        .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
+        .add_buffer("out_ray_array", 6, ray_array_ping)
+        .build(g_hit_test_kernel);
+    g_hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
+
+    g_filter_kernel_bind_group = new BindGroupBuilder(g_device, "filter kernel bind group")
+        .add_buffer("in_frame_index", 0, g_gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
+        .add_buffer("in_color_buffer", 1, color_buffer)
+        .create_then_add_buffer("out_filtered_color_buffer", 2, GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height)
+        .build(g_filter_kernel);
+
     g_blit_bind_group = new BindGroupBuilder(g_device, "blit bind group")
         .add_buffer("in_scene_info", 0, scene_info_buffer)
         .add_buffer("in_filtered_color_buffer", 1, g_filter_kernel_bind_group.get_buffer("out_filtered_color_buffer"))
@@ -372,19 +380,7 @@ function init_callbacks() {
                 g_canvas_width = canvas.width;
                 g_canvas_height = canvas.height;
 
-                const scene_info_data = prepare_scene_info_data();
-                const scene_info_buffer = g_gen_ray_kernel_bind_group.get_buffer("in_scene_info");
-                g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
-
-                const frame_index_buffer = g_gen_ray_kernel_bind_group.get_buffer("out_frame_index");
-                const frame_index_data = new Uint32Array(1);
-                frame_index_data[0] = 0;
-                g_device.queue.writeBuffer(frame_index_buffer, 0, frame_index_data);
-
-                g_filter_kernel_bind_group.set_buffer_size("in_color_buffer", 16 * g_canvas_width * g_canvas_height);
-                g_filter_kernel_bind_group.set_buffer_size("out_filtered_color_buffer", 16 * g_canvas_width * g_canvas_height);
-                g_hit_test_kernel_bind_group_pingpong[0].set_buffer_size("in_ray_array", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-                g_hit_test_kernel_bind_group_pingpong[1].set_buffer_size("in_ray_array", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+                init_bind_groups();
             })
         }, 100);
     });
@@ -480,11 +476,13 @@ function render() {
 
 async function main() {
     await init_webgpu();
-    pre_init();
-    init_kernels();
-    init_callbacks();
-    init_others();
-    render();
+    if (pre_init()) {
+        init_kernels();
+        init_bind_groups();
+        init_callbacks();
+        init_others();
+        render();
+    }
 }
 
 main();
