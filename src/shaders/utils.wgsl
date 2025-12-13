@@ -49,7 +49,7 @@ var<private> seed_bias = 0.0;
 
 // from: https://marktension.nl/blog/my_favorite_wgsl_random_func_so_far/
 fn rand(seed: f32) -> f32 {
-  var x = bitcast<u32>(seed_bias + seed);
+  var x = bitcast<u32>(seed_bias * 233.33 + seed);
 
   // A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm for u32.
   x += (x << 10u);
