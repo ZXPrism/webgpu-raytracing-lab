@@ -97,12 +97,7 @@ async function init_webgpu() {
     });
     g_context = context;
 
-    const dpr = window.devicePixelRatio;
-    canvas.width = dpr * window.innerWidth;
-    canvas.height = dpr * window.innerHeight;
-    g_canvas_width = canvas.width;
-    g_canvas_height = canvas.height;
-    g_pixel_cnt = g_canvas_width * g_canvas_height;
+    init_canvas_size();
 
     console.info("successfully initialized WebGPU 🎉");
 }
@@ -200,6 +195,16 @@ function prepare_scene_info_data(): ArrayBuffer {
         .set_field("eye", config_camera_eye);
 
     return scene_info_struct.data;
+}
+
+function init_canvas_size() {
+    const canvas = document.querySelector("canvas")!;
+    const dpr = window.devicePixelRatio;
+    canvas.width = Math.floor(dpr * canvas.clientWidth);
+    canvas.height = Math.floor(dpr * canvas.clientHeight);
+    g_canvas_width = canvas.width;
+    g_canvas_height = canvas.height;
+    g_pixel_cnt = g_canvas_width * g_canvas_height;
 }
 
 function init_kernels() {
@@ -375,14 +380,7 @@ function init_callbacks() {
         }
         resize_callback = setTimeout(() => {
             g_task_list.push(() => {
-                const canvas = document.querySelector("canvas")!;
-                const dpr = window.devicePixelRatio;
-                canvas.width = dpr * window.innerWidth;
-                canvas.height = dpr * window.innerHeight;
-                g_canvas_width = canvas.width;
-                g_canvas_height = canvas.height;
-                g_pixel_cnt = g_canvas_width * g_canvas_height;
-
+                init_canvas_size();
                 init_bind_groups();
             })
         }, 100);
