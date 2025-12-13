@@ -4,7 +4,7 @@ import type { BindGroup } from "./bind_group";
 import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
-import { create_gpu_buffer, create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_uniform_buffer } from "./kernel_utils";
+import { create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_uniform_buffer } from "./kernel_utils";
 import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_max_bounce } from "./config";
 
 import shader_utils from "./shaders/utils.wgsl?raw";
@@ -15,7 +15,6 @@ import shader_filter from "./shaders/filter.wgsl?raw";
 import shader_blit from "./shaders/blit.wgsl?raw";
 
 import { vec3 } from "gl-matrix";
-import { Pane } from "tweakpane";
 import { ShaderReflector } from "./shader_reflector/shader_reflector";
 
 // ==================
@@ -49,8 +48,6 @@ let g_blit_bind_group!: BindGroup;
 let g_task_list!: Array<() => void>;
 
 let g_utils_shader_reflector!: ShaderReflector;
-
-let g_pane = new Pane();
 
 async function init_webgpu() {
     const adapter = await navigator.gpu.requestAdapter();
@@ -96,8 +93,6 @@ async function init_webgpu() {
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
     g_context = context;
-
-    init_canvas_size();
 
     console.info("successfully initialized WebGPU 🎉");
 }
@@ -392,10 +387,10 @@ function init_others() {
 }
 
 function render() {
-    let last_timestamp: DOMHighResTimeStamp = 0;
-    function _render(time: DOMHighResTimeStamp) {
-        const delta_time = time - last_timestamp;
-        last_timestamp = time;
+    // let last_timestamp: DOMHighResTimeStamp = 0;
+    function _render(_time: DOMHighResTimeStamp) {
+        // const _delta_time = time - last_timestamp;
+        // last_timestamp = time;
 
         for (const task of g_task_list) {
             task();
@@ -477,6 +472,7 @@ function render() {
 
 async function main() {
     await init_webgpu();
+    init_canvas_size();
     if (pre_init()) {
         init_kernels();
         init_bind_groups();
