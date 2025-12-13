@@ -117,10 +117,11 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 // ============
 //  get normal
 // ============
+// NOTE: all returned normals should be normalized
 
-fn get_normal_sphere(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
+fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
-  return select(-delta, delta, dot(delta, ray.direction_norm) <= 0.0);
+  return select(-delta, delta, dot(delta, ray.direction_norm) <= 0.0) / sphere.radius;
 }
 
 // ===================
