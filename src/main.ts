@@ -4,7 +4,7 @@ import type { BindGroup } from "./bind_group";
 import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
-import { create_gpu_buffer } from "./kernel_utils";
+import { create_gpu_buffer, create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_uniform_buffer } from "./kernel_utils";
 import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_max_bounce } from "./config";
 
 import shader_utils from "./shaders/utils.wgsl?raw";
@@ -272,7 +272,7 @@ function init_bind_groups() {
     // ============
 
     const scene_info_data = prepare_scene_info_data();
-    const scene_info_buffer = create_gpu_buffer(g_device, "scene info", GPUBufferUsage.UNIFORM, 64);
+    const scene_info_buffer = create_gpu_uniform_buffer(g_device, "scene info", 64);
     g_device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
 
 
@@ -291,7 +291,7 @@ function init_bind_groups() {
         .set_field(3, "center", [-1.5, 0.5, 1.0])
         .set_field(3, "radius", 0.5);
     const sphere_array_data = sphere_array.data;
-    const sphere_array_buffer = create_gpu_buffer(g_device, "sphere array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
+    const sphere_array_buffer = create_gpu_storage_buffer(g_device, "sphere array", sphere_cnt * 16);
     g_device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 
 
@@ -305,15 +305,15 @@ function init_bind_groups() {
         .set_field(2, "albedo", [0.0, 1.0, 0.0])
         .set_field(3, "albedo", [0.0, 0.0, 1.0]);
     const diffuse_material_array_data = diffuse_material_array.data;
-    const diffuse_material_array_buffer = create_gpu_buffer(g_device, "diffuse material array", GPUBufferUsage.STORAGE, sphere_cnt * 16);
+    const diffuse_material_array_buffer = create_gpu_storage_buffer(g_device, "diffuse material array", sphere_cnt * 16);
     g_device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
 
-    const color_buffer = create_gpu_buffer(g_device, "color buffer", GPUBufferUsage.STORAGE, 16 * g_canvas_width * g_canvas_height);
-    const ray_array_length_ping = create_gpu_buffer(g_device, "ray array length ping", GPUBufferUsage.STORAGE, 4);
-    const ray_array_ping = create_gpu_buffer(g_device, "ray array ping", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-    const ray_array_length_pong = create_gpu_buffer(g_device, "ray array length pong", GPUBufferUsage.STORAGE, 4);
-    const ray_array_pong = create_gpu_buffer(g_device, "ray array pong", GPUBufferUsage.STORAGE, c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
-    const hit_test_indirect_arg = create_gpu_buffer(g_device, "hit test indirect arg", GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT, 12);
+    const color_buffer = create_gpu_storage_buffer(g_device, "color buffer", 16 * g_canvas_width * g_canvas_height);
+    const ray_array_length_ping = create_gpu_storage_buffer(g_device, "ray array length ping", 4);
+    const ray_array_ping = create_gpu_storage_buffer(g_device, "ray array ping", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const ray_array_length_pong = create_gpu_storage_buffer(g_device, "ray array length pong", 4);
+    const ray_array_pong = create_gpu_storage_buffer(g_device, "ray array pong", c_elem_size_struct_ray * g_canvas_width * g_canvas_height);
+    const hit_test_indirect_arg = create_gpu_indirect_buffer(g_device, "hit test indirect arg", 12);
 
     g_gen_ray_kernel_bind_group = new BindGroupBuilder(g_device, "gen ray kernel bind group")
         .add_buffer("in_scene_info", 0, scene_info_buffer)
