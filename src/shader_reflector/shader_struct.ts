@@ -1,48 +1,63 @@
 import { ShaderDataTypeComponentCount, ShaderDataTypePrimitivity, type ShaderDataType } from "./type";
 
 export class ShaderStructBuilder {
-    private shader_struct: ShaderStruct = new ShaderStruct();
+    private _shader_struct_name: string;
+    private _map_field_name_to_field_type = new Map<string, ShaderDataType>();
+    private _map_field_name_to_field_offset = new Map<string, number>();
 
-    public constructor(struct_name: string) {
-        this.shader_struct.name = struct_name;
+    public constructor(shader_struct_name: string) {
+        this._shader_struct_name = shader_struct_name;
     }
 
     public add_field(name: string, type: ShaderDataType, offset: number): ShaderStructBuilder {
-        this.shader_struct._map_field_name_to_field_type.set(name, type);
-        this.shader_struct._map_field_name_to_field_offset.set(name, offset);
+        this._map_field_name_to_field_type.set(name, type);
+        this._map_field_name_to_field_offset.set(name, offset);
         return this;
     }
 
     public build(total_size_bytes: number): ShaderStruct {
-        // all fields are initialized to zero by default for convenience
-        this.shader_struct._data = new ArrayBuffer(total_size_bytes);
-        return this.shader_struct;
+        // NOTE all fields are initialized to a special value 0x3F
+        // NOTE shaders should init data themselves and should not rely on implicit initial values
+        const data = new ArrayBuffer(total_size_bytes);
+        new Uint8Array(data).fill(0x3F);
+        return new ShaderStruct(this._shader_struct_name, data,
+            this._map_field_name_to_field_type, this._map_field_name_to_field_offset);
     }
 }
 
 export class ShaderStruct {
-    public name!: string;
+    public name: string;
 
-    public _map_field_name_to_field_type = new Map<string, ShaderDataType>();
-    public _map_field_name_to_field_offset = new Map<string, number>();
-    public _data!: ArrayBuffer;
+    public _map_field_name_to_field_type: Map<string, ShaderDataType>;
+    public _map_field_name_to_field_offset: Map<string, number>;
+    public _data: ArrayBuffer;
 
-    public copy(init_data: boolean = true): ShaderStruct {
-        const res = new ShaderStruct();
-        res.name = this.name;
-        res._map_field_name_to_field_type = new Map<string, ShaderDataType>(this._map_field_name_to_field_type);
-        res._map_field_name_to_field_offset = new Map<string, number>(this._map_field_name_to_field_offset);
-        if (init_data) {
-            res._data = new ArrayBuffer(this.size_bytes);
+    constructor(name: string, data: ArrayBuffer,
+        map_field_name_to_field_type: Map<string, ShaderDataType>,
+        map_field_name_to_field_offset: Map<string, number>) {
+        this.name = name;
+        this._data = data;
+        this._map_field_name_to_field_type = map_field_name_to_field_type;
+        this._map_field_name_to_field_offset = map_field_name_to_field_offset;
+    }
+
+    public copy(use_fresh_data: boolean = true): ShaderStruct {
+        let data: ArrayBuffer;
+        if (use_fresh_data) {
+            data = new ArrayBuffer(this.size_bytes);
+            new Uint8Array(data).fill(0x3F);
+        } else {
+            data = this._data.slice(0);
         }
-        return res;
+        return new ShaderStruct(this.name, data,
+            structuredClone(this._map_field_name_to_field_type),
+            structuredClone(this._map_field_name_to_field_offset));
     }
 
     public set_field(name: string, value: number | ArrayLike<number>, base_offset_bytes: number = 0): ShaderStruct {
         const field_type = this._map_field_name_to_field_type.get(name);
-        if (!field_type) {
-            console.warn(`ShaderStruct: field "${name}" does not exist in shader struct "${this.name}"`);
-            return this;
+        if (field_type === undefined) {
+            throw new Error(`ShaderStruct: field "${name}" does not exist in shader struct "${this.name}"`);
         }
 
         let _value: ArrayLike<number>;
@@ -55,14 +70,17 @@ export class ShaderStruct {
         const component_count = ShaderDataTypeComponentCount[field_type];
         if (component_count !== _value.length) {
             if (_value.length === 1) {
-                console.warn(`ShaderStruct: field "${name}" has ${component_count} components, but only "${_value.length}" component is given`);
+                throw new Error(`ShaderStruct: field "${name}" has ${component_count} components, but only "${_value.length}" component is given`);
             } else {
-                console.warn(`ShaderStruct: field "${name}" has ${component_count} components, but "${_value.length}" components are given`);
+                throw new Error(`ShaderStruct: field "${name}" has ${component_count} components, but "${_value.length}" components are given`);
             }
-            return this;
         }
 
-        const field_offset_4_bytes = (base_offset_bytes + this._map_field_name_to_field_offset.get(name)!) / 4;
+        const field_offset_bytes = this._map_field_name_to_field_offset.get(name);
+        if (field_offset_bytes === undefined) {
+            throw new Error(`ShaderStruct: could not find field offset for field ${name} of type ${field_type}. possibly the reflector logic is broken.`);
+        }
+        const field_offset_4_bytes = (base_offset_bytes + field_offset_bytes) / 4;
 
         const field_primitive_type = ShaderDataTypePrimitivity[field_type];
         if (field_primitive_type === "integer") {
@@ -101,14 +119,14 @@ export class ShaderStructArray {
         this._stride = shader_struct.size_bytes;
 
         this._data = new ArrayBuffer(count * this._stride);
+        new Uint8Array(this._data).fill(0x3F);
         this.shader_struct = shader_struct.copy(false);
         this.shader_struct._data = this._data;
     }
 
     public set_field(struct_index: number, name: string, value: number | ArrayLike<number>): ShaderStructArray {
         if (struct_index >= this.length) {
-            console.warn(`ShaderStructArray: struct_index is out of bounds, given ${struct_index}, max allowed is ${this.length}`);
-            return this;
+            throw new Error(`ShaderStructArray: struct_index is out of bounds, given ${struct_index}, max allowed is ${this.length}`);
         }
         this.shader_struct.set_field(name, value, struct_index * this._stride);
         return this;

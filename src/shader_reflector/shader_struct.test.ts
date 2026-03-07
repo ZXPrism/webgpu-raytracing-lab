@@ -12,6 +12,10 @@ describe('ShaderStruct', () => {
             expect(struct.size_bytes).toBe(4);
             expect(struct._map_field_name_to_field_type.get('value')).toBe('u32');
             expect(struct._map_field_name_to_field_offset.get('value')).toBe(0);
+
+            // Data is initialized with 0x3F
+            const dataView = new Uint8Array(struct._data);
+            expect(dataView[0]).toBe(0x3F);
         });
 
         it('should build a complex struct with multiple fields', () => {
@@ -80,33 +84,57 @@ describe('ShaderStruct', () => {
             expect(copy._map_field_name_to_field_offset.size).toBe(3);
         });
 
-        it('should create a new data buffer when init_data is true', () => {
+        it('should create fresh 0x3F-initialized buffer when use_fresh_data is true', () => {
             const builder = new ShaderStructBuilder('DataTest');
+            builder.add_field('value', 'u32', 0);
+            const original = builder.build(4);
+
+            // Set some data in the original (overriding the 0x3F init)
+            original.set_field('value', 42);
+            const originalDataView = new Uint32Array(original._data);
+            expect(originalDataView[0]).toBe(42);
+
+            // Copy with use_fresh_data=true should create a new 0x3F-initialized buffer
+            const copy = original.copy(true);
+            const copyDataView = new Uint32Array(copy._data);
+
+            expect(copy._data).not.toBe(original._data);
+            expect(copyDataView[0]).toBe(0x3F3F3F3F); // New buffer, initialized to 0x3F
+        });
+
+        it('should copy original data when use_fresh_data is false', () => {
+            const builder = new ShaderStructBuilder('NoDataTest');
             builder.add_field('value', 'u32', 0);
             const original = builder.build(4);
 
             // Set some data in the original
             original.set_field('value', 42);
-            const originalDataView = new Uint32Array(original._data);
-            expect(originalDataView[0]).toBe(42);
-
-            // Copy with init_data=true should create a new buffer
-            const copy = original.copy(true);
-            const copyDataView = new Uint32Array(copy._data);
-
-            expect(copy._data).not.toBe(original._data);
-            expect(copyDataView[0]).toBe(0); // New buffer, initialized to 0
-        });
-
-        it('should not create data buffer when init_data is false', () => {
-            const builder = new ShaderStructBuilder('NoDataTest');
-            builder.add_field('value', 'u32', 0);
-            const original = builder.build(4);
 
             const copy = original.copy(false);
 
-            // When init_data is false, _data is undefined
-            expect(copy._data).toBeUndefined();
+            // When use_fresh_data is false, data is a copy of original
+            expect(copy._data).not.toBe(original._data);
+            expect(copy._data.byteLength).toBe(4);
+
+            // Verify the data is actually copied correctly
+            const originalView = new Uint8Array(original._data);
+            const copyView = new Uint8Array(copy._data);
+            expect(copyView).toEqual(originalView);
+        });
+
+        it('should preserve 0x3F initialization when copying unmodified struct', () => {
+            const builder = new ShaderStructBuilder('InitPreserveTest');
+            builder.add_field('value', 'u32', 0);
+            const original = builder.build(4);
+
+            // Don't modify anything - keep the 0x3F initialization
+            const copy = original.copy(false);
+
+            // Verify the 0x3F initialization is preserved
+            const originalView = new Uint32Array(original._data);
+            const copyView = new Uint32Array(copy._data);
+            expect(originalView[0]).toBe(0x3F3F3F3F);
+            expect(copyView[0]).toBe(0x3F3F3F3F);
         });
 
         it('should create independent copies', () => {
@@ -196,22 +224,22 @@ describe('ShaderStruct', () => {
             expect(dataView[1]).toBe(200);
         });
 
-        it('should warn when field does not exist', () => {
+        it('should throw error when field does not exist', () => {
             const builder = new ShaderStructBuilder('NonExistentTest');
             builder.add_field('existing', 'u32', 0);
             const struct = builder.build(4);
 
-            // Should not throw, just warn
-            expect(() => struct.set_field('nonExistent', 42)).not.toThrow();
+            // Should throw error
+            expect(() => struct.set_field('nonExistent', 42)).toThrow();
         });
 
-        it('should warn when component count mismatches', () => {
+        it('should throw error when component count mismatches', () => {
             const builder = new ShaderStructBuilder('MismatchTest');
             builder.add_field('vec', 'vec3f', 0);
             const struct = builder.build(16);
 
-            // Should not throw, just warn
-            expect(() => struct.set_field('vec', [1.0, 2.0])).not.toThrow();
+            // Should throw error
+            expect(() => struct.set_field('vec', [1.0, 2.0])).toThrow();
         });
     });
 
@@ -246,6 +274,20 @@ describe('ShaderStruct', () => {
             expect(array.data.byteLength).toBe(40);
         });
 
+        it('should initialize array data with 0x3F', () => {
+            const builder = new ShaderStructBuilder('InitTest');
+            builder.add_field('value', 'u32', 0);
+            const template = builder.build(4);
+
+            const array = new ShaderStructArray(template, 5);
+
+            // All elements should be initialized to 0x3F3F3F3F
+            const dataView = new Uint32Array(array.data);
+            for (let i = 0; i < 5; i++) {
+                expect(dataView[i]).toBe(0x3F3F3F3F);
+            }
+        });
+
         it('should set field in specific struct', () => {
             const builder = new ShaderStructBuilder('ArrayElement');
             builder.add_field('value', 'u32', 0);
@@ -262,15 +304,15 @@ describe('ShaderStruct', () => {
             expect(dataView[2]).toBe(300);
         });
 
-        it('should warn when index out of bounds', () => {
+        it('should throw error when index out of bounds', () => {
             const builder = new ShaderStructBuilder('BoundsTest');
             builder.add_field('value', 'u32', 0);
             const template = builder.build(4);
 
             const array = new ShaderStructArray(template, 5);
 
-            // Should not throw, just warn
-            expect(() => array.set_field(10, 'value', 42)).not.toThrow();
+            // Should throw error
+            expect(() => array.set_field(10, 'value', 42)).toThrow();
         });
 
         it('should calculate correct stride', () => {

@@ -100,7 +100,7 @@ export class ShaderReflector {
                     }
                 }
 
-                if (!valid) {
+                if (valid === false) {
                     break;
                 }
 
@@ -109,21 +109,27 @@ export class ShaderReflector {
                 }
 
                 current_field_offset = Math.ceil(current_field_offset / alignment) * alignment;
-                shader_struct_builder.add_field(field_name, field_type!, current_field_offset);
+
+                if (field_type) {
+                    shader_struct_builder.add_field(field_name, field_type, current_field_offset);
+                } else {
+                    throw new Error("You should never see this error..This is just for passing type check. But if you do see this, you are in trouble.");
+                }
                 current_field_offset += size;
             }
 
-
             if (valid) {
+                // the whole object's address should be aligned too!
                 current_field_offset = Math.ceil(current_field_offset / max_alignment) * max_alignment;
-                this.map_struct_name_to_shader_struct.set(struct_name, shader_struct_builder.build(current_field_offset));
+                const shader_struct = shader_struct_builder.build(current_field_offset);
+                this.map_struct_name_to_shader_struct.set(struct_name, shader_struct);
             }
         }
     }
 
     public get_struct(struct_name: string): ShaderStruct {
         const shader_struct = this.map_struct_name_to_shader_struct.get(struct_name);
-        if (!shader_struct) {
+        if (shader_struct === undefined) {
             throw new Error(`ShaderReflector: struct "${struct_name}" not found in shader`);
         }
         return shader_struct.copy();

@@ -77,11 +77,18 @@ export class KernelBuilder {
     }
 
     private _init_pipeline(): GPUComputePipeline {
+        if (this.pipeline_layout === undefined) {
+            throw new Error("KernelBuilder: undefined pipeline layout. have you called `this._init_pipeline_layout()` first?");
+        }
+        if (this.shader_module === undefined) {
+            throw new Error("KernelBuilder: undefined shader module. have you called `this._init_shader_module()` first?");
+        }
+
         return this.device.createComputePipeline({
             label: `${this.kernel_name}_Pipeline`,
-            layout: this.pipeline_layout!,
+            layout: this.pipeline_layout,
             compute: {
-                module: this.shader_module!,
+                module: this.shader_module,
                 entryPoint: this.shader_entry_point,
                 constants: Object.fromEntries(this.map_constant_name_to_value)
             },

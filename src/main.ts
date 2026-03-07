@@ -50,7 +50,7 @@ let g_utils_shader_reflector!: ShaderReflector;
 
 async function init_webgpu() {
     const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) {
+    if (adapter === null) {
         console.error("failed to initialize WebGPU!");
         return;
     }
@@ -68,7 +68,7 @@ async function init_webgpu() {
             ? ["bgra8unorm-storage", "subgroups"] as const
             : ["subgroups"] as const,
     });
-    if (!device) {
+    if (device === null) {
         console.error("failed to initialize WebGPU!");
         return;
     }
@@ -79,9 +79,13 @@ async function init_webgpu() {
         : "rgba8unorm";
     g_presentation_format = presentation_format;
 
-    const canvas = document.querySelector("canvas")!;
+    const canvas = document.querySelector("canvas");
+    if (canvas === null) {
+        throw new Error("could not find canvas element. please check index.html!");
+    }
+
     const context = canvas.getContext("webgpu");
-    if (!context) {
+    if (context === null) {
         console.error("failed to initialize WebGPU!");
         return;
     }
@@ -197,7 +201,11 @@ function prepare_scene_info_data(): ArrayBuffer {
 }
 
 function init_canvas_size() {
-    const canvas = document.querySelector("canvas")!;
+    const canvas = document.querySelector("canvas");
+    if (canvas === null) {
+        throw new Error("could not find canvas element. please check index.html!");
+    }
+
     const dpr = window.devicePixelRatio;
     canvas.width = Math.floor(dpr * canvas.clientWidth);
     canvas.height = Math.floor(dpr * canvas.clientHeight);

@@ -100,6 +100,6 @@ export class BindGroupBuilder {
     }
 
     public build(kernel: Kernel, bind_group_index?: number): BindGroup {
-        return this.build_raw(kernel.pipeline!, bind_group_index);
+        return this.build_raw(kernel.pipeline, bind_group_index);
     }
 }
