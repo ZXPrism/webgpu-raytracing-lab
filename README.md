@@ -30,6 +30,10 @@ In one frame:
 3. filter using previous frame's output (running average)
 4. blit to screen
 
+## Style / Contribution Guide (DRAFT)
+- NEVER use non-null assertion (!)
+  - If you are querying sth that may not exist, return `undefined`. Callers should check the results properly.
+  - If you are querying sth that must exist, throw an error. Do not let error propagate.
 
 ## Deploy to GitHub Pages
 Run `pnpm run deploy`.

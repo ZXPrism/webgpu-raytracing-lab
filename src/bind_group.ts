@@ -12,14 +12,15 @@ export class BindGroup {
     public get_buffer(name: string): GPUBuffer {
         const buffer = this.map_buffer_name_to_buffer_object.get(name);
         if (!buffer) {
-            console.error(`BindGroup: buffer "${name}" does not exist in this bind group!`);
+            throw new Error(`BindGroup: buffer "${name}" does not exist in this bind group!`);
         }
-        return buffer!;
+        return buffer;
     }
 
     public set_buffer_size(name: string, new_buffer_size_bytes: number) {
         // if the new size is larger than the current size, expand the buffer to the new size
         // otherwise, do nothing
+        // TODO: need a smarter algo to manage buffer sizes..
         let buffer = this.get_buffer(name);
         const curr_buffer_size = buffer.size;
         if (new_buffer_size_bytes > curr_buffer_size) {

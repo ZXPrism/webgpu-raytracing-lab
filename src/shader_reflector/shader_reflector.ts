@@ -43,7 +43,7 @@ export class ShaderReflector {
         // ===================
         // currently can not parse nested structs (e.g. array<struct>, or struct in another struct)
         // for detailed support, please refer to `src\shader_reflector\type.ts`, all types listed there have been supported
-        const struct_outline_regexp = /struct\s+(\w+)\s*{([^}]+\n+)}/gm;
+        const struct_outline_regexp = /struct\s+(\w+)\s*{([^}]+)}/gm;
         while ((match = struct_outline_regexp.exec(shader_source)) !== null) {
             const struct_name = match[1];
             const struct_content = match[2];
@@ -113,6 +113,7 @@ export class ShaderReflector {
                 current_field_offset += size;
             }
 
+
             if (valid) {
                 current_field_offset = Math.ceil(current_field_offset / max_alignment) * max_alignment;
                 this.map_struct_name_to_shader_struct.set(struct_name, shader_struct_builder.build(current_field_offset));
@@ -123,9 +124,9 @@ export class ShaderReflector {
     public get_struct(struct_name: string): ShaderStruct {
         const shader_struct = this.map_struct_name_to_shader_struct.get(struct_name);
         if (!shader_struct) {
-            console.error(`ShaderReflector: the schema of struct "${struct_name}" does not exist in this shader!`);
+            throw new Error(`ShaderReflector: struct "${struct_name}" not found in shader`);
         }
-        return shader_struct!.copy();
+        return shader_struct.copy();
     }
 
     public get_struct_array(struct_name: string, array_length: number): ShaderStructArray {

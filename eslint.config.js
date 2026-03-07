@@ -35,6 +35,7 @@ export default [
       'no-console': 'off', // Allow console for development/debugging
       'prefer-const': 'error',
       'no-var': 'error',
+      'semi': ['error', 'always'], // Require semicolons
       eqeqeq: ['error', 'always'],
       curly: ['error', 'all'],
       'no-throw-literal': 'error',

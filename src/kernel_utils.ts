@@ -14,7 +14,7 @@ export function create_gpu_buffer(device: GPUDevice, bufferName: string, extraBu
 
 // helper to create a gpu uniform buffer
 export function create_gpu_uniform_buffer(device: GPUDevice, bufferName: string, nBytes: number): GPUBuffer {
-    let usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM;
+    const usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM;
 
     const gpu_buffer = device.createBuffer({
         label: bufferName,
@@ -27,7 +27,7 @@ export function create_gpu_uniform_buffer(device: GPUDevice, bufferName: string,
 
 // helper to create a gpu storage buffer
 export function create_gpu_storage_buffer(device: GPUDevice, bufferName: string, nBytes: number): GPUBuffer {
-    let usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE;
+    const usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE;
 
     const gpu_buffer = device.createBuffer({
         label: bufferName,
@@ -40,7 +40,7 @@ export function create_gpu_storage_buffer(device: GPUDevice, bufferName: string,
 
 // helper to create a gpu indirect buffer
 export function create_gpu_indirect_buffer(device: GPUDevice, bufferName: string, nBytes: number): GPUBuffer {
-    let usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT;
+    const usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT;
 
     const gpu_buffer = device.createBuffer({
         label: bufferName,

@@ -29,6 +29,7 @@ export class ShaderStruct {
 
     public copy(init_data: boolean = true): ShaderStruct {
         const res = new ShaderStruct();
+        res.name = this.name;
         res._map_field_name_to_field_type = new Map<string, ShaderDataType>(this._map_field_name_to_field_type);
         res._map_field_name_to_field_offset = new Map<string, number>(this._map_field_name_to_field_offset);
         if (init_data) {
@@ -45,15 +46,15 @@ export class ShaderStruct {
         }
 
         let _value: ArrayLike<number>;
-        if (typeof value == "number") {
+        if (typeof value === "number") {
             _value = [value];
         } else {
             _value = value;
         }
 
         const component_count = ShaderDataTypeComponentCount[field_type];
-        if (component_count != _value.length) {
-            if (_value.length == 1) {
+        if (component_count !== _value.length) {
+            if (_value.length === 1) {
                 console.warn(`ShaderStruct: field "${name}" has ${component_count} components, but only "${_value.length}" component is given`);
             } else {
                 console.warn(`ShaderStruct: field "${name}" has ${component_count} components, but "${_value.length}" components are given`);
@@ -64,7 +65,7 @@ export class ShaderStruct {
         const field_offset_4_bytes = (base_offset_bytes + this._map_field_name_to_field_offset.get(name)!) / 4;
 
         const field_primitive_type = ShaderDataTypePrimitivity[field_type];
-        if (field_primitive_type == "integer") {
+        if (field_primitive_type === "integer") {
             const data_view = new Uint32Array(this._data);
             data_view.set(_value, field_offset_4_bytes);
         } else { // "float"
