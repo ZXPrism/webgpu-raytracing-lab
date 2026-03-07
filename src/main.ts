@@ -55,7 +55,6 @@ async function init_webgpu() {
         return;
     }
 
-    const has_bgra8unorm_storage = adapter.features.has("bgra8unorm-storage");
     const device = await adapter.requestDevice({
         requiredLimits: {
             maxBufferSize: adapter.limits.maxBufferSize,
@@ -64,9 +63,7 @@ async function init_webgpu() {
             maxComputeWorkgroupSizeX: adapter.limits.maxComputeWorkgroupSizeX,
             maxStorageBuffersPerShaderStage: adapter.limits.maxStorageBuffersPerShaderStage
         },
-        requiredFeatures: has_bgra8unorm_storage
-            ? ["bgra8unorm-storage", "subgroups"] as const
-            : ["subgroups"] as const,
+        requiredFeatures: ["subgroups"] as const,
     });
     if (device === null) {
         console.error("failed to initialize WebGPU!");
@@ -74,10 +71,7 @@ async function init_webgpu() {
     }
     g_device = device;
 
-    const presentation_format = has_bgra8unorm_storage
-        ? navigator.gpu.getPreferredCanvasFormat()
-        : "rgba8unorm";
-    g_presentation_format = presentation_format;
+    g_presentation_format = navigator.gpu.getPreferredCanvasFormat();
 
     const canvas = document.querySelector("canvas");
     if (canvas === null) {
@@ -90,10 +84,9 @@ async function init_webgpu() {
         return;
     }
 
-    context.configure({
+    context.configure({// srgb?? gamma correction??
         device: g_device,
-        format: presentation_format,
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
+        format: g_presentation_format,
     });
     g_context = context;
 

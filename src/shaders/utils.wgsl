@@ -3,7 +3,10 @@
 // ===========
 const EPS = 0.001;
 const PI = 3.141592653;
-const SKY_COLOR = vec3f(143.0, 233.0, 255.0) / 255.0;
+// LESSON (260307): always set color in linear space.
+// but most tools give us srgb-encoded values.
+// so do the conversion first.
+const SKY_COLOR = vec3f(0.28, 0.82, 1.0);
 const RAY_NEAR_THRESHOLD = EPS;
 const RAY_FAR_THRESHOLD = 100.0;
 
@@ -127,7 +130,8 @@ fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // ===================
 //  evaluate material
 // ===================
-// NOTE: each function returns new ray's direction, which should be normalized
+// NOTE: each function returns new ray's direction, which should be normalized (here)
+// callers should always expect to get a noramlized ray direction
 
 fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
   let res_ray_direction = rand_unit_sphere_shell(seed);

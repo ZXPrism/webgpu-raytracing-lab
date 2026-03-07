@@ -20,5 +20,13 @@ fn vertex(@builtin(vertex_index) vertex_index: u32) -> VSOutput {
 fn fragment(@builtin(position) position: vec4f) -> @location(0) vec4f {
   let width = in_scene_info.width;
   let pixel_offset = u32(position.y) * width + u32(position.x);
-  return in_filtered_color_buffer[pixel_offset];
+  let linear_color = in_filtered_color_buffer[pixel_offset];
+  let cutoff = 0.0031308;
+  let srgb = select(
+    1.055 * pow(linear_color.rgb, vec3<f32>(1.0/2.4)) - 0.055,
+    12.92 * linear_color.rgb,
+    linear_color.rgb < vec3<f32>(cutoff)
+  );
+
+  return vec4<f32>(srgb, linear_color.a);
 }

@@ -23,7 +23,7 @@ fn compute(
     var hit_object_id = -1;
 
     let sphere_array_length = i32(arrayLength(&in_sphere_array));
-    for(var i = 0; i < sphere_array_length; i++) {
+    for (var i = 0; i < sphere_array_length; i++) {
       let t = hit_test_sphere(ray, in_sphere_array[i]);
       if t < RAY_NEAR_THRESHOLD || t > RAY_FAR_THRESHOLD {
         continue;
@@ -43,7 +43,7 @@ fn compute(
       let normal_norm = sphere_get_normal_norm(ray, sphere, hit_point);
       let diffuse_ray_direction_norm = evaluate_diffuse(normal_norm, hit_point, f32(write_idx) * min_t);
 
-      out_ray_array[write_idx] = Ray(hit_point + EPS * normal_norm, diffuse_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
+      out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), diffuse_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
     } else {
       out_color_buffer[ray.pixel_offset] += vec4f(SKY_COLOR * ray.weight, 1.0);
     }
