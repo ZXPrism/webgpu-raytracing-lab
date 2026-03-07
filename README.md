@@ -35,5 +35,18 @@ In one frame:
   - If you are querying sth that may not exist, return `undefined`. Callers should check the results properly.
   - If you are querying sth that must exist, throw an error. Do not let error propagate.
 
-## Deploy to GitHub Pages
+
+## Dev Guide for Myself (delete this)
+### Deploy to GitHub Pages
 Run `pnpm run deploy`.
+
+### Add New Changes
+- Add new changes on dev branch. Test whenever I can.
+- When these changes are ready (a complete new feature / fix, etc.), switch to main branch and run `git merge --squash dev`.
+- Deploy to github pages.
+- Switch back to dev branch, run `git merge main`.
+- Continue to add new things!
+
+### Miscs
+
+Do not need to write CHANGELOG, I will keep commit log of main branch clean. Sufficient for this personal project.
