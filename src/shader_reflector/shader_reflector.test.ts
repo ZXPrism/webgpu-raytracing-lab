@@ -13,11 +13,14 @@ describe('ShaderReflector', () => {
             const layouts = reflector.map_bind_group_index_to_bind_group_layout_entry_list;
 
             expect(layouts.has(0)).toBe(true);
-            const entries = layouts.get(0)!;
+            const entries = layouts.get(0);
+            expect(entries).toBeDefined();
             expect(entries).toHaveLength(1);
-            expect(entries[0].binding).toBe(0);
-            expect(entries[0].visibility).toBe(GPUShaderStage.COMPUTE);
-            expect(entries[0].buffer?.type).toBe('uniform');
+            if (entries) {
+                expect(entries[0].binding).toBe(0);
+                expect(entries[0].visibility).toBe(GPUShaderStage.COMPUTE);
+                expect(entries[0].buffer?.type).toBe('uniform');
+            }
         });
 
         it('should extract read-write storage buffer bindings', () => {
@@ -28,8 +31,11 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const layouts = reflector.map_bind_group_index_to_bind_group_layout_entry_list;
 
-            const entries = layouts.get(0)!;
-            expect(entries[0].buffer?.type).toBe('storage');
+            const entries = layouts.get(0);
+            expect(entries).toBeDefined();
+            if (entries) {
+                expect(entries[0].buffer?.type).toBe('storage');
+            }
         });
 
         it('should extract read-only storage buffer bindings', () => {
@@ -40,8 +46,11 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const layouts = reflector.map_bind_group_index_to_bind_group_layout_entry_list;
 
-            const entries = layouts.get(0)!;
-            expect(entries[0].buffer?.type).toBe('read-only-storage');
+            const entries = layouts.get(0);
+            expect(entries).toBeDefined();
+            if (entries) {
+                expect(entries[0].buffer?.type).toBe('read-only-storage');
+            }
         });
 
         it('should extract multiple bindings from the same group', () => {
@@ -54,11 +63,14 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const layouts = reflector.map_bind_group_index_to_bind_group_layout_entry_list;
 
-            const entries = layouts.get(0)!;
-            expect(entries).toHaveLength(3);
-            expect(entries[0].binding).toBe(0);
-            expect(entries[1].binding).toBe(1);
-            expect(entries[2].binding).toBe(2);
+            const entries = layouts.get(0);
+            expect(entries).toBeDefined();
+            if (entries) {
+                expect(entries).toHaveLength(3);
+                expect(entries[0].binding).toBe(0);
+                expect(entries[1].binding).toBe(1);
+                expect(entries[2].binding).toBe(2);
+            }
         });
 
         it('should extract bindings from different groups', () => {
@@ -88,8 +100,11 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const layouts = reflector.map_bind_group_index_to_bind_group_layout_entry_list;
 
-            const entries = layouts.get(0)!;
-            expect(entries).toHaveLength(2);
+            const entries = layouts.get(0);
+            expect(entries).toBeDefined();
+            if (entries) {
+                expect(entries).toHaveLength(2);
+            }
         });
     });
 
@@ -323,15 +338,17 @@ describe('ShaderReflector', () => {
             const struct = reflector.get_struct('SceneInfo');
 
             expect(struct).toBeDefined();
-            expect(struct!.size_bytes).toBe(64);
+            if (struct) {
+                expect(struct.size_bytes).toBe(64);
 
-            // Check field offsets
-            expect(struct!._map_field_name_to_field_offset.get('pixel00')).toBe(0);
-            expect(struct!._map_field_name_to_field_offset.get('width')).toBe(12);
-            expect(struct!._map_field_name_to_field_offset.get('viewport_u_base')).toBe(16);
-            expect(struct!._map_field_name_to_field_offset.get('height')).toBe(28);
-            expect(struct!._map_field_name_to_field_offset.get('viewport_v_base')).toBe(32);
-            expect(struct!._map_field_name_to_field_offset.get('eye')).toBe(48);
+                // Check field offsets
+                expect(struct._map_field_name_to_field_offset.get('pixel00')).toBe(0);
+                expect(struct._map_field_name_to_field_offset.get('width')).toBe(12);
+                expect(struct._map_field_name_to_field_offset.get('viewport_u_base')).toBe(16);
+                expect(struct._map_field_name_to_field_offset.get('height')).toBe(28);
+                expect(struct._map_field_name_to_field_offset.get('viewport_v_base')).toBe(32);
+                expect(struct._map_field_name_to_field_offset.get('eye')).toBe(48);
+            }
         });
 
         it('should handle Ray-like struct', () => {
@@ -348,13 +365,15 @@ describe('ShaderReflector', () => {
             const struct = reflector.get_struct('Ray');
 
             expect(struct).toBeDefined();
-            expect(struct!.size_bytes).toBe(48);
+            if (struct) {
+                expect(struct.size_bytes).toBe(48);
 
-            // Check field offsets
-            expect(struct!._map_field_name_to_field_offset.get('origin')).toBe(0);
-            expect(struct!._map_field_name_to_field_offset.get('direction_norm')).toBe(16);
-            expect(struct!._map_field_name_to_field_offset.get('pixel_offset')).toBe(28);
-            expect(struct!._map_field_name_to_field_offset.get('weight')).toBe(32);
+                // Check field offsets
+                expect(struct._map_field_name_to_field_offset.get('origin')).toBe(0);
+                expect(struct._map_field_name_to_field_offset.get('direction_norm')).toBe(16);
+                expect(struct._map_field_name_to_field_offset.get('pixel_offset')).toBe(28);
+                expect(struct._map_field_name_to_field_offset.get('weight')).toBe(32);
+            }
         });
 
         it('should handle Sphere-like struct', () => {
@@ -369,9 +388,11 @@ describe('ShaderReflector', () => {
             const struct = reflector.get_struct('Sphere');
 
             expect(struct).toBeDefined();
-            expect(struct!.size_bytes).toBe(16);
-            expect(struct!._map_field_name_to_field_offset.get('center')).toBe(0);
-            expect(struct!._map_field_name_to_field_offset.get('radius')).toBe(12);
+            if (struct) {
+                expect(struct.size_bytes).toBe(16);
+                expect(struct._map_field_name_to_field_offset.get('center')).toBe(0);
+                expect(struct._map_field_name_to_field_offset.get('radius')).toBe(12);
+            }
         });
 
         it('should handle IndirectArgs-like struct', () => {
@@ -387,10 +408,12 @@ describe('ShaderReflector', () => {
             const struct = reflector.get_struct('IndirectArgs');
 
             expect(struct).toBeDefined();
-            expect(struct!.size_bytes).toBe(12);
-            expect(struct!._map_field_name_to_field_offset.get('dispatch_x')).toBe(0);
-            expect(struct!._map_field_name_to_field_offset.get('dispatch_y')).toBe(4);
-            expect(struct!._map_field_name_to_field_offset.get('dispatch_z')).toBe(8);
+            if (struct) {
+                expect(struct.size_bytes).toBe(12);
+                expect(struct._map_field_name_to_field_offset.get('dispatch_x')).toBe(0);
+                expect(struct._map_field_name_to_field_offset.get('dispatch_y')).toBe(4);
+                expect(struct._map_field_name_to_field_offset.get('dispatch_z')).toBe(8);
+            }
         });
     });
 
@@ -461,20 +484,27 @@ describe('ShaderReflector', () => {
             // Check bindings
             const layouts = reflector.map_bind_group_index_to_bind_group_layout_entry_list;
             expect(layouts.has(0)).toBe(true);
-            const entries = layouts.get(0)!;
-            expect(entries).toHaveLength(3);
-            expect(entries[0].buffer?.type).toBe('uniform');
-            expect(entries[1].buffer?.type).toBe('storage');
-            expect(entries[2].buffer?.type).toBe('storage');
+            const entries = layouts.get(0);
+            expect(entries).toBeDefined();
+            if (entries) {
+                expect(entries).toHaveLength(3);
+                expect(entries[0].buffer?.type).toBe('uniform');
+                expect(entries[1].buffer?.type).toBe('storage');
+                expect(entries[2].buffer?.type).toBe('storage');
+            }
 
             // Check structs
             const scene_info = reflector.get_struct('SceneInfo');
             expect(scene_info).toBeDefined();
-            expect(scene_info!.size_bytes).toBe(64);
+            if (scene_info) {
+                expect(scene_info.size_bytes).toBe(64);
+            }
 
             const ray = reflector.get_struct('Ray');
             expect(ray).toBeDefined();
-            expect(ray!.size_bytes).toBe(48);
+            if (ray) {
+                expect(ray.size_bytes).toBe(48);
+            }
         });
     });
 
