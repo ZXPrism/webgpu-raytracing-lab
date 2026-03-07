@@ -10,7 +10,7 @@ fn compute(
   @builtin(workgroup_id) workgroup_id : vec3u,
   @builtin(local_invocation_index) thread_id: u32
 ) {
-  let id = workgroup_id.x * WG_DIM_X + thread_id;
+  let id = (workgroup_id.x * WG_DIM_X) + thread_id;
   let n = arrayLength(&in_color_buffer);
   if id < n {
     let curr = in_color_buffer[id];
