@@ -29,3 +29,7 @@ In one frame:
 2. hit test for `config_max_bounce` times
 3. filter using previous frame's output (running average)
 4. blit to screen
+
+
+## Deploy to GitHub Pages
+Run `pnpm run deploy`.
