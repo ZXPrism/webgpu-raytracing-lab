@@ -1,3 +1,5 @@
+export function get_shader_blit(): string {
+  return /* wgsl */`
 @group(0) @binding(0) var<uniform> in_scene_info: SceneInfo;
 @group(0) @binding(1) var<storage, read> in_filtered_color_buffer: array<vec4f>;
 
@@ -29,4 +31,6 @@ fn fragment(@builtin(position) position: vec4f) -> @location(0) vec4f {
   );
 
   return vec4<f32>(srgb, linear_color.a);
+}
+`;
 }

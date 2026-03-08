@@ -1,3 +1,5 @@
+export function get_shader_gen_ray(): string {
+  return /* wgsl */`
 @group(0) @binding(0) var<uniform> in_scene_info: SceneInfo;
 @group(0) @binding(1) var<storage, read_write> out_ray_array_length: u32;
 @group(0) @binding(2) var<storage, read_write> out_ray_array: array<Ray>;
@@ -36,4 +38,6 @@ fn compute(
     let primary_ray = Ray(eye, direction_norm, ray_array_offset, vec3f(1.0));
     out_ray_array[ray_array_offset] = primary_ray;
   }
+}
+`;
 }

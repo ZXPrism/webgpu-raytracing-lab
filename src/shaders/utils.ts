@@ -1,49 +1,53 @@
+import { config_eps, config_ray_far_threshold, config_ray_near_threshold, config_sky_color, constant_pi } from "../config";
+
+export function get_shader_utils(): string {
+  return /* wgsl */`
 // ===========
 //  constants
 // ===========
 
-const EPS = 0.001;
-const PI = 3.141592653;
+const EPS = ${config_eps};
+const PI = ${constant_pi};
 // LESSON (260307): always set color in linear space.
 // but most tools give us srgb-encoded values.
 // so do the conversion first.
-const SKY_COLOR = vec3f(0.28, 0.82, 1.0);
-const RAY_NEAR_THRESHOLD = EPS;
-const RAY_FAR_THRESHOLD = 100.0;
+const SKY_COLOR = vec3f(${config_sky_color});
+const RAY_NEAR_THRESHOLD = ${config_ray_near_threshold};
+const RAY_FAR_THRESHOLD = ${config_ray_far_threshold};
 
 // =========
 //  structs
 // =========
 
-struct SceneInfo { // 64
-  pixel00: vec3f, // 0 -> 12
-  width: u32, // 12 -> 4
-  viewport_u_base: vec3f, // 16 -> 12
-  height: u32, // 28 -> 4
-  viewport_v_base: vec3f, // 32 -> 16 (12 + 4)
-  eye: vec3f, // 48 -> 16 (12 + 4)
+struct SceneInfo {
+  pixel00: vec3f,
+  width: u32,
+  viewport_u_base: vec3f,
+  height: u32,
+  viewport_v_base: vec3f,
+  eye: vec3f,
 }
 
-struct Ray { // 48
-  origin: vec3f, // 0 -> 16 (12 + 4)
-  direction_norm: vec3f, // 16 -> 12;
-  pixel_offset: u32, // 28 -> 4
-  weight: vec3f, // 32 -> 16 (12 + 4)
+struct Ray {
+  origin: vec3f,
+  direction_norm: vec3f,
+  pixel_offset: u32,
+  weight: vec3f,
 }
 
-struct Sphere { // 16
-  center: vec3f, // 0 -> 12
-  radius: f32, // 12 -> 4
+struct Sphere {
+  center: vec3f,
+  radius: f32,
 }
 
-struct IndirectArgs { // 12
-  dispatch_x: u32, // 0 -> 4
-  dispatch_y: u32, // 4 -> 8
-  dispatch_z: u32, // 8 -> 12
+struct IndirectArgs {
+  dispatch_x: u32,
+  dispatch_y: u32,
+  dispatch_z: u32,
 }
 
-struct DiffuseMaterial { // 16
-  albedo: vec3f, // 0 -> 16 (12 + 4)
+struct DiffuseMaterial {
+  albedo: vec3f,
 }
 
 struct MetalMaterial {
@@ -140,12 +144,15 @@ fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // NOTE: each function returns new ray's direction, which should be normalized (here)
 // callers should always expect to get a noramlized ray direction
 
-fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
-  let res_ray_direction = rand_unit_sphere_shell(seed);
-  return select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal) >= 0.0);
+fn evaluate_diffuse(normal_norm: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+  // TODO: check if this is lambertian, need a proof
+  let res_ray_direction = normal_norm + rand_unit_sphere_shell(seed);
+  return normalize(select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0));
 }
 
 fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
   let res_ray_direction = reflect(in_ray_dirction, normal_norm);
   return normalize(res_ray_direction);
+}
+`;
 }
