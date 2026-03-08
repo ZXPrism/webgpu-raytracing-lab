@@ -1,17 +1,19 @@
+import { config_eps, config_ray_far_threshold, config_ray_near_threshold, config_sky_color, constant_pi } from "../config";
+
 export function get_shader_utils(): string {
   return /* wgsl */`
 // ===========
 //  constants
 // ===========
 
-const EPS = 0.001;
-const PI = 3.141592653;
+const EPS = ${config_eps};
+const PI = ${constant_pi};
 // LESSON (260307): always set color in linear space.
 // but most tools give us srgb-encoded values.
 // so do the conversion first.
-const SKY_COLOR = vec3f(0.48, 0.82, 1.0);
-const RAY_NEAR_THRESHOLD = EPS;
-const RAY_FAR_THRESHOLD = 100.0;
+const SKY_COLOR = vec3f(${config_sky_color});
+const RAY_NEAR_THRESHOLD = ${config_ray_near_threshold};
+const RAY_FAR_THRESHOLD = ${config_ray_far_threshold};
 
 // =========
 //  structs
