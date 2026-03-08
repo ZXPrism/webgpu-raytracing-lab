@@ -7,7 +7,7 @@ const PI = 3.141592653;
 // LESSON (260307): always set color in linear space.
 // but most tools give us srgb-encoded values.
 // so do the conversion first.
-const SKY_COLOR = vec3f(0.28, 0.82, 1.0);
+const SKY_COLOR = vec3f(0.48, 0.82, 1.0);
 const RAY_NEAR_THRESHOLD = EPS;
 const RAY_FAR_THRESHOLD = 100.0;
 
