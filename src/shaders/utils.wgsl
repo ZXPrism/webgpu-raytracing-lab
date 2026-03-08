@@ -36,8 +36,6 @@ struct Sphere {
   radius: f32,
 }
 
-
-
 struct IndirectArgs {
   dispatch_x: u32,
   dispatch_y: u32,
@@ -142,9 +140,9 @@ fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // NOTE: each function returns new ray's direction, which should be normalized (here)
 // callers should always expect to get a noramlized ray direction
 
-fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
-  let res_ray_direction = rand_unit_sphere_shell(seed);
-  return select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal) >= 0.0);
+fn evaluate_diffuse(normal_norm: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+  let res_ray_direction = normal_norm + rand_unit_sphere_shell(seed);
+  return select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0);
 }
 
 fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
