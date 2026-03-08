@@ -1,3 +1,5 @@
+export function get_shader_filter(): string {
+  return /* wgsl */`
 @group(0) @binding(0) var<storage, read> in_frame_index: u32;
 @group(0) @binding(1) var<storage, read> in_color_buffer: array<vec4f>;
 @group(0) @binding(2) var<storage, read_write> out_filtered_color_buffer: array<vec4f>;
@@ -17,4 +19,6 @@ fn compute(
     let prev = out_filtered_color_buffer[id];
     out_filtered_color_buffer[id] = mix(prev, curr, 1.0 / f32(in_frame_index));
   }
+}
+`;
 }

@@ -1,3 +1,5 @@
+export function get_shader_utils(): string {
+  return /* wgsl */`
 // ===========
 //  constants
 // ===========
@@ -149,4 +151,6 @@ fn evaluate_diffuse(normal_norm: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
 fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
   let res_ray_direction = reflect(in_ray_dirction, normal_norm);
   return normalize(res_ray_direction);
+}
+`;
 }

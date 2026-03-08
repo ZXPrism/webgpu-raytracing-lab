@@ -7,12 +7,12 @@ import { BindGroupBuilder } from "./bind_group_builder";
 import { create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_storage_buffer_u32, create_gpu_uniform_buffer } from "./kernel_utils";
 import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_max_bounce } from "./config";
 
-import shader_utils from "./shaders/utils.wgsl?raw";
-import shader_gen_ray from "./shaders/gen_ray.wgsl?raw";
-import shader_prep_hit_test from "./shaders/prep_hit_test.wgsl?raw";
-import shader_hit_test from "./shaders/hit_test.wgsl?raw";
-import shader_filter from "./shaders/filter.wgsl?raw";
-import shader_blit from "./shaders/blit.wgsl?raw";
+import { get_shader_utils } from "./shaders/utils";
+import { get_shader_gen_ray } from "./shaders/gen_ray";
+import { get_shader_prep_hit_test } from "./shaders/prep_hit_test";
+import { get_shader_hit_test } from "./shaders/hit_test";
+import { get_shader_filter } from "./shaders/filter";
+import { get_shader_blit } from "./shaders/blit";
 
 import { vec3 } from "gl-matrix";
 import { ShaderReflector } from "./shader_reflector/shader_reflector";
@@ -107,7 +107,7 @@ function pre_init(): boolean {
     //  other inits
     // =============
 
-    g_utils_shader_reflector = new ShaderReflector(shader_utils);
+    g_utils_shader_reflector = new ShaderReflector(get_shader_utils());
     g_event_bus = new EventBus();
 
     return true;
@@ -211,17 +211,17 @@ function init_kernels() {
     // =========
     //  kernels
     // =========
-    g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", shader_utils + shader_gen_ray, "compute")
+    g_gen_ray_kernel = new KernelBuilder(g_device, "gen ray kernel", get_shader_utils() + get_shader_gen_ray(), "compute")
         .build();
 
-    g_prep_hit_test_kernel = new KernelBuilder(g_device, "prep hit test kernel", shader_utils + shader_prep_hit_test, "compute")
+    g_prep_hit_test_kernel = new KernelBuilder(g_device, "prep hit test kernel", get_shader_utils() + get_shader_prep_hit_test(), "compute")
         .build();
 
-    g_hit_test_kernel = new KernelBuilder(g_device, "hit test kernel", shader_utils + shader_hit_test, "compute")
+    g_hit_test_kernel = new KernelBuilder(g_device, "hit test kernel", get_shader_utils() + get_shader_hit_test(), "compute")
         .build();
 
 
-    g_filter_kernel = new KernelBuilder(g_device, "filter kernel", shader_utils + shader_filter, "compute")
+    g_filter_kernel = new KernelBuilder(g_device, "filter kernel", get_shader_utils() + get_shader_filter(), "compute")
         .build();
 
     const blit_bind_group_layout = g_device.createBindGroupLayout({
@@ -249,13 +249,13 @@ function init_kernels() {
         layout: blit_pipeline_layout,
         vertex: {
             module: g_device.createShaderModule({
-                code: shader_utils + shader_blit,
+                code: get_shader_utils() + get_shader_blit(),
             }),
             entryPoint: "vertex"
         },
         fragment: {
             module: g_device.createShaderModule({
-                code: shader_utils + shader_blit,
+                code: get_shader_utils() + get_shader_blit(),
             }),
             entryPoint: "fragment",
             targets: [

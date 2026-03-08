@@ -1,3 +1,5 @@
+export function get_shader_hit_test(): string {
+  return /* wgsl */`
 @group(0) @binding(0) var<storage, read> in_ray_array_length: u32;
 @group(0) @binding(1) var<storage, read> in_ray_array: array<Ray>;
 @group(0) @binding(2) var<storage, read> in_sphere_array: array<Sphere>;
@@ -48,4 +50,6 @@ fn compute(
       out_color_buffer[ray.pixel_offset] += vec4f(SKY_COLOR * ray.weight, 1.0);
     }
   }
+}
+`;
 }
