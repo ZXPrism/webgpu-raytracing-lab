@@ -14,7 +14,7 @@
 - [ ] `260307` Picking
 - [ ] `260307` Editing
 - [ ] `260307` Shader optimizations (with profilers)
-
+- [ ] `260308` ShaderReflector: support parsing nested struct decls
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression

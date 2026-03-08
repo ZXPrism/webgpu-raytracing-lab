@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { describe, it, expect } from 'vitest';
 import { ShaderReflector } from './shader_reflector';
 import { ShaderDataTypeSize, ShaderDataTypeAlignment } from './type';
@@ -134,9 +135,13 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
-            expect(struct._map_field_name_to_field_type.get('a')).toBe('u32');
-            expect(struct._map_field_name_to_field_type.get('b')).toBe('f32');
-            expect(struct._map_field_name_to_field_type.get('c')).toBe('vec2f');
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+            const cIndex = struct.map_field_name_to_layout_entry_index.get('c');
+
+            expect(struct.layout[aIndex!].type).toBe('u32');
+            expect(struct.layout[bIndex!].type).toBe('f32');
+            expect(struct.layout[cIndex!].type).toBe('vec2f');
         });
 
         it('should calculate correct field offsets', () => {
@@ -151,12 +156,16 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+            const cIndex = struct.map_field_name_to_layout_entry_index.get('c');
+
             // u32 at offset 0, size 4
-            expect(struct._map_field_name_to_field_offset.get('a')).toBe(0);
+            expect(struct.layout[aIndex!].offset_bytes).toBe(0);
             // f32 at offset 4, size 4 (aligned to 4)
-            expect(struct._map_field_name_to_field_offset.get('b')).toBe(4);
+            expect(struct.layout[bIndex!].offset_bytes).toBe(4);
             // vec2f at offset 8, size 8 (aligned to 8)
-            expect(struct._map_field_name_to_field_offset.get('c')).toBe(8);
+            expect(struct.layout[cIndex!].offset_bytes).toBe(8);
         });
 
         it('should handle vec3f alignment (16 bytes)', () => {
@@ -170,10 +179,13 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+
             // vec3f at offset 0
-            expect(struct._map_field_name_to_field_offset.get('a')).toBe(0);
+            expect(struct.layout[aIndex!].offset_bytes).toBe(0);
             // f32 at offset 12 (after vec3f's 12 bytes, but vec3f has 16-byte alignment)
-            expect(struct._map_field_name_to_field_offset.get('b')).toBe(12);
+            expect(struct.layout[bIndex!].offset_bytes).toBe(12);
             // Total size: 16 (vec3f is 16-byte aligned)
             expect(struct.size_bytes).toBe(16);
         });
@@ -190,12 +202,16 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+            const cIndex = struct.map_field_name_to_layout_entry_index.get('c');
+
             // u32 at offset 0, size 4
-            expect(struct._map_field_name_to_field_offset.get('a')).toBe(0);
+            expect(struct.layout[aIndex!].offset_bytes).toBe(0);
             // vec3f at offset 16 (aligned to 16, after u32)
-            expect(struct._map_field_name_to_field_offset.get('b')).toBe(16);
+            expect(struct.layout[bIndex!].offset_bytes).toBe(16);
             // f32 at offset 28 (after vec3f's 12 bytes)
-            expect(struct._map_field_name_to_field_offset.get('c')).toBe(28);
+            expect(struct.layout[cIndex!].offset_bytes).toBe(28);
             // Total size: 32 (rounded up to max alignment of 16)
             expect(struct.size_bytes).toBe(32);
         });
@@ -212,12 +228,16 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+            const cIndex = struct.map_field_name_to_layout_entry_index.get('c');
+
             // u32 at offset 0, size 4
-            expect(struct._map_field_name_to_field_offset.get('a')).toBe(0);
+            expect(struct.layout[aIndex!].offset_bytes).toBe(0);
             // vec2f at offset 8 (aligned to 8)
-            expect(struct._map_field_name_to_field_offset.get('b')).toBe(8);
+            expect(struct.layout[bIndex!].offset_bytes).toBe(8);
             // f32 at offset 16 (after vec2f)
-            expect(struct._map_field_name_to_field_offset.get('c')).toBe(16);
+            expect(struct.layout[cIndex!].offset_bytes).toBe(16);
             // Total size: 20 (rounded up to alignment 8 = 24, then max alignment 8 = 24)
             expect(struct.size_bytes).toBe(24);
         });
@@ -233,8 +253,11 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
-            expect(struct._map_field_name_to_field_type.get('a')).toBe('vec2f');
-            expect(struct._map_field_name_to_field_type.get('b')).toBe('vec2f');
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+
+            expect(struct.layout[aIndex!].type).toBe('vec2f');
+            expect(struct.layout[bIndex!].type).toBe('vec2f');
         });
 
         it('should parse both vec3f and vec3<f32> syntax', () => {
@@ -248,8 +271,11 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
-            expect(struct._map_field_name_to_field_type.get('a')).toBe('vec3f');
-            expect(struct._map_field_name_to_field_type.get('b')).toBe('vec3f');
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+
+            expect(struct.layout[aIndex!].type).toBe('vec3f');
+            expect(struct.layout[bIndex!].type).toBe('vec3f');
         });
 
         it('should parse both vec4f and vec4<f32> syntax', () => {
@@ -263,8 +289,11 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
-            expect(struct._map_field_name_to_field_type.get('a')).toBe('vec4f');
-            expect(struct._map_field_name_to_field_type.get('b')).toBe('vec4f');
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+
+            expect(struct.layout[aIndex!].type).toBe('vec4f');
+            expect(struct.layout[bIndex!].type).toBe('vec4f');
         });
 
         it('should parse vec2u and vec2<u32> syntax', () => {
@@ -278,8 +307,11 @@ describe('ShaderReflector', () => {
             const reflector = new ShaderReflector(shader_source);
             const struct = reflector.get_struct('MyStruct');
 
-            expect(struct._map_field_name_to_field_type.get('a')).toBe('vec2u');
-            expect(struct._map_field_name_to_field_type.get('b')).toBe('vec2u');
+            const aIndex = struct.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = struct.map_field_name_to_layout_entry_index.get('b');
+
+            expect(struct.layout[aIndex!].type).toBe('vec2u');
+            expect(struct.layout[bIndex!].type).toBe('vec2u');
         });
     });
 
@@ -342,12 +374,19 @@ describe('ShaderReflector', () => {
                 expect(struct.size_bytes).toBe(64);
 
                 // Check field offsets
-                expect(struct._map_field_name_to_field_offset.get('pixel00')).toBe(0);
-                expect(struct._map_field_name_to_field_offset.get('width')).toBe(12);
-                expect(struct._map_field_name_to_field_offset.get('viewport_u_base')).toBe(16);
-                expect(struct._map_field_name_to_field_offset.get('height')).toBe(28);
-                expect(struct._map_field_name_to_field_offset.get('viewport_v_base')).toBe(32);
-                expect(struct._map_field_name_to_field_offset.get('eye')).toBe(48);
+                const pixel00Index = struct.map_field_name_to_layout_entry_index.get('pixel00');
+                const widthIndex = struct.map_field_name_to_layout_entry_index.get('width');
+                const viewportUBaseIndex = struct.map_field_name_to_layout_entry_index.get('viewport_u_base');
+                const heightIndex = struct.map_field_name_to_layout_entry_index.get('height');
+                const viewportVBaseIndex = struct.map_field_name_to_layout_entry_index.get('viewport_v_base');
+                const eyeIndex = struct.map_field_name_to_layout_entry_index.get('eye');
+
+                expect(struct.layout[pixel00Index!].offset_bytes).toBe(0);
+                expect(struct.layout[widthIndex!].offset_bytes).toBe(12);
+                expect(struct.layout[viewportUBaseIndex!].offset_bytes).toBe(16);
+                expect(struct.layout[heightIndex!].offset_bytes).toBe(28);
+                expect(struct.layout[viewportVBaseIndex!].offset_bytes).toBe(32);
+                expect(struct.layout[eyeIndex!].offset_bytes).toBe(48);
             }
         });
 
@@ -369,10 +408,15 @@ describe('ShaderReflector', () => {
                 expect(struct.size_bytes).toBe(48);
 
                 // Check field offsets
-                expect(struct._map_field_name_to_field_offset.get('origin')).toBe(0);
-                expect(struct._map_field_name_to_field_offset.get('direction_norm')).toBe(16);
-                expect(struct._map_field_name_to_field_offset.get('pixel_offset')).toBe(28);
-                expect(struct._map_field_name_to_field_offset.get('weight')).toBe(32);
+                const originIndex = struct.map_field_name_to_layout_entry_index.get('origin');
+                const directionNormIndex = struct.map_field_name_to_layout_entry_index.get('direction_norm');
+                const pixelOffsetIndex = struct.map_field_name_to_layout_entry_index.get('pixel_offset');
+                const weightIndex = struct.map_field_name_to_layout_entry_index.get('weight');
+
+                expect(struct.layout[originIndex!].offset_bytes).toBe(0);
+                expect(struct.layout[directionNormIndex!].offset_bytes).toBe(16);
+                expect(struct.layout[pixelOffsetIndex!].offset_bytes).toBe(28);
+                expect(struct.layout[weightIndex!].offset_bytes).toBe(32);
             }
         });
 
@@ -390,8 +434,10 @@ describe('ShaderReflector', () => {
             expect(struct).toBeDefined();
             if (struct) {
                 expect(struct.size_bytes).toBe(16);
-                expect(struct._map_field_name_to_field_offset.get('center')).toBe(0);
-                expect(struct._map_field_name_to_field_offset.get('radius')).toBe(12);
+                const centerIndex = struct.map_field_name_to_layout_entry_index.get('center');
+                const radiusIndex = struct.map_field_name_to_layout_entry_index.get('radius');
+                expect(struct.layout[centerIndex!].offset_bytes).toBe(0);
+                expect(struct.layout[radiusIndex!].offset_bytes).toBe(12);
             }
         });
 
@@ -410,9 +456,12 @@ describe('ShaderReflector', () => {
             expect(struct).toBeDefined();
             if (struct) {
                 expect(struct.size_bytes).toBe(12);
-                expect(struct._map_field_name_to_field_offset.get('dispatch_x')).toBe(0);
-                expect(struct._map_field_name_to_field_offset.get('dispatch_y')).toBe(4);
-                expect(struct._map_field_name_to_field_offset.get('dispatch_z')).toBe(8);
+                const dispatchXIndex = struct.map_field_name_to_layout_entry_index.get('dispatch_x');
+                const dispatchYIndex = struct.map_field_name_to_layout_entry_index.get('dispatch_y');
+                const dispatchZIndex = struct.map_field_name_to_layout_entry_index.get('dispatch_z');
+                expect(struct.layout[dispatchXIndex!].offset_bytes).toBe(0);
+                expect(struct.layout[dispatchYIndex!].offset_bytes).toBe(4);
+                expect(struct.layout[dispatchZIndex!].offset_bytes).toBe(8);
             }
         });
     });

@@ -10,11 +10,18 @@ describe('ShaderStruct', () => {
 
             expect(struct.name).toBe('TestStruct');
             expect(struct.size_bytes).toBe(4);
-            expect(struct._map_field_name_to_field_type.get('value')).toBe('u32');
-            expect(struct._map_field_name_to_field_offset.get('value')).toBe(0);
+
+            // Access field info through new layout API
+            const valueIndex = struct.map_field_name_to_layout_entry_index.get('value');
+            expect(valueIndex).toBeDefined();
+            if (valueIndex !== undefined) {
+                const valueEntry = struct.layout[valueIndex];
+                expect(valueEntry.type).toBe('u32');
+                expect(valueEntry.offset_bytes).toBe(0);
+            }
 
             // Data is initialized with 0x3F
-            const dataView = new Uint8Array(struct._data);
+            const dataView = new Uint8Array(struct.data);
             expect(dataView[0]).toBe(0x3F);
         });
 
@@ -27,8 +34,8 @@ describe('ShaderStruct', () => {
 
             expect(struct.name).toBe('ComplexStruct');
             expect(struct.size_bytes).toBe(32);
-            expect(struct._map_field_name_to_field_type.size).toBe(3);
-            expect(struct._map_field_name_to_field_offset.size).toBe(3);
+            expect(struct.layout.length).toBe(3);
+            expect(struct.map_field_name_to_layout_entry_index.size).toBe(3);
         });
 
         it('should chain method calls', () => {
@@ -40,6 +47,67 @@ describe('ShaderStruct', () => {
 
             expect(struct.name).toBe('ChainTest');
             expect(struct.size_bytes).toBe(12);
+        });
+
+        it('should throw error when adding field with non-increasing offset', () => {
+            const builder = new ShaderStructBuilder('OffsetCheck');
+
+            // Add first field at offset 0
+            builder.add_field('first', 'u32', 0);
+
+            // Should throw: second field has same offset as first
+            expect(() => builder.add_field('second', 'u32', 0)).toThrow();
+        });
+
+        it('should throw error when adding field with decreasing offset', () => {
+            const builder = new ShaderStructBuilder('DecreasingOffset');
+
+            builder.add_field('first', 'u32', 0);
+            builder.add_field('second', 'u32', 4);
+
+            // Should throw: third field has offset less than second field
+            expect(() => builder.add_field('third', 'u32', 2)).toThrow();
+        });
+
+        it('should allow first field to have offset 0', () => {
+            const builder = new ShaderStructBuilder('FirstFieldZero');
+
+            // First field with offset 0 should be allowed
+            expect(() => builder.add_field('first', 'u32', 0)).not.toThrow();
+        });
+
+        it('should throw error when first field has non-zero offset', () => {
+            const builder = new ShaderStructBuilder('FirstFieldNonZero');
+
+            // Should throw: first field must have offset 0
+            expect(() => builder.add_field('first', 'u32', 4)).toThrow();
+        });
+
+        it('should throw error when first field has large non-zero offset', () => {
+            const builder = new ShaderStructBuilder('FirstFieldLargeOffset');
+
+            // Should throw: first field must have offset 0, not 16
+            expect(() => builder.add_field('first', 'vec4f', 16)).toThrow();
+        });
+
+        it('should allow field with offset equal to previous field end', () => {
+            const builder = new ShaderStructBuilder('AdjacentFields');
+
+            builder.add_field('a', 'u32', 0);
+            // Offset 4 is exactly after a 4-byte u32 at offset 0
+            builder.add_field('b', 'u32', 4);
+
+            expect(() => builder.build(8)).not.toThrow();
+        });
+
+        it('should allow field with offset greater than previous field with padding', () => {
+            const builder = new ShaderStructBuilder('PaddedFields');
+
+            builder.add_field('a', 'u32', 0);
+            // Offset 16 has padding after the 4-byte field at offset 0
+            builder.add_field('b', 'vec4f', 16);
+
+            expect(() => builder.build(32)).not.toThrow();
         });
     });
 
@@ -63,10 +131,20 @@ describe('ShaderStruct', () => {
 
             const copy = original.copy();
 
-            expect(copy._map_field_name_to_field_type.get('a')).toBe('u32');
-            expect(copy._map_field_name_to_field_type.get('b')).toBe('f32');
-            expect(copy._map_field_name_to_field_type.get('c')).toBe('vec3f');
-            expect(copy._map_field_name_to_field_type.size).toBe(3);
+            const aIndex = copy.map_field_name_to_layout_entry_index.get('a');
+            const bIndex = copy.map_field_name_to_layout_entry_index.get('b');
+            const cIndex = copy.map_field_name_to_layout_entry_index.get('c');
+
+            expect(aIndex).toBeDefined();
+            expect(bIndex).toBeDefined();
+            expect(cIndex).toBeDefined();
+
+            if (aIndex !== undefined && bIndex !== undefined && cIndex !== undefined) {
+                expect(copy.layout[aIndex].type).toBe('u32');
+                expect(copy.layout[bIndex].type).toBe('f32');
+                expect(copy.layout[cIndex].type).toBe('vec3f');
+            }
+            expect(copy.layout.length).toBe(3);
         });
 
         it('should copy all field offsets', () => {
@@ -78,10 +156,20 @@ describe('ShaderStruct', () => {
 
             const copy = original.copy();
 
-            expect(copy._map_field_name_to_field_offset.get('x')).toBe(0);
-            expect(copy._map_field_name_to_field_offset.get('y')).toBe(4);
-            expect(copy._map_field_name_to_field_offset.get('z')).toBe(8);
-            expect(copy._map_field_name_to_field_offset.size).toBe(3);
+            const xIndex = copy.map_field_name_to_layout_entry_index.get('x');
+            const yIndex = copy.map_field_name_to_layout_entry_index.get('y');
+            const zIndex = copy.map_field_name_to_layout_entry_index.get('z');
+
+            expect(xIndex).toBeDefined();
+            expect(yIndex).toBeDefined();
+            expect(zIndex).toBeDefined();
+
+            if (xIndex !== undefined && yIndex !== undefined && zIndex !== undefined) {
+                expect(copy.layout[xIndex].offset_bytes).toBe(0);
+                expect(copy.layout[yIndex].offset_bytes).toBe(4);
+                expect(copy.layout[zIndex].offset_bytes).toBe(8);
+            }
+            expect(copy.layout.length).toBe(3);
         });
 
         it('should create fresh 0x3F-initialized buffer when use_fresh_data is true', () => {
@@ -91,14 +179,14 @@ describe('ShaderStruct', () => {
 
             // Set some data in the original (overriding the 0x3F init)
             original.set_field('value', 42);
-            const originalDataView = new Uint32Array(original._data);
+            const originalDataView = new Uint32Array(original.data);
             expect(originalDataView[0]).toBe(42);
 
             // Copy with use_fresh_data=true should create a new 0x3F-initialized buffer
             const copy = original.copy(true);
-            const copyDataView = new Uint32Array(copy._data);
+            const copyDataView = new Uint32Array(copy.data);
 
-            expect(copy._data).not.toBe(original._data);
+            expect(copy.data).not.toBe(original.data);
             expect(copyDataView[0]).toBe(0x3F3F3F3F); // New buffer, initialized to 0x3F
         });
 
@@ -113,12 +201,12 @@ describe('ShaderStruct', () => {
             const copy = original.copy(false);
 
             // When use_fresh_data is false, data is a copy of original
-            expect(copy._data).not.toBe(original._data);
-            expect(copy._data.byteLength).toBe(4);
+            expect(copy.data).not.toBe(original.data);
+            expect(copy.data.byteLength).toBe(4);
 
             // Verify the data is actually copied correctly
-            const originalView = new Uint8Array(original._data);
-            const copyView = new Uint8Array(copy._data);
+            const originalView = new Uint8Array(original.data);
+            const copyView = new Uint8Array(copy.data);
             expect(copyView).toEqual(originalView);
         });
 
@@ -131,8 +219,8 @@ describe('ShaderStruct', () => {
             const copy = original.copy(false);
 
             // Verify the 0x3F initialization is preserved
-            const originalView = new Uint32Array(original._data);
-            const copyView = new Uint32Array(copy._data);
+            const originalView = new Uint32Array(original.data);
+            const copyView = new Uint32Array(copy.data);
             expect(originalView[0]).toBe(0x3F3F3F3F);
             expect(copyView[0]).toBe(0x3F3F3F3F);
         });
@@ -149,8 +237,8 @@ describe('ShaderStruct', () => {
             copy1.set_field('value', 100);
             copy2.set_field('value', 200);
 
-            const copy1DataView = new Uint32Array(copy1._data);
-            const copy2DataView = new Uint32Array(copy2._data);
+            const copy1DataView = new Uint32Array(copy1.data);
+            const copy2DataView = new Uint32Array(copy2.data);
 
             expect(copy1DataView[0]).toBe(100);
             expect(copy2DataView[0]).toBe(200);
@@ -163,11 +251,15 @@ describe('ShaderStruct', () => {
 
             const copy = original.copy();
 
-            // Modifying copy's map should not affect original
-            copy._map_field_name_to_field_type.set('newField', 'f32');
+            // Check that copies have independent maps (via public API)
+            expect(copy.map_field_name_to_layout_entry_index.size).toBe(1);
+            expect(original.map_field_name_to_layout_entry_index.size).toBe(1);
+            expect(copy.layout.length).toBe(1);
+            expect(original.layout.length).toBe(1);
 
-            expect(original._map_field_name_to_field_type.has('newField')).toBe(false);
-            expect(copy._map_field_name_to_field_type.has('newField')).toBe(true);
+            // Verify they are different objects
+            expect(copy.map_field_name_to_layout_entry_index).not.toBe(original.map_field_name_to_layout_entry_index);
+            expect(copy.layout).not.toBe(original.layout);
         });
     });
 
@@ -178,7 +270,7 @@ describe('ShaderStruct', () => {
             const struct = builder.build(4);
 
             struct.set_field('value', 42);
-            const dataView = new Uint32Array(struct._data);
+            const dataView = new Uint32Array(struct.data);
 
             expect(dataView[0]).toBe(42);
         });
@@ -189,7 +281,7 @@ describe('ShaderStruct', () => {
             const struct = builder.build(16);
 
             struct.set_field('position', [1.0, 2.0, 3.0]);
-            const dataView = new Float32Array(struct._data);
+            const dataView = new Float32Array(struct.data);
 
             expect(dataView[0]).toBe(1.0);
             expect(dataView[1]).toBe(2.0);
@@ -202,7 +294,7 @@ describe('ShaderStruct', () => {
             const struct = builder.build(8);
 
             struct.set_field('coords', [10, 20]);
-            const dataView = new Uint32Array(struct._data);
+            const dataView = new Uint32Array(struct.data);
 
             expect(dataView[0]).toBe(10);
             expect(dataView[1]).toBe(20);
@@ -219,7 +311,7 @@ describe('ShaderStruct', () => {
             struct.set_field('a', 100, 0);
             struct.set_field('b', 200, 0);
 
-            const dataView = new Uint32Array(struct._data);
+            const dataView = new Uint32Array(struct.data);
             expect(dataView[0]).toBe(100);
             expect(dataView[1]).toBe(200);
         });
@@ -258,7 +350,8 @@ describe('ShaderStruct', () => {
             builder.add_field('value', 'u32', 0);
             const struct = builder.build(4);
 
-            expect(struct.data).toBe(struct._data);
+            expect(struct.data).toBeInstanceOf(ArrayBuffer);
+            expect(struct.data.byteLength).toBe(4);
         });
     });
 

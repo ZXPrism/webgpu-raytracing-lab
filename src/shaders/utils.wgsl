@@ -21,7 +21,7 @@ struct SceneInfo { // 64
   viewport_u_base: vec3f, // 16 -> 12
   height: u32, // 28 -> 4
   viewport_v_base: vec3f, // 32 -> 16 (12 + 4)
-  eye: vec3f // 48 -> 16 (12 + 4)
+  eye: vec3f, // 48 -> 16 (12 + 4)
 }
 
 struct Ray { // 48
@@ -43,7 +43,12 @@ struct IndirectArgs { // 12
 }
 
 struct DiffuseMaterial { // 16
-  albedo: vec3f // 0 -> 16 (12 + 4)
+  albedo: vec3f, // 0 -> 16 (12 + 4)
+}
+
+struct MetalMaterial {
+  albedo: vec3f,
+  fuzziness: f32,
 }
 
 // ========
