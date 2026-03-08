@@ -1,6 +1,7 @@
 // ===========
 //  constants
 // ===========
+
 const EPS = 0.001;
 const PI = 3.141592653;
 // LESSON (260307): always set color in linear space.
@@ -13,13 +14,14 @@ const RAY_FAR_THRESHOLD = 100.0;
 // =========
 //  structs
 // =========
+
 struct SceneInfo { // 64
   pixel00: vec3f, // 0 -> 12
   width: u32, // 12 -> 4
   viewport_u_base: vec3f, // 16 -> 12
   height: u32, // 28 -> 4
   viewport_v_base: vec3f, // 32 -> 16 (12 + 4)
-  eye: vec3f // 48 -> 16 (12 + 4)
+  eye: vec3f, // 48 -> 16 (12 + 4)
 }
 
 struct Ray { // 48
@@ -41,7 +43,12 @@ struct IndirectArgs { // 12
 }
 
 struct DiffuseMaterial { // 16
-  albedo: vec3f // 0 -> 16 (12 + 4)
+  albedo: vec3f, // 0 -> 16 (12 + 4)
+}
+
+struct MetalMaterial {
+  albedo: vec3f,
+  fuzziness: f32,
 }
 
 // ========
@@ -138,7 +145,7 @@ fn evaluate_diffuse(normal: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
   return select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal) >= 0.0);
 }
 
-// fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
-//   let res_ray_direction = reflect(in_ray_dirction, normal_norm);
-//   return normalize(res_ray_direction);
-// }
+fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
+  let res_ray_direction = reflect(in_ray_dirction, normal_norm);
+  return normalize(res_ray_direction);
+}

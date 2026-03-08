@@ -14,7 +14,7 @@ fn compute(
   @builtin(workgroup_id) workgroup_id : vec3u,
   @builtin(local_invocation_index) thread_id: u32
 ) {
-  let id = workgroup_id.x * WG_DIM_X + thread_id;
+  let id = (workgroup_id.x * WG_DIM_X) + thread_id;
 
   if id < in_ray_array_length {
     let ray = in_ray_array[id];
