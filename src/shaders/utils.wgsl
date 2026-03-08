@@ -141,8 +141,9 @@ fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // callers should always expect to get a noramlized ray direction
 
 fn evaluate_diffuse(normal_norm: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+  // TODO: check if this is lambertian, need a proof
   let res_ray_direction = normal_norm + rand_unit_sphere_shell(seed);
-  return select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0);
+  return normalize(select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0));
 }
 
 fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
