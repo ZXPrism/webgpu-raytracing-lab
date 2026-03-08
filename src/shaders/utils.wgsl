@@ -15,35 +15,37 @@ const RAY_FAR_THRESHOLD = 100.0;
 //  structs
 // =========
 
-struct SceneInfo { // 64
-  pixel00: vec3f, // 0 -> 12
-  width: u32, // 12 -> 4
-  viewport_u_base: vec3f, // 16 -> 12
-  height: u32, // 28 -> 4
-  viewport_v_base: vec3f, // 32 -> 16 (12 + 4)
-  eye: vec3f, // 48 -> 16 (12 + 4)
+struct SceneInfo {
+  pixel00: vec3f,
+  width: u32,
+  viewport_u_base: vec3f,
+  height: u32,
+  viewport_v_base: vec3f,
+  eye: vec3f,
 }
 
-struct Ray { // 48
-  origin: vec3f, // 0 -> 16 (12 + 4)
-  direction_norm: vec3f, // 16 -> 12;
-  pixel_offset: u32, // 28 -> 4
-  weight: vec3f, // 32 -> 16 (12 + 4)
+struct Ray {
+  origin: vec3f,
+  direction_norm: vec3f,
+  pixel_offset: u32,
+  weight: vec3f,
 }
 
-struct Sphere { // 16
-  center: vec3f, // 0 -> 12
-  radius: f32, // 12 -> 4
+struct Sphere {
+  center: vec3f,
+  radius: f32,
 }
 
-struct IndirectArgs { // 12
-  dispatch_x: u32, // 0 -> 4
-  dispatch_y: u32, // 4 -> 8
-  dispatch_z: u32, // 8 -> 12
+
+
+struct IndirectArgs {
+  dispatch_x: u32,
+  dispatch_y: u32,
+  dispatch_z: u32,
 }
 
-struct DiffuseMaterial { // 16
-  albedo: vec3f, // 0 -> 16 (12 + 4)
+struct DiffuseMaterial {
+  albedo: vec3f,
 }
 
 struct MetalMaterial {
