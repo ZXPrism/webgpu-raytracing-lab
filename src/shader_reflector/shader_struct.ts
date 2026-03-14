@@ -7,48 +7,60 @@ export interface ShaderStructLayoutEntry {
 
 export class ShaderStructBuilder {
     private _shader_struct_name: string;
-    private _map_field_name_to_layout_entry_index: Map<string, number>;
-    private _layout: ShaderStructLayoutEntry[];
+    private _field_name_list: string[];
+    private _field_type_list: ShaderDataType[];
 
     public constructor(shader_struct_name: string) {
         this._shader_struct_name = shader_struct_name;
 
-        this._map_field_name_to_layout_entry_index = new Map<string, number>();
-        this._layout = [];
+        this._field_name_list = [];
+        this._field_type_list = [];
     }
 
-    public add_field(name: string, type: ShaderDataType, offset_bytes: number): ShaderStructBuilder {
-        if (this._map_field_name_to_layout_entry_index.has(name)) {
-            throw new Error(`ShaderStructBuilder: field ${name} already exists in shader struct ${this._shader_struct_name}!`);
-        }
-
-        const field_idx = this._layout.length;
-        if (field_idx !== 0) {
-            if (offset_bytes <= this._layout[field_idx - 1].offset_bytes) {
-                throw new Error(`ShaderStructBuilder: failed to add field ${name} to shader struct ${this._shader_struct_name}: invalid field offset`);
-            }
-        } else { // first field
-            if (offset_bytes !== 0) {
-                throw new Error(`ShaderStructBuilder: failed to add field ${name} to shader struct ${this._shader_struct_name}: first field offset nonzero`);
-            }
-        }
-
-        this._map_field_name_to_layout_entry_index.set(name, field_idx);
-        this._layout.push({
-            type,
-            offset_bytes,
-        });
+    public add_field(name: string, type: ShaderDataType): ShaderStructBuilder {
+        this._field_name_list.push(name);
+        this._field_type_list.push(type);
 
         return this;
     }
 
-    public build(total_size_bytes: number): ShaderStruct {
+    public build(): ShaderStruct {
+        // compute layout
+        const layout: ShaderStructLayoutEntry[] = [];
+        const map_field_name_to_layout_entry_index = new Map<string, number>();
+
+        let current_offset_bytes = 0;
+        let max_alignment = 0;
+        this._field_name_list.forEach((name, index) => {
+            const type = this._field_type_list[index];
+            const size = ShaderDataTypeSize[type];
+
+            const alignment = ShaderDataTypeAlignment[type];
+            if (alignment > max_alignment) {
+                max_alignment = alignment;
+            }
+
+            current_offset_bytes = Math.ceil(current_offset_bytes / alignment) * alignment;
+
+            map_field_name_to_layout_entry_index.set(name, index);
+            layout.push({
+                type: type,
+                offset_bytes: current_offset_bytes,
+            });
+
+            current_offset_bytes += size;
+        });
+
+        const total_size_bytes = Math.ceil(current_offset_bytes / max_alignment) * max_alignment;
+
         // NOTE all fields are initialized to a special value 0x3F
         // NOTE shaders should init data themselves and should not rely on implicit initial values
         const data = new ArrayBuffer(total_size_bytes);
         new Uint8Array(data).fill(0x3F);
-        return new ShaderStruct(this._shader_struct_name, data,
-            this._map_field_name_to_layout_entry_index, this._layout);
+
+        const shader_struct = new ShaderStruct(this._shader_struct_name, data,
+            map_field_name_to_layout_entry_index, layout);
+        return shader_struct;
     }
 }
 

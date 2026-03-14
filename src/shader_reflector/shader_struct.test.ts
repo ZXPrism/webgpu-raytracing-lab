@@ -5,8 +5,8 @@ describe('ShaderStruct', () => {
     describe('ShaderStructBuilder', () => {
         it('should build a simple struct with primitive types', () => {
             const builder = new ShaderStructBuilder('TestStruct');
-            builder.add_field('value', 'u32', 0);
-            const struct = builder.build(4);
+            builder.add_field('value', 'u32');
+            const struct = builder.build();
 
             expect(struct.name).toBe('TestStruct');
             expect(struct.size_bytes).toBe(4);
@@ -27,10 +27,10 @@ describe('ShaderStruct', () => {
 
         it('should build a complex struct with multiple fields', () => {
             const builder = new ShaderStructBuilder('ComplexStruct');
-            builder.add_field('a', 'u32', 0);
-            builder.add_field('b', 'f32', 4);
-            builder.add_field('c', 'vec3f', 16);
-            const struct = builder.build(32);
+            builder.add_field('a', 'u32');
+            builder.add_field('b', 'f32');
+            builder.add_field('c', 'vec3f');
+            const struct = builder.build();
 
             expect(struct.name).toBe('ComplexStruct');
             expect(struct.size_bytes).toBe(32);
@@ -40,82 +40,30 @@ describe('ShaderStruct', () => {
 
         it('should chain method calls', () => {
             const struct = new ShaderStructBuilder('ChainTest')
-                .add_field('x', 'f32', 0)
-                .add_field('y', 'f32', 4)
-                .add_field('z', 'f32', 8)
-                .build(12);
+                .add_field('x', 'f32')
+                .add_field('y', 'f32')
+                .add_field('z', 'f32')
+                .build();
 
             expect(struct.name).toBe('ChainTest');
             expect(struct.size_bytes).toBe(12);
         });
 
-        it('should throw error when adding field with non-increasing offset', () => {
-            const builder = new ShaderStructBuilder('OffsetCheck');
+        it('should automatically calculate offsets for fields', () => {
+            const builder = new ShaderStructBuilder('AutoOffsetTest');
 
-            // Add first field at offset 0
-            builder.add_field('first', 'u32', 0);
+            builder.add_field('a', 'u32');
+            builder.add_field('vec', 'vec3f');
 
-            // Should throw: second field has same offset as first
-            expect(() => builder.add_field('second', 'u32', 0)).toThrow();
-        });
-
-        it('should throw error when adding field with decreasing offset', () => {
-            const builder = new ShaderStructBuilder('DecreasingOffset');
-
-            builder.add_field('first', 'u32', 0);
-            builder.add_field('second', 'u32', 4);
-
-            // Should throw: third field has offset less than second field
-            expect(() => builder.add_field('third', 'u32', 2)).toThrow();
-        });
-
-        it('should allow first field to have offset 0', () => {
-            const builder = new ShaderStructBuilder('FirstFieldZero');
-
-            // First field with offset 0 should be allowed
-            expect(() => builder.add_field('first', 'u32', 0)).not.toThrow();
-        });
-
-        it('should throw error when first field has non-zero offset', () => {
-            const builder = new ShaderStructBuilder('FirstFieldNonZero');
-
-            // Should throw: first field must have offset 0
-            expect(() => builder.add_field('first', 'u32', 4)).toThrow();
-        });
-
-        it('should throw error when first field has large non-zero offset', () => {
-            const builder = new ShaderStructBuilder('FirstFieldLargeOffset');
-
-            // Should throw: first field must have offset 0, not 16
-            expect(() => builder.add_field('first', 'vec4f', 16)).toThrow();
-        });
-
-        it('should allow field with offset equal to previous field end', () => {
-            const builder = new ShaderStructBuilder('AdjacentFields');
-
-            builder.add_field('a', 'u32', 0);
-            // Offset 4 is exactly after a 4-byte u32 at offset 0
-            builder.add_field('b', 'u32', 4);
-
-            expect(() => builder.build(8)).not.toThrow();
-        });
-
-        it('should allow field with offset greater than previous field with padding', () => {
-            const builder = new ShaderStructBuilder('PaddedFields');
-
-            builder.add_field('a', 'u32', 0);
-            // Offset 16 has padding after the 4-byte field at offset 0
-            builder.add_field('b', 'vec4f', 16);
-
-            expect(() => builder.build(32)).not.toThrow();
+            expect(() => builder.build()).not.toThrow();
         });
     });
 
     describe('ShaderStruct copy()', () => {
         it('should copy the struct name', () => {
             const builder = new ShaderStructBuilder('OriginalStruct');
-            builder.add_field('value', 'u32', 0);
-            const original = builder.build(4);
+            builder.add_field('value', 'u32');
+            const original = builder.build();
 
             const copy = original.copy();
 
@@ -124,10 +72,10 @@ describe('ShaderStruct', () => {
 
         it('should copy all field types', () => {
             const builder = new ShaderStructBuilder('FieldTest');
-            builder.add_field('a', 'u32', 0);
-            builder.add_field('b', 'f32', 4);
-            builder.add_field('c', 'vec3f', 16);
-            const original = builder.build(32);
+            builder.add_field('a', 'u32');
+            builder.add_field('b', 'f32');
+            builder.add_field('c', 'vec3f');
+            const original = builder.build();
 
             const copy = original.copy();
 
@@ -149,10 +97,10 @@ describe('ShaderStruct', () => {
 
         it('should copy all field offsets', () => {
             const builder = new ShaderStructBuilder('OffsetTest');
-            builder.add_field('x', 'f32', 0);
-            builder.add_field('y', 'f32', 4);
-            builder.add_field('z', 'f32', 8);
-            const original = builder.build(12);
+            builder.add_field('x', 'f32');
+            builder.add_field('y', 'f32');
+            builder.add_field('z', 'f32');
+            const original = builder.build();
 
             const copy = original.copy();
 
@@ -174,8 +122,8 @@ describe('ShaderStruct', () => {
 
         it('should create fresh 0x3F-initialized buffer when use_fresh_data is true', () => {
             const builder = new ShaderStructBuilder('DataTest');
-            builder.add_field('value', 'u32', 0);
-            const original = builder.build(4);
+            builder.add_field('value', 'u32');
+            const original = builder.build();
 
             // Set some data in the original (overriding the 0x3F init)
             original.set_field('value', 42);
@@ -192,8 +140,8 @@ describe('ShaderStruct', () => {
 
         it('should copy original data when use_fresh_data is false', () => {
             const builder = new ShaderStructBuilder('NoDataTest');
-            builder.add_field('value', 'u32', 0);
-            const original = builder.build(4);
+            builder.add_field('value', 'u32');
+            const original = builder.build();
 
             // Set some data in the original
             original.set_field('value', 42);
@@ -212,8 +160,8 @@ describe('ShaderStruct', () => {
 
         it('should preserve 0x3F initialization when copying unmodified struct', () => {
             const builder = new ShaderStructBuilder('InitPreserveTest');
-            builder.add_field('value', 'u32', 0);
-            const original = builder.build(4);
+            builder.add_field('value', 'u32');
+            const original = builder.build();
 
             // Don't modify anything - keep the 0x3F initialization
             const copy = original.copy(false);
@@ -227,8 +175,8 @@ describe('ShaderStruct', () => {
 
         it('should create independent copies', () => {
             const builder = new ShaderStructBuilder('IndependentTest');
-            builder.add_field('value', 'u32', 0);
-            const original = builder.build(4);
+            builder.add_field('value', 'u32');
+            const original = builder.build();
 
             const copy1 = original.copy();
             const copy2 = original.copy();
@@ -246,8 +194,8 @@ describe('ShaderStruct', () => {
 
         it('should create independent maps', () => {
             const builder = new ShaderStructBuilder('MapTest');
-            builder.add_field('value', 'u32', 0);
-            const original = builder.build(4);
+            builder.add_field('value', 'u32');
+            const original = builder.build();
 
             const copy = original.copy();
 
@@ -266,8 +214,8 @@ describe('ShaderStruct', () => {
     describe('ShaderStruct set_field()', () => {
         it('should set single scalar value', () => {
             const builder = new ShaderStructBuilder('ScalarTest');
-            builder.add_field('value', 'u32', 0);
-            const struct = builder.build(4);
+            builder.add_field('value', 'u32');
+            const struct = builder.build();
 
             struct.set_field('value', 42);
             const dataView = new Uint32Array(struct.data);
@@ -277,8 +225,8 @@ describe('ShaderStruct', () => {
 
         it('should set vector values', () => {
             const builder = new ShaderStructBuilder('VectorTest');
-            builder.add_field('position', 'vec3f', 0);
-            const struct = builder.build(16);
+            builder.add_field('position', 'vec3f');
+            const struct = builder.build();
 
             struct.set_field('position', [1.0, 2.0, 3.0]);
             const dataView = new Float32Array(struct.data);
@@ -290,8 +238,8 @@ describe('ShaderStruct', () => {
 
         it('should set integer vector values', () => {
             const builder = new ShaderStructBuilder('IntVectorTest');
-            builder.add_field('coords', 'vec2u', 0);
-            const struct = builder.build(8);
+            builder.add_field('coords', 'vec2u');
+            const struct = builder.build();
 
             struct.set_field('coords', [10, 20]);
             const dataView = new Uint32Array(struct.data);
@@ -302,9 +250,9 @@ describe('ShaderStruct', () => {
 
         it('should handle base offset parameter', () => {
             const builder = new ShaderStructBuilder('OffsetTest');
-            builder.add_field('a', 'u32', 0);
-            builder.add_field('b', 'u32', 4);
-            const struct = builder.build(8);
+            builder.add_field('a', 'u32');
+            builder.add_field('b', 'u32');
+            const struct = builder.build();
 
             // base_offset is used for array indexing (e.g., in ShaderStructArray)
             // For a single struct, base_offset should be 0
@@ -318,8 +266,8 @@ describe('ShaderStruct', () => {
 
         it('should throw error when field does not exist', () => {
             const builder = new ShaderStructBuilder('NonExistentTest');
-            builder.add_field('existing', 'u32', 0);
-            const struct = builder.build(4);
+            builder.add_field('existing', 'u32');
+            const struct = builder.build();
 
             // Should throw error
             expect(() => struct.set_field('nonExistent', 42)).toThrow();
@@ -327,8 +275,8 @@ describe('ShaderStruct', () => {
 
         it('should throw error when component count mismatches', () => {
             const builder = new ShaderStructBuilder('MismatchTest');
-            builder.add_field('vec', 'vec3f', 0);
-            const struct = builder.build(16);
+            builder.add_field('vec', 'vec3f');
+            const struct = builder.build();
 
             // Should throw error
             expect(() => struct.set_field('vec', [1.0, 2.0])).toThrow();
@@ -338,17 +286,17 @@ describe('ShaderStruct', () => {
     describe('ShaderStruct getters', () => {
         it('should return correct size_bytes', () => {
             const builder = new ShaderStructBuilder('SizeTest');
-            builder.add_field('a', 'u32', 0);
-            builder.add_field('b', 'u32', 4);
-            const struct = builder.build(8);
+            builder.add_field('a', 'u32');
+            builder.add_field('b', 'u32');
+            const struct = builder.build();
 
             expect(struct.size_bytes).toBe(8);
         });
 
         it('should return data buffer', () => {
             const builder = new ShaderStructBuilder('DataGetterTest');
-            builder.add_field('value', 'u32', 0);
-            const struct = builder.build(4);
+            builder.add_field('value', 'u32');
+            const struct = builder.build();
 
             expect(struct.data).toBeInstanceOf(ArrayBuffer);
             expect(struct.data.byteLength).toBe(4);
@@ -358,8 +306,8 @@ describe('ShaderStruct', () => {
     describe('ShaderStructArray', () => {
         it('should create array of structs', () => {
             const builder = new ShaderStructBuilder('ArrayElement');
-            builder.add_field('value', 'u32', 0);
-            const template = builder.build(4);
+            builder.add_field('value', 'u32');
+            const template = builder.build();
 
             const array = new ShaderStructArray(template, 10);
 
@@ -369,8 +317,8 @@ describe('ShaderStruct', () => {
 
         it('should initialize array data with 0x3F', () => {
             const builder = new ShaderStructBuilder('InitTest');
-            builder.add_field('value', 'u32', 0);
-            const template = builder.build(4);
+            builder.add_field('value', 'u32');
+            const template = builder.build();
 
             const array = new ShaderStructArray(template, 5);
 
@@ -383,8 +331,8 @@ describe('ShaderStruct', () => {
 
         it('should set field in specific struct', () => {
             const builder = new ShaderStructBuilder('ArrayElement');
-            builder.add_field('value', 'u32', 0);
-            const template = builder.build(4);
+            builder.add_field('value', 'u32');
+            const template = builder.build();
 
             const array = new ShaderStructArray(template, 3);
             array.set_field(0, 'value', 100);
@@ -399,8 +347,8 @@ describe('ShaderStruct', () => {
 
         it('should throw error when index out of bounds', () => {
             const builder = new ShaderStructBuilder('BoundsTest');
-            builder.add_field('value', 'u32', 0);
-            const template = builder.build(4);
+            builder.add_field('value', 'u32');
+            const template = builder.build();
 
             const array = new ShaderStructArray(template, 5);
 
@@ -410,9 +358,9 @@ describe('ShaderStruct', () => {
 
         it('should calculate correct stride', () => {
             const builder = new ShaderStructBuilder('StrideTest');
-            builder.add_field('a', 'vec3f', 0);
-            builder.add_field('b', 'f32', 12);
-            const template = builder.build(16);
+            builder.add_field('a', 'vec3f');
+            builder.add_field('b', 'f32');
+            const template = builder.build();
 
             const array = new ShaderStructArray(template, 5);
 
@@ -431,8 +379,8 @@ describe('ShaderStruct', () => {
 
         it('should return length and data', () => {
             const builder = new ShaderStructBuilder('GetterTest');
-            builder.add_field('value', 'u32', 0);
-            const template = builder.build(4);
+            builder.add_field('value', 'u32');
+            const template = builder.build();
 
             const array = new ShaderStructArray(template, 7);
 
