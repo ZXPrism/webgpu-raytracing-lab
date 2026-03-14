@@ -80,6 +80,14 @@ fn compute(
         out_ray_array[write_idx] = Ray(hit_point + (EPS * offset_dir), new_ray_direction_norm, ray.pixel_offset, ray.weight);
         // LESSON (260314) we almost always need some bias to improve numerical stability..
       }
+
+      // hack: checkerboard
+      if object.geometry_type == 1u {
+        const RES = 50.0;
+        let uv = hit_test_rect_alpha_beta(ray, in_rect_array[object.geometry_data_id]) * RES;
+        let uv_int = vec2u(uv);
+        out_ray_array[write_idx].weight = ray.weight * select(1.0, 0.0, (uv_int.x + uv_int.y) % 2 == 0u);
+      }
     } else {
       out_color_buffer[ray.pixel_offset] += vec4f(SKY_COLOR * ray.weight, 1.0);
     }

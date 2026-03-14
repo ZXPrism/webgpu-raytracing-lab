@@ -182,6 +182,27 @@ fn hit_test_rect(ray: Ray, rect: Rect) -> f32 {
   return -1.0; // if miss, return a negative value
 }
 
+// hack: just to temporarily render a checkerboard
+// will be removed in the future
+fn hit_test_rect_alpha_beta(ray: Ray, rect: Rect) -> vec2f {
+  let normal_norm = rect_get_normal_norm(ray, rect);
+  let t_denominator = dot(normal_norm, ray.direction_norm);
+
+  let normal = cross(rect.u, rect.v);
+  let s = dot(normal, normal);
+  let w = normal / s;
+  let d = dot(normal_norm, rect.corner);
+  let t_numerator = d - dot(normal_norm, ray.origin);
+  let t = t_numerator / t_denominator;
+
+  let hit_point = get_hit_point(ray, t);
+  let hit_point_rel = hit_point - rect.corner;
+
+  let alpha = dot(cross(hit_point_rel, rect.v), w);
+  let beta = dot(cross(rect.u, hit_point_rel), w);
+  return vec2f(alpha, beta);
+}
+
 fn get_hit_point(ray: Ray, t: f32) -> vec3f {
   return ray.origin + (ray.direction_norm * t);
 }
