@@ -13,7 +13,7 @@
 - [ ] `260307` Mix rendering (with rasterization)
 - [ ] `260307` Picking
 - [ ] `260307` Editing
-- [ ] `260307` Shader optimizations (with profilers)
+- [ ] `260307` Shader optimizations (with profilers), maybe need some sort to improve locality, or do compressions!
 - [ ] `260308` ShaderReflector: support parsing nested struct decls
 - [ ] `260308` ShaderReflector: generate shader structs bind codes
 - [ ] `260308` BindGroupBuilder: provide wrappers to (create then) add {storage,uniform} buffer, do not expose GPUBufferUsage flags

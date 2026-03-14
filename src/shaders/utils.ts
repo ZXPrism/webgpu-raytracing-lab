@@ -163,9 +163,9 @@ fn evaluate_diffuse(normal_norm: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
   return normalize(select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0));
 }
 
-fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
+fn evaluate_metal(normal_norm: vec3f, hit_point: vec3f, in_ray_dirction: vec3f, fuzziness: f32, seed: f32) -> vec3f {
   let res_ray_direction = reflect(in_ray_dirction, normal_norm);
-  return normalize(res_ray_direction);
+  return normalize(normalize(res_ray_direction) + (fuzziness * rand_unit_sphere_shell(seed)));
 }
 `;
 }
