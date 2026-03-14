@@ -17,10 +17,12 @@
 - [ ] `260308` ShaderReflector: support parsing nested struct decls
 - [ ] `260308` ShaderReflector: generate shader structs bind codes
 - [ ] `260308` BindGroupBuilder: provide wrappers to (create then) add {storage,uniform} buffer, do not expose GPUBufferUsage flags
+- [ ] `260314` Randomization overhaul. Evaluate current randomness (may be some freq analysis?)
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
 - [ ] `260307` Gallery
+- [ ] `260314` Docs
 
 ## Miscs
 - [ ] `260314` Logging overhaul: each log should have object name

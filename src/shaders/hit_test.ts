@@ -5,9 +5,10 @@ export function get_shader_hit_test(): string {
 @group(0) @binding(2) var<storage, read_write> out_ray_array_length: atomic<u32>;
 @group(0) @binding(3) var<storage, read_write> out_ray_array: array<Ray>;
 
-@group(1) @binding(0) var<storage, read> in_sphere_array: array<Sphere>;
-@group(1) @binding(1) var<storage, read> in_diffuse_material_array: array<DiffuseMaterial>;
-@group(1) @binding(2) var<storage, read_write> out_color_buffer: array<vec4f>;
+@group(1) @binding(0) var<storage, read> in_object_array: array<Object>;
+@group(1) @binding(1) var<storage, read> in_sphere_array: array<Sphere>;
+@group(1) @binding(2) var<storage, read> in_diffuse_material_array: array<DiffuseMaterial>;
+@group(1) @binding(3) var<storage, read_write> out_color_buffer: array<vec4f>;
 
 const WG_DIM_X = 128u;
 
@@ -25,12 +26,20 @@ fn compute(
     var min_t = 1e10;
     var hit_object_id = -1;
 
-    let sphere_array_length = i32(arrayLength(&in_sphere_array));
-    for (var i = 0; i < sphere_array_length; i++) {
-      let t = hit_test_sphere(ray, in_sphere_array[i]);
-      if t < RAY_NEAR_THRESHOLD || t > RAY_FAR_THRESHOLD {
+    let object_array_length = i32(arrayLength(&in_object_array));
+
+    for (var i = 0; i < object_array_length; i++) {
+      let object = in_object_array[i];
+
+      var t = RAY_FAR_THRESHOLD;
+      if object.geometry_type == 0u {
+        t = hit_test_sphere(ray, in_sphere_array[object.geometry_data_id]);
+      }
+
+      if t <= RAY_NEAR_THRESHOLD || t >= RAY_FAR_THRESHOLD {
         continue;
       }
+
       if t < min_t {
         min_t = t;
         hit_object_id = i;
@@ -38,15 +47,24 @@ fn compute(
     }
 
     if hit_object_id >= 0 {
-      let sphere = in_sphere_array[hit_object_id];
-      let material = in_diffuse_material_array[hit_object_id];
-
       let write_idx = atomicAdd(&out_ray_array_length, 1u);
       let hit_point = get_hit_point(ray, min_t);
-      let normal_norm = sphere_get_normal_norm(ray, sphere, hit_point);
-      let diffuse_ray_direction_norm = evaluate_diffuse(normal_norm, hit_point, f32(write_idx) * min_t);
 
-      out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), diffuse_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
+      let object = in_object_array[hit_object_id];
+
+      let material = in_diffuse_material_array[hit_object_id];
+
+      var normal_norm = vec3f(0.0);
+      if object.geometry_type == 0u {
+        normal_norm = sphere_get_normal_norm(ray, in_sphere_array[object.geometry_data_id], hit_point);
+      }
+
+      var new_ray_direction_norm = vec3f(0.0);
+      if object.material_type == 0u {
+        let material = in_diffuse_material_array[object.material_data_id];
+        new_ray_direction_norm = evaluate_diffuse(normal_norm, hit_point, f32(write_idx) * min_t);
+        out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), new_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
+      }
     } else {
       out_color_buffer[ray.pixel_offset] += vec4f(SKY_COLOR * ray.weight, 1.0);
     }

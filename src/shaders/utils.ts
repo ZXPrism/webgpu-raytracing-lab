@@ -19,6 +19,8 @@ const RAY_FAR_THRESHOLD = ${config_ray_far_threshold};
 //  structs
 // =========
 
+// ===== basic
+
 struct SceneInfo {
   pixel00: vec3f,
   width: u32,
@@ -35,22 +37,33 @@ struct Ray {
   weight: vec3f,
 }
 
-struct Sphere {
-  center: vec3f,
-  radius: f32,
-}
-
 struct IndirectArgs {
   dispatch_x: u32,
   dispatch_y: u32,
   dispatch_z: u32,
 }
 
-struct DiffuseMaterial {
+struct Object {
+  geometry_type: u32,
+  geometry_data_id: u32,
+  material_type: u32,
+  material_data_id: u32,
+}
+
+// ===== geometry
+
+struct Sphere { // type = 0
+  center: vec3f,
+  radius: f32,
+}
+
+// ===== material
+
+struct DiffuseMaterial { // type = 0
   albedo: vec3f,
 }
 
-struct MetalMaterial {
+struct MetalMaterial { // type = 1
   albedo: vec3f,
   fuzziness: f32,
 }
