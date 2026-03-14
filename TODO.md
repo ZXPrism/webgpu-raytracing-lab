@@ -21,3 +21,6 @@
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
 - [ ] `260307` Gallery
+
+## Miscs
+- [ ] `260314` Logging overhaul: each log should have object name

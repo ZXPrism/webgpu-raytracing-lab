@@ -1,5 +1,5 @@
 import { ShaderStructArray, ShaderStructBuilder, type ShaderStruct } from "./shader_struct";
-import { MapTypeToShaderDataType, ShaderDataTypeAlignment, ShaderDataTypeSize } from "./type";
+import { MapTypeToShaderDataType } from "./type";
 
 export class ShaderReflector {
     public map_bind_group_index_to_bind_group_layout_entry_list = new Map<number, GPUBindGroupLayoutEntry[]>();
@@ -50,10 +50,6 @@ export class ShaderReflector {
 
             const shader_struct_builder = new ShaderStructBuilder(struct_name);
             let valid = true;
-            let current_field_offset = 0;
-            let size = 0;
-            let max_alignment = 0;
-            let alignment = 0;
 
             const struct_field_regexp = /(\w+)\s*:\s*([\w<>]+)/gm;
             let match_field: RegExpExecArray | null;
@@ -61,67 +57,22 @@ export class ShaderReflector {
                 const field_name = match_field[1];
                 const field_type = MapTypeToShaderDataType.get(match_field[2]);
 
-                switch (field_type) {
-                    case "u32": {
-                        size = ShaderDataTypeSize.u32;
-                        alignment = ShaderDataTypeAlignment.u32;
-                        break;
-                    }
-                    case "f32": {
-                        size = ShaderDataTypeSize.f32;
-                        alignment = ShaderDataTypeAlignment.f32;
-                        break;
-                    }
-                    case "vec2u": {
-                        size = ShaderDataTypeSize.vec2u;
-                        alignment = ShaderDataTypeAlignment.vec2u;
-                        break;
-                    }
-                    case "vec2f": {
-                        size = ShaderDataTypeSize.vec2f;
-                        alignment = ShaderDataTypeAlignment.vec2f;
-                        break;
-                    }
-                    case "vec3f": {
-                        size = ShaderDataTypeSize.vec3f;
-                        alignment = ShaderDataTypeAlignment.vec3f;
-                        break;
-                    }
-                    case "vec4f": {
-                        size = ShaderDataTypeSize.vec4f;
-                        alignment = ShaderDataTypeAlignment.vec4f;
-                        break;
-                    }
-                    default: {
-                        console.warn(`ShaderReflector: detected unsupported data type "${field_type}" (field: "${field_name}")`);
-                        console.warn(`ShaderReflector: struct "${struct_name}" won't be reflected`);
-                        valid = false;
-                        break;
-                    }
-                }
-
-                if (valid === false) {
+                if (field_type === undefined) {
+                    console.warn(`ShaderReflector: detected unsupported data type "${field_type}" (field: "${field_name}")`);
+                    console.warn(`ShaderReflector: struct "${struct_name}" won't be reflected`);
+                    valid = false;
                     break;
                 }
 
-                if (alignment > max_alignment) {
-                    max_alignment = alignment;
-                }
-
-                current_field_offset = Math.ceil(current_field_offset / alignment) * alignment;
-
                 if (field_type) {
-                    shader_struct_builder.add_field(field_name, field_type, current_field_offset);
+                    shader_struct_builder.add_field(field_name, field_type);
                 } else {
                     throw new Error("You should never see this error..This is just for passing type check. But if you do see this, you are in trouble.");
                 }
-                current_field_offset += size;
             }
 
             if (valid) {
-                // the whole object's address should be aligned too!
-                current_field_offset = Math.ceil(current_field_offset / max_alignment) * max_alignment;
-                const shader_struct = shader_struct_builder.build(current_field_offset);
+                const shader_struct = shader_struct_builder.build();
                 this.map_struct_name_to_shader_struct.set(struct_name, shader_struct);
             }
         }
