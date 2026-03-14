@@ -295,78 +295,88 @@ export class Renderer {
 
         const object_cnt = 4;
         const object_array = this._utils_shader_reflector.get_struct_array("Object", object_cnt)
-            .set_field(0, "geometry_type", 0)
+            .set_field(0, "geometry_type", 0) // sphere
             .set_field(0, "geometry_data_id", 0)
-            .set_field(0, "material_type", 0)
             .set_field(0, "material_data_id", 0)
 
-            .set_field(1, "geometry_type", 0)
-            .set_field(1, "geometry_data_id", 1)
-            .set_field(1, "material_type", 0)
+            .set_field(1, "geometry_type", 1) // quad
+            .set_field(1, "geometry_data_id", 0)
             .set_field(1, "material_data_id", 1)
 
-            .set_field(2, "geometry_type", 0)
-            .set_field(2, "geometry_data_id", 2)
-            .set_field(2, "material_type", 2)
+            .set_field(2, "geometry_type", 0) // sphere
+            .set_field(2, "geometry_data_id", 1)
             .set_field(2, "material_data_id", 2)
 
-            .set_field(3, "geometry_type", 0)
-            .set_field(3, "geometry_data_id", 3)
-            .set_field(3, "material_type", 0)
+            .set_field(3, "geometry_type", 0) // sphere
+            .set_field(3, "geometry_data_id", 2)
             .set_field(3, "material_data_id", 3);
         const object_array_data = object_array.data;
         const object_array_buffer = create_gpu_storage_buffer(this._device, "object array", object_array_data.byteLength);
         this._device.queue.writeBuffer(object_array_buffer, 0, object_array_data);
 
-        const sphere_cnt = object_cnt; // FIX THIS AFTER WE HAVE NEW GEOMETRY!
-        const sphere_array = this._utils_shader_reflector.get_struct_array("Sphere", sphere_cnt)
+        const sphere_array = this._utils_shader_reflector.get_struct_array("Sphere", 3)
             .set_field(0, "center", [0.3 - 0.5, 0.5, 1.2])
             .set_field(0, "radius", 0.5)
-            .set_field(1, "center", [0.0, -10000.0, 0.0])
-            .set_field(1, "radius", 10000.0)
-            .set_field(2, "center", [1.0 - 0.5, 0.75, 1.0])
-            .set_field(2, "radius", 0.75)
-            .set_field(3, "center", [-1.0, 0.3, 1.0])
-            .set_field(3, "radius", 0.3);
+            .set_field(1, "center", [1.0 - 0.5, 0.75, 1.0])
+            .set_field(1, "radius", 0.75)
+            .set_field(2, "center", [-1.2, 0.3, 1.0])
+            .set_field(2, "radius", 0.3);
         const sphere_array_data = sphere_array.data;
         const sphere_array_buffer = create_gpu_storage_buffer(this._device, "sphere array", sphere_array_data.byteLength);
         this._device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
+
+        const rect_array = this._utils_shader_reflector.get_struct_array("Rect", 1)
+            .set_field(0, "corner", [-5.0, 0.0, -5.0])
+            .set_field(0, "u", [10.0, 0.0, 0.0])
+            .set_field(0, "v", [0.0, 0.0, 10.0]);
+        const rect_array_data = rect_array.data;
+        const rect_array_buffer = create_gpu_storage_buffer(this._device, "rect array", rect_array_data.byteLength);
+        this._device.queue.writeBuffer(rect_array_buffer, 0, rect_array_data);
 
 
         // =================
         //  material buffer
         // =================
 
-        const diffuse_material_array = this._utils_shader_reflector.get_struct_array("DiffuseMaterial", sphere_cnt)
+        const material_array = this._utils_shader_reflector.get_struct_array("Material", object_cnt)
+            .set_field(0, "_type", 0) // diffuse
             .set_field(0, "albedo", [0.8, 0.0, 0.0])
-            .set_field(1, "albedo", [0.5, 0.5, 0.5])
-            .set_field(2, "albedo", [0.0, 0.8, 0.0])
-            .set_field(3, "albedo", [0.0, 0.0, 0.8]);
-        const diffuse_material_array_data = diffuse_material_array.data;
-        const diffuse_material_array_buffer = create_gpu_storage_buffer(this._device, "diffuse material array", diffuse_material_array_data.byteLength);
-        this._device.queue.writeBuffer(diffuse_material_array_buffer, 0, diffuse_material_array_data);
 
-        const metal_material_array = this._utils_shader_reflector.get_struct_array("MetalMaterial", sphere_cnt)
-            .set_field(0, "albedo", [0.8, 0.0, 0.0])
-            .set_field(0, "fuzziness", 0.0)
-            .set_field(1, "albedo", [0.5, 0.5, 0.5])
-            .set_field(1, "fuzziness", 0.0)
-            .set_field(2, "albedo", [0.0, 0.8, 0.0])
-            .set_field(2, "fuzziness", 0.0)
-            .set_field(3, "albedo", [0.0, 0.0, 0.8])
-            .set_field(3, "fuzziness", 0.0);
-        const metal_material_array_data = metal_material_array.data;
-        const metal_material_array_buffer = create_gpu_storage_buffer(this._device, "metal material array", metal_material_array_data.byteLength);
-        this._device.queue.writeBuffer(metal_material_array_buffer, 0, metal_material_array_data);
+            .set_field(1, "_type", 0) // diffuse
+            .set_field(1, "albedo", [0.2, 0.2, 0.2])
 
-        const glass_material_array = this._utils_shader_reflector.get_struct_array("GlassMaterial", sphere_cnt)
-            .set_field(0, "refraction_index", 1.5)
-            .set_field(1, "refraction_index", 1.5)
+            .set_field(2, "_type", 2) // glass
+            .set_field(2, "albedo", [0.0, 0.8, 0.0])
             .set_field(2, "refraction_index", 1.5)
-            .set_field(3, "refraction_index", 1.5);
-        const glass_material_array_data = glass_material_array.data;
-        const glass_material_array_buffer = create_gpu_storage_buffer(this._device, "glass material array", glass_material_array_data.byteLength);
-        this._device.queue.writeBuffer(glass_material_array_buffer, 0, glass_material_array_data);
+
+            .set_field(3, "_type", 0) // diffuse
+            .set_field(3, "albedo", [0.0, 0.0, 0.8]);
+
+        const material_array_data = material_array.data;
+        const material_array_buffer = create_gpu_storage_buffer(this._device, "material array", material_array_data.byteLength);
+        this._device.queue.writeBuffer(material_array_buffer, 0, material_array_data);
+
+        // const metal_material_array = this._utils_shader_reflector.get_struct_array("MetalMaterial", sphere_cnt)
+        //     .set_field(0, "albedo", [0.8, 0.0, 0.0])
+        //     .set_field(0, "fuzziness", 0.0)
+        //     .set_field(1, "albedo", [0.5, 0.5, 0.5])
+        //     .set_field(1, "fuzziness", 0.0)
+        //     .set_field(2, "albedo", [0.0, 0.8, 0.0])
+        //     .set_field(2, "fuzziness", 0.0)
+        //     .set_field(3, "albedo", [0.0, 0.0, 0.8])
+        //     .set_field(3, "fuzziness", 0.0);
+        // const metal_material_array_data = metal_material_array.data;
+        // const metal_material_array_buffer = create_gpu_storage_buffer(this._device, "metal material array", metal_material_array_data.byteLength);
+        // this._device.queue.writeBuffer(metal_material_array_buffer, 0, metal_material_array_data);
+
+        // const glass_material_array = this._utils_shader_reflector.get_struct_array("GlassMaterial", sphere_cnt)
+        //     .set_field(0, "refraction_index", 1.5)
+        //     .set_field(1, "refraction_index", 1.5)
+        //     .set_field(2, "refraction_index", 1.5)
+        //     .set_field(3, "refraction_index", 1.5);
+        // const glass_material_array_data = glass_material_array.data;
+        // const glass_material_array_buffer = create_gpu_storage_buffer(this._device, "glass material array", glass_material_array_data.byteLength);
+        // this._device.queue.writeBuffer(glass_material_array_buffer, 0, glass_material_array_data);
 
         const color_buffer = create_gpu_storage_buffer(this._device, "color buffer", 16 * this._canvas_width * this._canvas_height);
         const hit_test_indirect_arg = create_gpu_indirect_buffer(this._device, "hit test indirect arg", 12);
@@ -412,10 +422,9 @@ export class Renderer {
         this._hit_test_kernel_bind_group_shared = new BindGroupBuilder(this._device, "hit test kernel bind group shared")
             .add_buffer("in_object_array", 0, object_array_buffer)
             .add_buffer("in_sphere_array", 1, sphere_array_buffer)
-            .add_buffer("in_diffuse_material_array", 2, diffuse_material_array_buffer)
-            .add_buffer("in_metal_material_array", 3, metal_material_array_buffer)
-            .add_buffer("in_glass_material_array", 4, glass_material_array_buffer)
-            .add_buffer("out_color_buffer", 5, color_buffer)
+            .add_buffer("in_rect_array", 2, rect_array_buffer)
+            .add_buffer("in_material_array", 3, material_array_buffer)
+            .add_buffer("out_color_buffer", 4, color_buffer)
             .build(this._hit_test_kernel, 1);
         this._hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 

@@ -46,7 +46,6 @@ struct IndirectArgs {
 struct Object {
   geometry_type: u32,
   geometry_data_id: u32,
-  material_type: u32,
   material_data_id: u32,
 }
 
@@ -57,19 +56,33 @@ struct Sphere { // type = 0
   radius: f32,
 }
 
+// both faces should have normal point outwards
+struct Rect { // type = 1
+  corner: vec3f,
+  u: vec3f,
+  v: vec3f,
+}
+
+struct Parallelepiped { // type = 2
+  corner: vec3f,
+  u: vec3f,
+  v: vec3f,
+  w: vec3f,
+}
+
+struct Triangle { // type = 3
+  corner: vec3f,
+  u: vec3f,
+  v: vec3f,
+}
+
 // ===== material
 
-struct DiffuseMaterial { // type = 0
-  albedo: vec3f,
-}
-
-struct MetalMaterial { // type = 1
-  albedo: vec3f,
-  fuzziness: f32,
-}
-
-struct GlassMaterial { // type = 2
-  refraction_index: f32,
+struct Material {
+  albedo: vec3f, // for diffuse & metal material (type = 0 & 1)
+  fuzziness: f32, // for metal material (type = 1)
+  refraction_index: f32, // for glass material (type = 2)
+  _type: u32, // type is a reserved keyword, so have to use _type
 }
 
 // ========
@@ -141,6 +154,34 @@ fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
   return -1.0; // if miss, return a negative value
 }
 
+fn hit_test_rect(ray: Ray, rect: Rect) -> f32 {
+  let normal_norm = rect_get_normal_norm(ray, rect);
+  let t_denominator = dot(normal_norm, ray.direction_norm);
+  if abs(t_denominator) < EPS {
+    return -1.0;
+  }
+
+  let normal = cross(rect.u, rect.v);
+  let s = dot(normal, normal);
+  let w = normal / s;
+  let d = dot(normal_norm, rect.corner);
+  let t_numerator = d - dot(normal_norm, ray.origin);
+  let t = t_numerator / t_denominator;
+  if t <= 0.0 {
+    return -1.0;
+  }
+
+  let hit_point = get_hit_point(ray, t);
+  let hit_point_rel = hit_point - rect.corner;
+
+  let alpha = dot(cross(hit_point_rel, rect.v), w);
+  let beta = dot(cross(rect.u, hit_point_rel), w);
+  if 0.0 <= alpha && alpha <= 1.0 && 0.0 <= beta && beta <= 1.0 {
+    return t;
+  }
+  return -1.0; // if miss, return a negative value
+}
+
 fn get_hit_point(ray: Ray, t: f32) -> vec3f {
   return ray.origin + (ray.direction_norm * t);
 }
@@ -153,6 +194,11 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
   return delta / sphere.radius;
+}
+
+fn rect_get_normal_norm(ray: Ray, rect: Rect) -> vec3f {
+  let normal = normalize(cross(rect.u, rect.v));
+  return select(-normal, normal, dot(ray.direction_norm, normal) <= 0.0);
 }
 
 // ===================
