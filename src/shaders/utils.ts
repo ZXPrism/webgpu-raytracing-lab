@@ -68,6 +68,10 @@ struct MetalMaterial { // type = 1
   fuzziness: f32,
 }
 
+struct GlassMaterial { // type = 2
+  refraction_index: f32,
+}
+
 // ========
 //  random
 // ========
@@ -148,7 +152,7 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 
 fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
-  return select(-delta, delta, dot(delta, ray.direction_norm) <= 0.0) / sphere.radius;
+  return delta / sphere.radius;
 }
 
 // ===================
@@ -157,15 +161,33 @@ fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // NOTE: each function returns new ray's direction, which should be normalized (here)
 // callers should always expect to get a noramlized ray direction
 
-fn evaluate_diffuse(normal_norm: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+fn evaluate_diffuse(normal_norm: vec3f, seed: f32) -> vec3f {
   // TODO: check if this is lambertian, need a proof
   let res_ray_direction = normal_norm + rand_unit_sphere_shell(seed);
   return normalize(select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0));
 }
 
-fn evaluate_metal(normal_norm: vec3f, hit_point: vec3f, in_ray_dirction: vec3f, fuzziness: f32, seed: f32) -> vec3f {
-  let res_ray_direction = reflect(in_ray_dirction, normal_norm);
+fn evaluate_metal(normal_norm: vec3f, in_ray_direction: vec3f, fuzziness: f32, seed: f32) -> vec3f {
+  let res_ray_direction = reflect(in_ray_direction, normal_norm);
   return normalize(normalize(res_ray_direction) + (fuzziness * rand_unit_sphere_shell(seed)));
+}
+
+fn evaluate_glass(normal_norm: vec3f, in_ray_direction_norm: vec3f, refraction_index: f32, seed: f32) -> vec3f {
+  let entering = dot(in_ray_direction_norm, normal_norm) <= 0.0;
+  let co_norm = select(-normal_norm, normal_norm, entering);
+  let eta = select(refraction_index, 1.0 / refraction_index, entering);
+
+  let cos_theta = dot(in_ray_direction_norm, co_norm);
+  let r0 = ((1.0 - eta) / (1.0 + eta)) * ((1.0 - eta) / (1.0 + eta));
+  let fresnel = r0 + (1.0 - r0) * pow(1.0 - abs(cos_theta), 5.0);
+
+  let refracted = refract(in_ray_direction_norm, co_norm, eta);
+
+  if all(refracted == vec3f(0.0)) || fresnel > rand(seed) {
+    return reflect(in_ray_direction_norm, normal_norm);
+  } else {
+    return refracted;
+  }
 }
 `;
 }
