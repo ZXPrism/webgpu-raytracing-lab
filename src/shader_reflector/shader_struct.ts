@@ -24,7 +24,7 @@ export class ShaderStructBuilder {
         return this;
     }
 
-    public build(): ShaderStruct {
+    public build(is_dummy: boolean = false): ShaderStruct {
         // compute layout
         const layout: ShaderStructLayoutEntry[] = [];
         const map_field_name_to_layout_entry_index = new Map<string, number>();
@@ -59,7 +59,7 @@ export class ShaderStructBuilder {
         new Uint8Array(data).fill(0x3F);
 
         const shader_struct = new ShaderStruct(this._shader_struct_name, data,
-            map_field_name_to_layout_entry_index, layout);
+            map_field_name_to_layout_entry_index, layout, is_dummy);
         return shader_struct;
     }
 }
@@ -72,13 +72,16 @@ export class ShaderStruct {
 
     constructor(name: string, data: ArrayBuffer,
         map_field_name_to_layout_entry_index: Map<string, number>,
-        layout: ShaderStructLayoutEntry[]) {
+        layout: ShaderStructLayoutEntry[],
+        is_dummy: boolean = false) {
         this._name = name;
         this._data = data;
         this._map_field_name_to_layout_entry_index = map_field_name_to_layout_entry_index;
         this._layout = layout;
 
-        // this.check_optimal_layout(); TODO
+        if (is_dummy === false) {
+            this.check_optimal_layout();
+        }
     }
 
     public copy(use_fresh_data: boolean = true): ShaderStruct {
@@ -134,7 +137,7 @@ export class ShaderStruct {
         return this;
     }
 
-    private _get_optimal_layout_impl_brute_force(): ShaderStructLayoutEntry[] {
+    private _get_optimal_layout_impl_brute_force(): [ShaderStructLayoutEntry[], number] {
         // Enumerate all permutations of current layout array
         const entry_cnt = this._layout.length;
 
@@ -144,16 +147,17 @@ export class ShaderStruct {
         let optimal_entry_index_perm = Array.from({ length: entry_cnt }, () => -1);
         let optimal_size_bytes = 0x3f3f3f3f;
 
-        function dfs(kth: number) {
+        const dfs = (kth: number) => {
             if (kth === entry_cnt) {
-                const current_size_bytes = 0; // TODO
-                // TODO: poplulate offset using a function
-                // compute offset array based on data array
-                // in ctor then populate layout with offset array
-                // shader reflector no longer need to compute offsets
+                const shader_struct_builder = new ShaderStructBuilder("(I am a dummy used in the optimal layout algo >_<)");
+                for (let i = 0; i < entry_cnt; i++) {
+                    shader_struct_builder.add_field(`dummy field #{i}`, this.layout[entry_index_perm[i]].type);
+                }
+
+                const current_size_bytes = shader_struct_builder.build(true).size_bytes;
                 if (current_size_bytes < optimal_size_bytes) {
                     optimal_size_bytes = current_size_bytes;
-                    optimal_entry_index_perm = entry_index_perm;
+                    optimal_entry_index_perm = structuredClone(entry_index_perm);
                 }
                 return;
             }
@@ -161,15 +165,22 @@ export class ShaderStruct {
                 if (used[i] === false) {
                     used[i] = true;
                     entry_index_perm[kth] = i;
+                    dfs(kth + 1);
                     used[i] = false;
                 }
             }
-        }
+        };
         dfs(0);
 
-        return Array.from({ length: entry_cnt }, (_, index) => {
-            return this._layout[optimal_entry_index_perm[index]];
-        });
+        return [
+            Array.from({ length: entry_cnt }, (_, index) => {
+                return {
+                    type: this._layout[optimal_entry_index_perm[index]].type,
+                    offset_bytes: - 1
+                };
+            }),
+            optimal_size_bytes
+        ];
     }
 
     // todo!
@@ -190,7 +201,7 @@ export class ShaderStruct {
             return;
         }
 
-        function validate_layout(ref_layout: ShaderStructLayoutEntry[], layout: ShaderStructLayoutEntry[]): boolean {
+        function validate_layout(ref_layout: ReadonlyArray<ShaderStructLayoutEntry>, layout: ReadonlyArray<ShaderStructLayoutEntry>): boolean {
             if (layout.length !== ref_layout.length) {
                 return false;
             }
@@ -220,26 +231,18 @@ export class ShaderStruct {
             return is_valid;
         }
 
-        const optimal_layout = this._get_optimal_layout_impl_brute_force();
+        const [optimal_layout, optimal_size_bytes] = this._get_optimal_layout_impl_brute_force();
 
-        // TODO: check if both layout is identical after sorting by entry type
         if (validate_layout(this._layout, optimal_layout) === false) {
             throw new Error(`ShaderStruct (${this._name}): Bad impl of optimal layout algorithm: layout entry counts mismatch`);
         }
 
-        const last_entry_idx = optimal_layout.length - 1;
-
-        const last_entry_optimal_layout = optimal_layout[last_entry_idx];
-        const max_aligment_optimal_layout = Math.max(...optimal_layout.map(entry => ShaderDataTypeAlignment[entry.type]));
-        const total_size_optimal_layout = last_entry_optimal_layout.offset_bytes + ShaderDataTypeSize[last_entry_optimal_layout.type];
-        const optimal_size = Math.ceil(total_size_optimal_layout / max_aligment_optimal_layout) * max_aligment_optimal_layout;
-
-        if (optimal_size > this.size_bytes) {
+        if (optimal_size_bytes > this.size_bytes) {
             throw new Error(`ShaderStruct (${this._name}): bad impl of optimal layout algorithm: the "optimal" layout is suboptimal`);
-        } else if (optimal_size < this.size_bytes) {
+        } else if (optimal_size_bytes < this.size_bytes) {
             console.warn(`ShaderStruct (${this._name}): current layout is suboptimal, the suggested layout is:`);
             console.warn(optimal_layout);
-            console.warn(`which can save ${this.size_bytes} - ${optimal_size} = ${this.size_bytes - optimal_size} bytes`);
+            console.warn(`which can save ${this.size_bytes} - ${optimal_size_bytes} = ${this.size_bytes - optimal_size_bytes} bytes`);
         }
     }
 

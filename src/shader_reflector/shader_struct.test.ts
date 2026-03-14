@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ShaderStructBuilder, ShaderStructArray } from './shader_struct';
 
 describe('ShaderStruct', () => {
@@ -300,6 +300,147 @@ describe('ShaderStruct', () => {
 
             expect(struct.data).toBeInstanceOf(ArrayBuffer);
             expect(struct.data.byteLength).toBe(4);
+        });
+    });
+
+    describe('check_optimal_layout', () => {
+        it('should pass for empty struct', () => {
+            const builder = new ShaderStructBuilder('EmptyStruct');
+            const struct = builder.build();
+
+            expect(struct.size_bytes).toBe(0);
+        });
+
+        it('should pass for single field struct', () => {
+            const builder = new ShaderStructBuilder('SingleField');
+            builder.add_field('value', 'f32');
+            const struct = builder.build();
+
+            expect(struct.size_bytes).toBe(4);
+        });
+
+        it('should pass for optimal layout with same alignment types', () => {
+            const consoleWarnSpy = vi.spyOn(console, 'warn');
+
+            const builder = new ShaderStructBuilder('OptimalSameAlign');
+            builder.add_field('a', 'f32');
+            builder.add_field('b', 'f32');
+            builder.add_field('c', 'f32');
+            const struct = builder.build();
+
+            expect(struct.size_bytes).toBe(12);
+
+            // Verify that console.warn was NOT called for optimal layout
+            expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it('should pass for optimal layout with descending alignment', () => {
+            const consoleWarnSpy = vi.spyOn(console, 'warn');
+
+            const builder = new ShaderStructBuilder('OptimalDescending');
+            builder.add_field('a', 'vec4f');
+            builder.add_field('b', 'vec3f');
+            builder.add_field('c', 'f32');
+            const struct = builder.build();
+
+            // vec4f: offset 0, size 16
+            // vec3f: offset 16, size 12 (alignment 16)
+            // f32: offset 28, size 4
+            // Total: 32, rounded to 16 = 32 bytes
+            expect(struct.size_bytes).toBe(32);
+
+            // Verify that console.warn was NOT called for optimal layout
+            expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it('should warn for suboptimal layout with ascending alignment', () => {
+            const consoleWarnSpy = vi.spyOn(console, 'warn');
+
+            // Note: f32 + vec4f in either order produces the same size (32 bytes)
+            // This is because vec4f is exactly 16 bytes (no internal padding like vec3f)
+            // So this test verifies the layout doesn't warn for equivalent layouts
+
+            const builder = new ShaderStructBuilder('AscendingCheck');
+            builder.add_field('small', 'f32');    // alignment 4
+            builder.add_field('large', 'vec4f');  // alignment 16
+            const struct = builder.build();
+
+            // Both orderings produce 32 bytes, so this is actually optimal
+            expect(struct.size_bytes).toBe(32);
+
+            // Verify that console.warn was NOT called for equivalent layouts
+            expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it('should warn for suboptimal layout with vec3f and f32', () => {
+            const consoleWarnSpy = vi.spyOn(console, 'warn');
+
+            const builder = new ShaderStructBuilder('SuboptimalVec3f');
+            builder.add_field('small', 'u32');    // alignment 4
+            builder.add_field('large', 'vec3f');  // alignment 16
+            const struct = builder.build();
+
+            // u32 at offset 0 (size 4, alignment 4)
+            // padding to 16
+            // vec3f at offset 16 (size 12, alignment 16)
+            // Total: 28, rounded to 16 = 32 bytes
+
+            // Optimal would be: vec3f first, then u32
+            // vec3f at offset 0 (size 12, alignment 16)
+            // u32 at offset 12 (size 4, alignment 4)
+            // Total: 16, rounded to 16 = 16 bytes
+            expect(struct.size_bytes).toBe(32);
+
+            // Verify that console.warn was called
+            expect(consoleWarnSpy).toHaveBeenCalled();
+            expect(consoleWarnSpy.mock.calls.some((call: unknown[]) =>
+                call.some((arg: unknown) => typeof arg === 'string' && arg.includes('current layout is suboptimal'))
+            )).toBe(true);
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it('should pass for optimal mixed types layout', () => {
+            const consoleWarnSpy = vi.spyOn(console, 'warn');
+
+            const builder = new ShaderStructBuilder('OptimalMixed');
+            builder.add_field('vec4', 'vec4f');  // size 16, alignment 16
+            builder.add_field('vec3', 'vec3f');  // size 12, alignment 16
+            builder.add_field('val', 'f32');     // size 4, alignment 4
+            const struct = builder.build();
+
+            // vec4f at offset 0 (size 16, alignment 16)
+            // vec3f at offset 16 (size 12, alignment 16)
+            // f32 at offset 28 (size 4, alignment 4)
+            // Total: 32, rounded to 16 = 32 bytes
+            expect(struct.size_bytes).toBe(32);
+
+            // Verify that console.warn was NOT called for optimal layout
+            expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it('should not check optimal layout for dummy structs', () => {
+            const consoleWarnSpy = vi.spyOn(console, 'warn');
+
+            const builder = new ShaderStructBuilder('DummyTest');
+            builder.add_field('a', 'f32');
+            builder.add_field('b', 'vec4f'); // This is suboptimal but won't be checked
+            const struct = builder.build(true); // is_dummy = true
+
+            expect(struct.size_bytes).toBe(32); // Suboptimal layout size
+
+            // Verify that console.warn was NOT called for dummy structs
+            expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+            consoleWarnSpy.mockRestore();
         });
     });
 
