@@ -1,5 +1,6 @@
 import "./style.css";
 
-import { main } from "./renderer";
+import { Renderer } from "./renderer";
 
-main();
+const renderer = new Renderer();
+renderer.main();
