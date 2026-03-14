@@ -34,6 +34,7 @@ export class Renderer {
 
     _hit_test_kernel!: Kernel;
     _hit_test_kernel_bind_group_pingpong!: BindGroup[];
+    _hit_test_kernel_bind_group_shared!: BindGroup;
 
     _filter_kernel!: Kernel;
     _filter_kernel_bind_group!: BindGroup;
@@ -352,21 +353,20 @@ export class Renderer {
         const hit_test_kernel_bind_group_ping = new BindGroupBuilder(this._device, "hit test kernel bind group ping")
             .add_buffer("in_ray_array_length", 0, ray_array_length_ping)
             .add_buffer("in_ray_array", 1, ray_array_ping)
-            .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-            .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
-            .add_buffer("out_color_buffer", 4, color_buffer)
-            .add_buffer("out_ray_array_length", 5, ray_array_length_pong)
-            .add_buffer("out_ray_array", 6, ray_array_pong)
-            .build(this._hit_test_kernel);
+            .add_buffer("out_ray_array_length", 2, ray_array_length_pong)
+            .add_buffer("out_ray_array", 3, ray_array_pong)
+            .build(this._hit_test_kernel, 0);
         const hit_test_kernel_bind_group_pong = new BindGroupBuilder(this._device, "hit test kernel bind group pong")
             .add_buffer("in_ray_array_length", 0, ray_array_length_pong)
             .add_buffer("in_ray_array", 1, ray_array_pong)
-            .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-            .add_buffer("in_diffuse_material_array", 3, diffuse_material_array_buffer)
-            .add_buffer("out_color_buffer", 4, color_buffer)
-            .add_buffer("out_ray_array_length", 5, ray_array_length_ping)
-            .add_buffer("out_ray_array", 6, ray_array_ping)
-            .build(this._hit_test_kernel);
+            .add_buffer("out_ray_array_length", 2, ray_array_length_ping)
+            .add_buffer("out_ray_array", 3, ray_array_ping)
+            .build(this._hit_test_kernel, 0);
+        this._hit_test_kernel_bind_group_shared = new BindGroupBuilder(this._device, "hit test kernel bind group shared")
+            .add_buffer("in_sphere_array", 0, sphere_array_buffer)
+            .add_buffer("in_diffuse_material_array", 1, diffuse_material_array_buffer)
+            .add_buffer("out_color_buffer", 2, color_buffer)
+            .build(this._hit_test_kernel, 1);
         this._hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 
         this._filter_kernel_bind_group = new BindGroupBuilder(this._device, "filter kernel bind group")
@@ -433,7 +433,7 @@ export class Renderer {
                                 1,
                                 1
                             );
-                            this._hit_test_kernel.dispatch_indirect(command_encoder, this._hit_test_kernel_bind_group_pingpong[i & 1], hit_test_indirect_arg);
+                            this._hit_test_kernel.dispatch_multiple_bind_group_indirect(command_encoder, [this._hit_test_kernel_bind_group_pingpong[i & 1], this._hit_test_kernel_bind_group_shared], hit_test_indirect_arg);
                         }
 
                         command_encoder.popDebugGroup();
