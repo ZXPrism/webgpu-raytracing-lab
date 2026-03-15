@@ -19,6 +19,8 @@ const RAY_FAR_THRESHOLD = ${config_ray_far_threshold};
 //  structs
 // =========
 
+// ===== basic
+
 struct SceneInfo {
   pixel00: vec3f,
   width: u32,
@@ -35,24 +37,52 @@ struct Ray {
   weight: vec3f,
 }
 
-struct Sphere {
-  center: vec3f,
-  radius: f32,
-}
-
 struct IndirectArgs {
   dispatch_x: u32,
   dispatch_y: u32,
   dispatch_z: u32,
 }
 
-struct DiffuseMaterial {
-  albedo: vec3f,
+struct Object {
+  geometry_type: u32,
+  geometry_data_id: u32,
+  material_data_id: u32,
 }
 
-struct MetalMaterial {
-  albedo: vec3f,
-  fuzziness: f32,
+// ===== geometry
+
+struct Sphere { // type = 0
+  center: vec3f,
+  radius: f32,
+}
+
+// both faces should have normal point outwards
+struct Rect { // type = 1
+  corner: vec3f,
+  u: vec3f,
+  v: vec3f,
+}
+
+struct Parallelepiped { // type = 2
+  corner: vec3f,
+  u: vec3f,
+  v: vec3f,
+  w: vec3f,
+}
+
+struct Triangle { // type = 3
+  corner: vec3f,
+  u: vec3f,
+  v: vec3f,
+}
+
+// ===== material
+
+struct Material {
+  albedo: vec3f, // for diffuse & metal material (type = 0 & 1)
+  fuzziness: f32, // for metal material (type = 1)
+  refraction_index: f32, // for glass material (type = 2)
+  _type: u32, // type is a reserved keyword, so have to use _type
 }
 
 // ========
@@ -124,6 +154,55 @@ fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
   return -1.0; // if miss, return a negative value
 }
 
+fn hit_test_rect(ray: Ray, rect: Rect) -> f32 {
+  let normal_norm = rect_get_normal_norm(ray, rect);
+  let t_denominator = dot(normal_norm, ray.direction_norm);
+  if abs(t_denominator) < EPS {
+    return -1.0;
+  }
+
+  let normal = cross(rect.u, rect.v);
+  let s = dot(normal, normal);
+  let w = normal / s;
+  let d = dot(normal_norm, rect.corner);
+  let t_numerator = d - dot(normal_norm, ray.origin);
+  let t = t_numerator / t_denominator;
+  if t <= 0.0 {
+    return -1.0;
+  }
+
+  let hit_point = get_hit_point(ray, t);
+  let hit_point_rel = hit_point - rect.corner;
+
+  let alpha = dot(cross(hit_point_rel, rect.v), w);
+  let beta = dot(cross(rect.u, hit_point_rel), w);
+  if 0.0 <= alpha && alpha <= 1.0 && 0.0 <= beta && beta <= 1.0 {
+    return t;
+  }
+  return -1.0; // if miss, return a negative value
+}
+
+// hack: just to temporarily render a checkerboard
+// will be removed in the future
+fn hit_test_rect_alpha_beta(ray: Ray, rect: Rect) -> vec2f {
+  let normal_norm = rect_get_normal_norm(ray, rect);
+  let t_denominator = dot(normal_norm, ray.direction_norm);
+
+  let normal = cross(rect.u, rect.v);
+  let s = dot(normal, normal);
+  let w = normal / s;
+  let d = dot(normal_norm, rect.corner);
+  let t_numerator = d - dot(normal_norm, ray.origin);
+  let t = t_numerator / t_denominator;
+
+  let hit_point = get_hit_point(ray, t);
+  let hit_point_rel = hit_point - rect.corner;
+
+  let alpha = dot(cross(hit_point_rel, rect.v), w);
+  let beta = dot(cross(rect.u, hit_point_rel), w);
+  return vec2f(alpha, beta);
+}
+
 fn get_hit_point(ray: Ray, t: f32) -> vec3f {
   return ray.origin + (ray.direction_norm * t);
 }
@@ -135,7 +214,12 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 
 fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
-  return select(-delta, delta, dot(delta, ray.direction_norm) <= 0.0) / sphere.radius;
+  return delta / sphere.radius;
+}
+
+fn rect_get_normal_norm(ray: Ray, rect: Rect) -> vec3f {
+  let normal = normalize(cross(rect.u, rect.v));
+  return select(-normal, normal, dot(ray.direction_norm, normal) <= 0.0);
 }
 
 // ===================
@@ -144,15 +228,33 @@ fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 // NOTE: each function returns new ray's direction, which should be normalized (here)
 // callers should always expect to get a noramlized ray direction
 
-fn evaluate_diffuse(normal_norm: vec3f, hit_point: vec3f, seed: f32) -> vec3f {
+fn evaluate_diffuse(normal_norm: vec3f, seed: f32) -> vec3f {
   // TODO: check if this is lambertian, need a proof
   let res_ray_direction = normal_norm + rand_unit_sphere_shell(seed);
   return normalize(select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0));
 }
 
-fn evaluate_metal(in_ray_dirction: vec3f, normal_norm: vec3f, hit_point: vec3f) -> vec3f {
-  let res_ray_direction = reflect(in_ray_dirction, normal_norm);
-  return normalize(res_ray_direction);
+fn evaluate_metal(normal_norm: vec3f, in_ray_direction: vec3f, fuzziness: f32, seed: f32) -> vec3f {
+  let res_ray_direction = reflect(in_ray_direction, normal_norm);
+  return normalize(normalize(res_ray_direction) + (fuzziness * rand_unit_sphere_shell(seed)));
+}
+
+fn evaluate_glass(normal_norm: vec3f, in_ray_direction_norm: vec3f, refraction_index: f32, seed: f32) -> vec3f {
+  let entering = dot(in_ray_direction_norm, normal_norm) <= 0.0;
+  let co_norm = select(-normal_norm, normal_norm, entering);
+  let eta = select(refraction_index, 1.0 / refraction_index, entering);
+
+  let cos_theta = dot(in_ray_direction_norm, co_norm);
+  let r0 = ((1.0 - eta) / (1.0 + eta)) * ((1.0 - eta) / (1.0 + eta));
+  let fresnel = r0 + (1.0 - r0) * pow(1.0 - abs(cos_theta), 5.0);
+
+  let refracted = refract(in_ray_direction_norm, co_norm, eta);
+
+  if all(refracted == vec3f(0.0)) || fresnel > rand(seed) {
+    return reflect(in_ray_direction_norm, normal_norm);
+  } else {
+    return refracted;
+  }
 }
 `;
 }
