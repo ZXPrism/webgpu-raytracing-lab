@@ -70,7 +70,7 @@ export class Renderer {
                 maxComputeWorkgroupSizeX: adapter.limits.maxComputeWorkgroupSizeX,
                 maxStorageBuffersPerShaderStage: adapter.limits.maxStorageBuffersPerShaderStage
             },
-            requiredFeatures: ["subgroups"] as const,
+            requiredFeatures: [] as const,
         });
         if (device === null) {
             console.error("failed to initialize WebGPU!");
@@ -325,10 +325,11 @@ export class Renderer {
         const sphere_array_buffer = create_gpu_storage_buffer(this._device, "sphere array", sphere_array_data.byteLength);
         this._device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
 
+        const ground_side_length = 5.0;
         const rect_array = this._utils_shader_reflector.get_struct_array("Rect", 1)
-            .set_field(0, "corner", [-5.0, 0.0, -5.0])
-            .set_field(0, "u", [10.0, 0.0, 0.0])
-            .set_field(0, "v", [0.0, 0.0, 10.0]);
+            .set_field(0, "corner", [-ground_side_length / 2.0, 0.0, -ground_side_length / 2.0])
+            .set_field(0, "u", [ground_side_length, 0.0, 0.0])
+            .set_field(0, "v", [0.0, 0.0, ground_side_length]);
         const rect_array_data = rect_array.data;
         const rect_array_buffer = create_gpu_storage_buffer(this._device, "rect array", rect_array_data.byteLength);
         this._device.queue.writeBuffer(rect_array_buffer, 0, rect_array_data);

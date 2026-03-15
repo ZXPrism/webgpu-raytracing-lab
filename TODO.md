@@ -2,7 +2,7 @@
 ## Base
 - [ ] `260307` HDR support
 - [ ] `260307` More geometries
-    - [ ] planes
+    - [X] planes
     - [ ] cuboids
     - [ ] triangles
 - [ ] `260307` BVH
@@ -18,6 +18,8 @@
 - [ ] `260308` ShaderReflector: generate shader structs bind codes
 - [ ] `260308` BindGroupBuilder: provide wrappers to (create then) add {storage,uniform} buffer, do not expose GPUBufferUsage flags
 - [ ] `260314` Randomization overhaul. Evaluate current randomness (may be some freq analysis?)
+- [ ] `260315` Graph node editor similar to Blender
+- [ ] `260315` Environmental mapping
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
