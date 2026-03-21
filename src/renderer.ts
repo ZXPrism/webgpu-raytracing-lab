@@ -3,7 +3,7 @@ import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
 import { create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_storage_buffer_u32, create_gpu_uniform_buffer } from "./kernel_utils";
-import { config_camera_center, config_camera_eye, config_camera_focal_length, config_camera_fov_y, config_max_bounce } from "./config";
+import { ConfigManager } from "./config";
 
 import { get_shader_utils } from "./shaders/utils";
 import { get_shader_gen_ray } from "./shaders/gen_ray";
@@ -17,6 +17,8 @@ import { ShaderReflector } from "./shader_reflector/shader_reflector";
 import { EventBus } from "./event_bus";
 
 export class Renderer {
+    private _config_manager: ConfigManager;
+
     _event_bus!: EventBus;
 
     _device!: GPUDevice;
@@ -44,6 +46,10 @@ export class Renderer {
 
     _utils_shader_reflector!: ShaderReflector;
 
+    constructor(config_manager: ConfigManager) {
+        this._config_manager = config_manager;
+    }
+
     public async main() {
         await this.init_webgpu();
         this.init_canvas_size();
@@ -58,8 +64,7 @@ export class Renderer {
     public async init_webgpu() {
         const adapter = await navigator.gpu.requestAdapter();
         if (adapter === null) {
-            console.error("failed to initialize WebGPU!");
-            return;
+            throw new Error("Failed to request WebGPU adapter. Your browser may not support WebGPU.");
         }
 
         const device = await adapter.requestDevice({
@@ -73,9 +78,14 @@ export class Renderer {
             requiredFeatures: [] as const,
         });
         if (device === null) {
-            console.error("failed to initialize WebGPU!");
-            return;
+            throw new Error("Failed to request WebGPU device.");
         }
+
+        // Catch uncaptured WebGPU errors and convert to thrown errors
+        device.addEventListener('uncapturederror', (event) => {
+            throw new Error(`WebGPU Error: ${event.error.message}`);
+        });
+
         this._device = device;
 
         this._presentation_format = navigator.gpu.getPreferredCanvasFormat();
@@ -97,7 +107,7 @@ export class Renderer {
         });
         this._context = context;
 
-        console.info("successfully initialized WebGPU 🎉");
+        console.info("WebGPU initialized successfully 😘");
     }
 
     public pre_init(): boolean {
@@ -105,8 +115,8 @@ export class Renderer {
         //  check configs
         // ===============
 
-        if (config_max_bounce < 1) {
-            console.error(`bad config: "config_max_bounce" should be positive! (given: ${config_max_bounce})`);
+        if (this._config_manager.config.max_bounce < 1) {
+            console.error(`bad config: "config_max_bounce" should be positive! (given: ${this._config_manager.config.max_bounce})`);
             return false;
         }
 
@@ -114,7 +124,7 @@ export class Renderer {
         //  other inits
         // =============
 
-        this._utils_shader_reflector = new ShaderReflector(get_shader_utils());
+        this._utils_shader_reflector = new ShaderReflector(get_shader_utils(this._config_manager.config));
         this._event_bus = new EventBus();
 
         return true;
@@ -129,9 +139,10 @@ export class Renderer {
         // let camera_down_norm = cross(camera_gaze_norm, camera_right_norm);
 
         const camera_aspect_ratio = this._canvas_width / this._canvas_height;
+        const config = this._config_manager.config;
 
         const camera_gaze_norm = vec3.create();
-        vec3.sub(camera_gaze_norm, config_camera_center, config_camera_eye);
+        vec3.sub(camera_gaze_norm, config.camera_center, config.camera_eye);
         vec3.normalize(camera_gaze_norm, camera_gaze_norm);
 
         const camera_right_norm = vec3.create();
@@ -154,7 +165,7 @@ export class Renderer {
         // let viewport_top_left = camera_info.eye + (camera_gaze_norm * camera_info.focal_length) - (viewport_u + viewport_v) / 2.0;
         // let pixel00 = viewport_top_left + (0.5 * (viewport_u_base + viewport_v_base)); // default sample point is the center of each pixel
 
-        const viewport_height = 2.0 * Math.tan(config_camera_fov_y / 2.0) * config_camera_focal_length;
+        const viewport_height = 2.0 * Math.tan(config.camera_fov_y / 2.0) * config.camera_focal_length;
         const viewport_width = viewport_height * camera_aspect_ratio;
 
         const viewport_u = vec3.create();
@@ -171,8 +182,8 @@ export class Renderer {
 
         const viewport_top_left = vec3.create();
         const temp = vec3.create();
-        vec3.scale(temp, camera_gaze_norm, config_camera_focal_length);
-        vec3.add(viewport_top_left, config_camera_eye, temp);
+        vec3.scale(temp, camera_gaze_norm, config.camera_focal_length);
+        vec3.add(viewport_top_left, config.camera_eye, temp);
         vec3.add(temp, viewport_u, viewport_v);
         vec3.scale(temp, temp, 0.5);
         vec3.sub(viewport_top_left, viewport_top_left, temp);
@@ -195,7 +206,7 @@ export class Renderer {
             .set_field("height", this._canvas_height)
             .set_field("viewport_u_base", viewport_u_base)
             .set_field("viewport_v_base", viewport_v_base)
-            .set_field("eye", config_camera_eye);
+            .set_field("eye", config.camera_eye);
 
         return scene_info_struct.data;
     }
@@ -215,20 +226,23 @@ export class Renderer {
     }
 
     public init_kernels() {
+        const config = this._config_manager.config;
+        const shader_utils = get_shader_utils(config);
+
         // =========
         //  kernels
         // =========
-        this._gen_ray_kernel = new KernelBuilder(this._device, "gen ray kernel", get_shader_utils() + get_shader_gen_ray(), "compute")
+        this._gen_ray_kernel = new KernelBuilder(this._device, "gen ray kernel", shader_utils + get_shader_gen_ray(), "compute")
             .build();
 
-        this._prep_hit_test_kernel = new KernelBuilder(this._device, "prep hit test kernel", get_shader_utils() + get_shader_prep_hit_test(), "compute")
+        this._prep_hit_test_kernel = new KernelBuilder(this._device, "prep hit test kernel", shader_utils + get_shader_prep_hit_test(), "compute")
             .build();
 
-        this._hit_test_kernel = new KernelBuilder(this._device, "hit test kernel", get_shader_utils() + get_shader_hit_test(), "compute")
+        this._hit_test_kernel = new KernelBuilder(this._device, "hit test kernel", shader_utils + get_shader_hit_test(), "compute")
             .build();
 
 
-        this._filter_kernel = new KernelBuilder(this._device, "filter kernel", get_shader_utils() + get_shader_filter(), "compute")
+        this._filter_kernel = new KernelBuilder(this._device, "filter kernel", shader_utils + get_shader_filter(), "compute")
             .build();
 
         const blit_bind_group_layout = this._device.createBindGroupLayout({
@@ -256,13 +270,13 @@ export class Renderer {
             layout: blit_pipeline_layout,
             vertex: {
                 module: this._device.createShaderModule({
-                    code: get_shader_utils() + get_shader_blit(),
+                    code: shader_utils + get_shader_blit(),
                 }),
                 entryPoint: "vertex"
             },
             fragment: {
                 module: this._device.createShaderModule({
-                    code: get_shader_utils() + get_shader_blit(),
+                    code: shader_utils + get_shader_blit(),
                 }),
                 entryPoint: "fragment",
                 targets: [
@@ -429,15 +443,27 @@ export class Renderer {
             this.init_bind_groups();
         });
 
+        this._event_bus.listen("config-changed", () => {
+            this.init_kernels();
+            this.init_bind_groups();
+        });
+
         let resize_callback: number;
         addEventListener("resize", () => {
             if (resize_callback) {
                 clearTimeout(resize_callback);
             }
             resize_callback = setTimeout(() => {
-                this._event_bus.emit("canvas-size-changed");
+                // Wait for the browser to complete layout updates before reading canvas size
+                requestAnimationFrame(() => {
+                    this._event_bus.emit("canvas-size-changed");
+                });
             }, 100);
         });
+    }
+
+    public get_event_bus(): EventBus {
+        return this._event_bus;
     }
 
     public render() {
@@ -469,7 +495,7 @@ export class Renderer {
 
                     command_encoder.pushDebugGroup("hit test");
                     {
-                        for (let i = 0; i < config_max_bounce; i++) {
+                        for (let i = 0; i < this._config_manager.config.max_bounce; i++) {
                             this._prep_hit_test_kernel.dispatch(command_encoder, this._prep_hit_test_kernel_bind_group_pingpong[i & 1],
                                 1,
                                 1,
