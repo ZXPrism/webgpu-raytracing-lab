@@ -5,11 +5,12 @@ export function get_shader_hit_test(): string {
 @group(0) @binding(2) var<storage, read_write> out_ray_array_length: atomic<u32>;
 @group(0) @binding(3) var<storage, read_write> out_ray_array: array<Ray>;
 
-@group(1) @binding(0) var<storage, read> in_object_array: array<Object>;
-@group(1) @binding(1) var<storage, read> in_sphere_array: array<Sphere>;
-@group(1) @binding(2) var<storage, read> in_rect_array: array<Rect>;
-@group(1) @binding(3) var<storage, read> in_material_array: array<Material>;
-@group(1) @binding(4) var<storage, read_write> out_color_buffer: array<vec4f>;
+@group(1) @binding(0) var<uniform> in_scene_info: SceneInfo;
+@group(1) @binding(1) var<storage, read> in_object_array: array<Object>;
+@group(1) @binding(2) var<storage, read> in_sphere_array: array<Sphere>;
+@group(1) @binding(3) var<storage, read> in_rect_array: array<Rect>;
+@group(1) @binding(4) var<storage, read> in_material_array: array<Material>;
+@group(1) @binding(5) var<storage, read_write> out_color_buffer: array<vec4f>;
 
 const WG_DIM_X = 128u;
 
@@ -27,7 +28,7 @@ fn compute(
     var min_t = 1e10;
     var hit_object_id = -1;
 
-    let object_array_length = i32(arrayLength(&in_object_array));
+    let object_array_length = i32(in_scene_info.object_count);
 
     for (var i = 0; i < object_array_length; i++) {
       let object = in_object_array[i];

@@ -29,6 +29,7 @@ struct SceneInfo {
   height: u32,
   viewport_v_base: vec3f,
   eye: vec3f,
+  object_count: u32,
 }
 
 struct Ray {
@@ -79,10 +80,10 @@ struct Triangle { // type = 3
 
 // ===== material
 
-struct Material {
-  albedo: vec3f, // for diffuse & metal material (type = 0 & 1)
-  fuzziness: f32, // for metal material (type = 1)
-  refraction_index: f32, // for glass material (type = 2)
+struct Material { // see scene.ts for clearer interface
+  albedo: vec3f,
+  fuzziness: f32,
+  refraction_index: f32,
   _type: u32, // type is a reserved keyword, so have to use _type
 }
 
