@@ -309,7 +309,7 @@ export class Renderer {
         //  scene buffers
         // ===============
 
-        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/dream_entrance.json");
+        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/cube_grid.json");
         const { object_array_buffer, sphere_array_buffer, rect_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
 
         // ============

@@ -1,7 +1,7 @@
 {
-  "name": "dream entrance",
+  "name": "Dream Entrance",
   "date": "2025-03-22",
-  "version": "1.0.0",
+  "version": "1.0",
   "objects": [
     {
       "geometry_type": "sphere",
