@@ -1,4 +1,4 @@
-export type Event = "canvas-size-changed";
+export type Event = "canvas-size-changed" | "config-changed";
 export type EventCallback = () => void;
 
 export class EventBus {
