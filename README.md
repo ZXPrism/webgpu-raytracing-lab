@@ -35,6 +35,7 @@ In one frame:
   - If you are querying sth that may not exist, return `undefined`. Callers should check the results properly.
   - If you are querying sth that must exist, throw an error. Do not let error propagate.
 
+- NEVER use `arrayLength` function in WGSL but explicitly pass length in or calculate on the fly, since array length is not necessarily equal to actual element count
 
 ## Dev Guide for Myself (delete this)
 ### Deploy to GitHub Pages

@@ -1,5 +1,6 @@
 import type { Config } from "../config";
 import { constant_pi } from "../config";
+import { GEOMETRY_TYPE, MATERIAL_TYPE } from "../scene";
 
 export function get_shader_utils(config: Config): string {
   return /* wgsl */`
@@ -15,6 +16,11 @@ const PI = ${constant_pi};
 const SKY_COLOR = vec3f(${config.sky_color});
 const RAY_NEAR_THRESHOLD = ${config.ray_near_threshold};
 const RAY_FAR_THRESHOLD = ${config.ray_far_threshold};
+const GEOMETRY_TYPE_SPHERE = ${GEOMETRY_TYPE.SPHERE}u;
+const GEOMETRY_TYPE_RECT = ${GEOMETRY_TYPE.RECT}u;
+const MATERIAL_TYPE_DIFFUSE = ${MATERIAL_TYPE.DIFFUSE}u;
+const MATERIAL_TYPE_METAL = ${MATERIAL_TYPE.METAL}u;
+const MATERIAL_TYPE_GLASS = ${MATERIAL_TYPE.GLASS}u;
 
 // =========
 //  structs
@@ -29,6 +35,7 @@ struct SceneInfo {
   height: u32,
   viewport_v_base: vec3f,
   eye: vec3f,
+  object_count: u32,
 }
 
 struct Ray {
@@ -79,10 +86,10 @@ struct Triangle { // type = 3
 
 // ===== material
 
-struct Material {
-  albedo: vec3f, // for diffuse & metal material (type = 0 & 1)
-  fuzziness: f32, // for metal material (type = 1)
-  refraction_index: f32, // for glass material (type = 2)
+struct Material { // see scene.ts for clearer interface
+  albedo: vec3f,
+  fuzziness: f32,
+  refraction_index: f32,
   _type: u32, // type is a reserved keyword, so have to use _type
 }
 

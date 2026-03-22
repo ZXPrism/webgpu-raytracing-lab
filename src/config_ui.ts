@@ -3,7 +3,7 @@ import { ConfigManager } from "./config";
 import * as Tweakpane from "tweakpane";
 
 export class ConfigUI {
-    private pane: any;
+    private pane: Tweakpane.Pane;
     private event_bus: EventBus;
     private config_manager: ConfigManager;
 

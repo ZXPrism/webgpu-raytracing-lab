@@ -15,9 +15,13 @@ import { get_shader_blit } from "./shaders/blit";
 import { vec3 } from "gl-matrix";
 import { ShaderReflector } from "./shader_reflector/shader_reflector";
 import { EventBus } from "./event_bus";
+import { SceneLoader } from "./scene";
+import type { SceneBuffers } from "./scene";
 
 export class Renderer {
     private _config_manager: ConfigManager;
+    private _scene_loader!: SceneLoader;
+    private _scene_buffers!: SceneBuffers;
 
     _event_bus!: EventBus;
 
@@ -55,7 +59,7 @@ export class Renderer {
         this.init_canvas_size();
         if (this.pre_init()) {
             this.init_kernels();
-            this.init_bind_groups();
+            await this.init_bind_groups();
             this.init_callbacks();
             this.render();
         }
@@ -127,10 +131,16 @@ export class Renderer {
         this._utils_shader_reflector = new ShaderReflector(get_shader_utils(this._config_manager.config));
         this._event_bus = new EventBus();
 
+        // =============
+        //  scene loader
+        // =============
+
+        this._scene_loader = new SceneLoader(this._device, this._utils_shader_reflector);
+
         return true;
     }
 
-    public prepare_scene_info_data(): ArrayBuffer {
+    public prepare_scene_info_data(object_count: number): ArrayBuffer {
         // ========
         //  camera
         // ========
@@ -206,7 +216,8 @@ export class Renderer {
             .set_field("height", this._canvas_height)
             .set_field("viewport_u_base", viewport_u_base)
             .set_field("viewport_v_base", viewport_v_base)
-            .set_field("eye", config.camera_eye);
+            .set_field("eye", config.camera_eye)
+            .set_field("object_count", object_count);
 
         return scene_info_struct.data;
     }
@@ -293,87 +304,21 @@ export class Renderer {
 
     }
 
-    public init_bind_groups() {
+    public async init_bind_groups() {
+        // ===============
+        //  scene buffers
+        // ===============
+
+        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/cube_grid.json");
+        const { object_array_buffer, sphere_array_buffer, rect_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
+
         // ============
         //  scene info
         // ============
 
-        const scene_info_data = this.prepare_scene_info_data();
+        const scene_info_data = this.prepare_scene_info_data(object_count);
         const scene_info_buffer = create_gpu_uniform_buffer(this._device, "scene info", scene_info_data.byteLength);
         this._device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
-
-
-        // ===============
-        //  object buffer
-        // ===============
-
-        const object_cnt = 4;
-        const object_array = this._utils_shader_reflector.get_struct_array("Object", object_cnt)
-            .set_field(0, "geometry_type", 0) // sphere
-            .set_field(0, "geometry_data_id", 0)
-            .set_field(0, "material_data_id", 0)
-
-            .set_field(1, "geometry_type", 1) // quad
-            .set_field(1, "geometry_data_id", 0)
-            .set_field(1, "material_data_id", 1)
-
-            .set_field(2, "geometry_type", 0) // sphere
-            .set_field(2, "geometry_data_id", 1)
-            .set_field(2, "material_data_id", 4)
-
-            .set_field(3, "geometry_type", 0) // sphere
-            .set_field(3, "geometry_data_id", 2)
-            .set_field(3, "material_data_id", 2);
-        const object_array_data = object_array.data;
-        const object_array_buffer = create_gpu_storage_buffer(this._device, "object array", object_array_data.byteLength);
-        this._device.queue.writeBuffer(object_array_buffer, 0, object_array_data);
-
-        const sphere_array = this._utils_shader_reflector.get_struct_array("Sphere", 3)
-            .set_field(0, "center", [0.3 - 0.5, 0.5, 1.2])
-            .set_field(0, "radius", 0.5)
-            .set_field(1, "center", [1.1, 0.75, 1.0])
-            .set_field(1, "radius", 0.75)
-            .set_field(2, "center", [-1.2, 0.3, 1.0])
-            .set_field(2, "radius", 0.3);
-        const sphere_array_data = sphere_array.data;
-        const sphere_array_buffer = create_gpu_storage_buffer(this._device, "sphere array", sphere_array_data.byteLength);
-        this._device.queue.writeBuffer(sphere_array_buffer, 0, sphere_array_data);
-
-        const ground_side_length = 5.0;
-        const rect_array = this._utils_shader_reflector.get_struct_array("Rect", 1)
-            .set_field(0, "corner", [-ground_side_length / 2.0, 0.0, -ground_side_length / 2.0])
-            .set_field(0, "u", [ground_side_length, 0.0, 0.0])
-            .set_field(0, "v", [0.0, 0.0, ground_side_length]);
-        const rect_array_data = rect_array.data;
-        const rect_array_buffer = create_gpu_storage_buffer(this._device, "rect array", rect_array_data.byteLength);
-        this._device.queue.writeBuffer(rect_array_buffer, 0, rect_array_data);
-
-
-        // =================
-        //  material buffer
-        // =================
-
-        const material_array = this._utils_shader_reflector.get_struct_array("Material", 5)
-            .set_field(0, "_type", 0) // diffuse
-            .set_field(0, "albedo", [0.8, 0.0, 0.0])
-
-            .set_field(1, "_type", 0) // diffuse
-            .set_field(1, "albedo", [0.2, 0.2, 0.2])
-
-            .set_field(2, "_type", 2) // glass
-            .set_field(2, "albedo", [0.0, 0.8, 0.0])
-            .set_field(2, "refraction_index", 1.5)
-
-            .set_field(3, "_type", 0) // diffuse
-            .set_field(3, "albedo", [0.0, 0.0, 0.8])
-
-            .set_field(4, "_type", 1) // metal
-            .set_field(4, "albedo", [0.5, 0.5, 0.5])
-            .set_field(4, "fuzziness", 0.0);
-
-        const material_array_data = material_array.data;
-        const material_array_buffer = create_gpu_storage_buffer(this._device, "material array", material_array_data.byteLength);
-        this._device.queue.writeBuffer(material_array_buffer, 0, material_array_data);
 
         const color_buffer = create_gpu_storage_buffer(this._device, "color buffer", 16 * this._canvas_width * this._canvas_height);
         const hit_test_indirect_arg = create_gpu_indirect_buffer(this._device, "hit test indirect arg", 12);
@@ -417,18 +362,20 @@ export class Renderer {
             .add_buffer("out_ray_array", 3, ray_array_ping)
             .build(this._hit_test_kernel, 0);
         this._hit_test_kernel_bind_group_shared = new BindGroupBuilder(this._device, "hit test kernel bind group shared")
-            .add_buffer("in_object_array", 0, object_array_buffer)
-            .add_buffer("in_sphere_array", 1, sphere_array_buffer)
-            .add_buffer("in_rect_array", 2, rect_array_buffer)
-            .add_buffer("in_material_array", 3, material_array_buffer)
-            .add_buffer("out_color_buffer", 4, color_buffer)
+            .add_buffer("in_scene_info", 0, scene_info_buffer)
+            .add_buffer("in_object_array", 1, object_array_buffer)
+            .add_buffer("in_sphere_array", 2, sphere_array_buffer)
+            .add_buffer("in_rect_array", 3, rect_array_buffer)
+            .add_buffer("in_material_array", 4, material_array_buffer)
+            .add_buffer("out_color_buffer", 5, color_buffer)
             .build(this._hit_test_kernel, 1);
         this._hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 
         this._filter_kernel_bind_group = new BindGroupBuilder(this._device, "filter kernel bind group")
-            .add_buffer("in_frame_index", 0, this._gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
-            .add_buffer("in_color_buffer", 1, color_buffer)
-            .create_then_add_buffer("out_filtered_color_buffer", 2, GPUBufferUsage.STORAGE, 16 * this._canvas_width * this._canvas_height)
+            .add_buffer("in_scene_info", 0, scene_info_buffer)
+            .add_buffer("in_frame_index", 1, this._gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
+            .add_buffer("in_color_buffer", 2, color_buffer)
+            .create_then_add_buffer("out_filtered_color_buffer", 3, GPUBufferUsage.STORAGE, 16 * this._canvas_width * this._canvas_height)
             .build(this._filter_kernel);
 
         this._blit_bind_group = new BindGroupBuilder(this._device, "blit bind group")

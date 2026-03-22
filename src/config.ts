@@ -18,9 +18,9 @@ export class ConfigManager {
     constructor() {
         this.config = {
             max_bounce: 32,
-            camera_fov_y: 90.0 / 180.0 * Math.PI,
+            camera_fov_y: 1.11545,
             camera_focal_length: 1.0,
-            camera_eye: vec3.fromValues(0.0, 2.0, 3.0),
+            camera_eye: vec3.fromValues(3.07, 2.77, 1.17),
             camera_center: vec3.fromValues(0.0, 0.0, 0.0),
             eps: 0.001,
             sky_color: vec3.fromValues(0.48, 0.82, 1.0),
