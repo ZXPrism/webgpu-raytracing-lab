@@ -1,5 +1,8 @@
 # webgpu-raytracing-lab
 
+<img width="3824" height="1828" alt="demo" src="https://github.com/user-attachments/assets/c04982b0-9e01-44ad-828e-cfe48f415606" />
+
+
 This is my experiment on raytracing based on GPU.
 
 It should obey the basic rules of raytracing, but is probably not the common practice, so be cautious when reading my codes.
