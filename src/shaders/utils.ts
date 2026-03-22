@@ -1,5 +1,6 @@
 import type { Config } from "../config";
 import { constant_pi } from "../config";
+import { GEOMETRY_TYPE, MATERIAL_TYPE } from "../scene";
 
 export function get_shader_utils(config: Config): string {
   return /* wgsl */`
@@ -15,6 +16,11 @@ const PI = ${constant_pi};
 const SKY_COLOR = vec3f(${config.sky_color});
 const RAY_NEAR_THRESHOLD = ${config.ray_near_threshold};
 const RAY_FAR_THRESHOLD = ${config.ray_far_threshold};
+const GEOMETRY_TYPE_SPHERE = ${GEOMETRY_TYPE.SPHERE}u;
+const GEOMETRY_TYPE_RECT = ${GEOMETRY_TYPE.RECT}u;
+const MATERIAL_TYPE_DIFFUSE = ${MATERIAL_TYPE.DIFFUSE}u;
+const MATERIAL_TYPE_METAL = ${MATERIAL_TYPE.METAL}u;
+const MATERIAL_TYPE_GLASS = ${MATERIAL_TYPE.GLASS}u;
 
 // =========
 //  structs

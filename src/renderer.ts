@@ -20,8 +20,8 @@ import type { SceneBuffers } from "./scene";
 
 export class Renderer {
     private _config_manager: ConfigManager;
-    private _scene_loader?: SceneLoader;
-    private _scene_buffers?: SceneBuffers;
+    private _scene_loader!: SceneLoader;
+    private _scene_buffers!: SceneBuffers;
 
     _event_bus!: EventBus;
 
@@ -309,7 +309,7 @@ export class Renderer {
         //  scene buffers
         // ===============
 
-        this._scene_buffers = await this._scene_loader!.load_from_json("./demo_scenes/dream_entrance.json");
+        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/dream_entrance.json");
         const { object_array_buffer, sphere_array_buffer, rect_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
 
         // ============

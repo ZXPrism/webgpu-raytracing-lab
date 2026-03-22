@@ -6,7 +6,7 @@ import { ConfigManager } from "./config";
 
 function display_error(title: string, error: Error | string, stack?: string) {
     const error_display = document.getElementById("error-display");
-    if (!error_display) return;
+    if (!error_display) { return; }
 
     const error_message = typeof error === "string" ? error : error.message;
 
