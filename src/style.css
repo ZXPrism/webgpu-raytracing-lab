@@ -7,25 +7,81 @@ body {
     overflow: hidden;
 }
 
-.canvas-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-}
-
 canvas {
     display: block;
-    width: min(75vh, 75vw);
-    height: min(75vh, 75vw);
+    width: 100%;
+    height: 100%;
     position: fixed;
-    left: 25%;
-    top: 50%;
-    transform: translateY(-50%);
-    border-radius: 8px;
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.5),
-        0 20px 60px rgba(0, 0, 0, 0.2);
+    left: 0;
+    top: 0;
     background: black;
+}
+
+.tips-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.tips-container:hover {
+    opacity: 1;
+}
+
+.tips-container h3 {
+    margin: 0;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: normal;
+    color: #fff;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.error-display {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 600px;
+    width: 90%;
+    background: rgba(20, 0, 0, 0.95);
+    border: 2px solid #ff4444;
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 10000;
+    box-shadow: 0 10px 40px rgba(255, 0, 0, 0.3);
+}
+
+.error-display h2 {
+    margin: 0 0 15px 0;
+    color: #ff4444;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.error-display .error-message {
+    color: #ffcccc;
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.error-display .error-stack {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ff4444;
+    color: #ff9999;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
 }

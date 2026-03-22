@@ -29,9 +29,14 @@ export function create_gpu_uniform_buffer(device: GPUDevice, bufferName: string,
 export function create_gpu_storage_buffer(device: GPUDevice, bufferName: string, nBytes: number): GPUBuffer {
     const usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE;
 
+    // WebGPU requires a minimum buffer size for storage buffers
+    // Even if the buffer is logically empty, we need at least 16 bytes
+    const MIN_BUFFER_SIZE = 16;
+    const size = Math.max(nBytes, MIN_BUFFER_SIZE);
+
     const gpu_buffer = device.createBuffer({
         label: bufferName,
-        size: nBytes,
+        size: size,
         usage
     });
 
