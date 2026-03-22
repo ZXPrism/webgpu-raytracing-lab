@@ -20,6 +20,7 @@
 - [ ] `260314` Randomization overhaul. Evaluate current randomness (may be some freq analysis?)
 - [ ] `260315` Graph node editor similar to Blender
 - [ ] `260315` Environmental mapping
+- [ ] `260319` Neural graphics
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
