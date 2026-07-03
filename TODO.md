@@ -1,6 +1,7 @@
 # Raw
 ## Base
-- [ ] `260307` HDR support
+- [X] `260307` HDR support
+  - `260703` Added ACES
 - [ ] `260307` More geometries
     - [X] planes
     - [ ] cuboids
@@ -21,6 +22,7 @@
 - [ ] `260315` Graph node editor similar to Blender
 - [ ] `260315` Environmental mapping
 - [ ] `260319` Neural graphics
+- [ ] `260703` DPR account
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
