@@ -1,16 +1,19 @@
 # Raw
 ## Base
-- [ ] `260307` HDR support
+- [X] `260307` HDR support
+  - `260703` Added ACES
 - [ ] `260307` More geometries
     - [X] planes
     - [ ] cuboids
     - [ ] triangles
+    - [ ] `260703` SDF support
 - [ ] `260307` BVH
     - [ ] js impl
     - [ ] wasm impl
 - [ ] `260307` Perf (with limited metrics) for quickly checks
 - [ ] `260307` Convergence checks to save power
-- [ ] `260307` Mix rendering (with rasterization)
+  - TODO 0703
+- [ ] `260307` Mixed rendering (with rasterization)
 - [ ] `260307` Picking
 - [ ] `260307` Editing
 - [ ] `260307` Shader optimizations (with profilers), maybe need some sort to improve locality, or do compressions!
@@ -21,6 +24,8 @@
 - [ ] `260315` Graph node editor similar to Blender
 - [ ] `260315` Environmental mapping
 - [ ] `260319` Neural graphics
+- [ ] `260703` DPR account
+- [ ] `260703` Pressure test to evaluate if sortings are needed
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression

@@ -25,12 +25,15 @@ fn fragment(@builtin(position) position: vec4f) -> @location(0) vec4f {
   let linear_color = in_filtered_color_buffer[pixel_offset];
   let cutoff = 0.0031308;
   let srgb = select(
-    1.055 * pow(linear_color.rgb, vec3<f32>(1.0/2.4)) - 0.055,
+    1.055 * pow(linear_color.rgb, vec3f(1.0/2.4)) - 0.055,
     12.92 * linear_color.rgb,
-    linear_color.rgb < vec3<f32>(cutoff)
+    linear_color.rgb < vec3f(cutoff)
   );
 
-  return vec4<f32>(srgb, linear_color.a);
+  let tone_mapped = (linear_color.rgb * (2.51 * linear_color.rgb + vec3f(0.03)))
+    / (linear_color.rgb * (2.43 * linear_color.rgb + vec3f(0.59)) + vec3f(0.14));
+
+  return vec4f(tone_mapped, linear_color.a);
 }
 `;
 }
