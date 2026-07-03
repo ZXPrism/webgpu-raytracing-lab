@@ -33,7 +33,7 @@ fn fragment(@builtin(position) position: vec4f) -> @location(0) vec4f {
   let tone_mapped = (linear_color.rgb * (2.51 * linear_color.rgb + vec3f(0.03)))
     / (linear_color.rgb * (2.43 * linear_color.rgb + vec3f(0.59)) + vec3f(0.14));
 
-  return select(vec4f(tone_mapped, linear_color.a), vec4f(srgb, linear_color.a), position.x * 2 < f32(width));
+  return vec4f(tone_mapped, linear_color.a);
 }
 `;
 }
