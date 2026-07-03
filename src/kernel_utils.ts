@@ -67,6 +67,27 @@ export function create_gpu_buffer_u32(device: GPUDevice, bufferName: string, ext
     return gpu_buffer;
 }
 
+// helper to read an f32 array back from a gpu buffer
+export async function read_gpu_buffer_f32(device: GPUDevice, buffer: GPUBuffer, n_floats: number): Promise<Float32Array> {
+    const n_bytes = n_floats * 4;
+    const staging = device.createBuffer({
+        label: "staging: " + buffer.label,
+        size: n_bytes,
+        usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+    });
+
+    const cmd = device.createCommandEncoder();
+    cmd.copyBufferToBuffer(buffer, 0, staging, 0, n_bytes);
+    device.queue.submit([cmd.finish()]);
+
+    await staging.mapAsync(GPUMapMode.READ);
+    const data = new Float32Array(staging.getMappedRange().slice());
+    staging.unmap();
+    staging.destroy();
+
+    return data;
+}
+
 // helper to create a gpu storage buffer containing one single u32
 export function create_gpu_storage_buffer_u32(device: GPUDevice, bufferName: string, value_u32: number): GPUBuffer {
     const gpu_buffer = create_gpu_storage_buffer(device, bufferName, 4);
