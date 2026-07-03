@@ -2,14 +2,14 @@ import type { BindGroup } from "./bind_group";
 import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
-import { create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_storage_buffer_u32, create_gpu_uniform_buffer } from "./kernel_utils";
+import { create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_storage_buffer_u32, create_gpu_uniform_buffer, read_gpu_buffer_f32 } from "./kernel_utils";
 import { ConfigManager } from "./config";
 
 import { get_shader_utils } from "./shaders/utils";
 import { get_shader_gen_ray } from "./shaders/gen_ray";
 import { get_shader_prep_hit_test } from "./shaders/prep_hit_test";
 import { get_shader_hit_test } from "./shaders/hit_test";
-import { get_shader_filter } from "./shaders/filter";
+import { filter_kernel_workgroup_size, get_shader_filter } from "./shaders/filter";
 import { get_shader_blit } from "./shaders/blit";
 
 import { vec3 } from "gl-matrix";
@@ -31,6 +31,8 @@ export class Renderer {
     _canvas_width!: number;
     _canvas_height!: number;
     _pixel_cnt!: number;
+    _filter_kernel_dispatch_x!: number;
+    _render_diff!: number;
 
     _gen_ray_kernel!: Kernel;
     _gen_ray_kernel_bind_group!: BindGroup;
@@ -79,7 +81,7 @@ export class Renderer {
                 maxComputeWorkgroupSizeX: adapter.limits.maxComputeWorkgroupSizeX,
                 maxStorageBuffersPerShaderStage: adapter.limits.maxStorageBuffersPerShaderStage
             },
-            requiredFeatures: [] as const,
+            requiredFeatures: ["subgroups"] as const,
         });
         if (device === null) {
             throw new Error("Failed to request WebGPU device.");
@@ -234,6 +236,8 @@ export class Renderer {
         this._canvas_width = canvas.width;
         this._canvas_height = canvas.height;
         this._pixel_cnt = this._canvas_width * this._canvas_height;
+        this._filter_kernel_dispatch_x = Math.ceil(this._pixel_cnt / filter_kernel_workgroup_size[0]);
+        this._render_diff = Infinity;
     }
 
     public init_kernels() {
@@ -376,6 +380,7 @@ export class Renderer {
             .add_buffer("in_frame_index", 1, this._gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
             .add_buffer("in_color_buffer", 2, color_buffer)
             .create_then_add_buffer("out_filtered_color_buffer", 3, GPUBufferUsage.STORAGE, 16 * this._canvas_width * this._canvas_height)
+            .create_then_add_buffer("out_render_diff_per_workgroup", 4, GPUBufferUsage.STORAGE, 4 * this._filter_kernel_dispatch_x)
             .build(this._filter_kernel);
 
         this._blit_bind_group = new BindGroupBuilder(this._device, "blit bind group")
@@ -386,11 +391,13 @@ export class Renderer {
 
     public init_callbacks() {
         this._event_bus.listen("canvas-size-changed", () => {
+            this._render_diff = Infinity;
             this.init_canvas_size();
             this.init_bind_groups();
         });
 
         this._event_bus.listen("config-changed", () => {
+            this._render_diff = Infinity;
             this.init_kernels();
             this.init_bind_groups();
         });
@@ -414,12 +421,34 @@ export class Renderer {
     }
 
     public render() {
-        // let last_timestamp: DOMHighResTimeStamp = 0;
-        const _render = (_time: DOMHighResTimeStamp) => {
-            // const _delta_time = time - last_timestamp;
-            // last_timestamp = time;
+        let last_timestamp: DOMHighResTimeStamp | null = null;
+        let time_acc = 0.0;
+
+        const _render = async (time: DOMHighResTimeStamp) => {
+            window.requestAnimationFrame(_render);
 
             this._event_bus.process();
+
+            if (last_timestamp === null) {
+                last_timestamp = time;
+            }
+            const delta_time = time - last_timestamp;
+            last_timestamp = time;
+
+            const { convergence_check, convergence_threshold } = this._config_manager.config;
+            if (convergence_check) {
+                if (this._render_diff >= convergence_threshold) {
+                    time_acc += delta_time;
+                    if (time_acc > 1000.0) {
+                        time_acc = 0.0;
+
+                        const render_diff_per_workgroup = await read_gpu_buffer_f32(this._device, this._filter_kernel_bind_group.get_buffer("out_render_diff_per_workgroup"), this._filter_kernel_dispatch_x);
+                        this._render_diff = render_diff_per_workgroup.reduce((prev, curr) => prev + curr, 0.0);
+                    }
+                } else {
+                    return;
+                }
+            }
 
             const hit_test_indirect_arg = this._prep_hit_test_kernel_bind_group_pingpong[0].get_buffer("out_indirect_args");
 
@@ -457,7 +486,7 @@ export class Renderer {
                     command_encoder.pushDebugGroup("filtering");
                     {
                         this._filter_kernel.dispatch(command_encoder, this._filter_kernel_bind_group,
-                            Math.ceil(this._pixel_cnt / 128),
+                            this._filter_kernel_dispatch_x,
                             1,
                             1
                         );
@@ -490,8 +519,6 @@ export class Renderer {
 
                 this._device.queue.submit([command_encoder.finish()]);
             }
-
-            window.requestAnimationFrame(_render);
         };
 
         window.requestAnimationFrame(_render);

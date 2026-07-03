@@ -4,6 +4,8 @@ import { GEOMETRY_TYPE, MATERIAL_TYPE } from "../scene";
 
 export function get_shader_utils(config: Config): string {
   return /* wgsl */`
+enable subgroups;
+
 // ===========
 //  constants
 // ===========

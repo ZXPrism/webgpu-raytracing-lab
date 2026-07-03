@@ -18,6 +18,8 @@ export class ConfigUI {
         sky_color: { r: 0, g: 0, b: 0 },
         ray_near_threshold: 0,
         ray_far_threshold: 0,
+        convergence_check: false,
+        convergence_threshold: 0.0,
     };
 
     constructor(config_manager: ConfigManager, event_bus: EventBus) {
@@ -43,6 +45,8 @@ export class ConfigUI {
         this.params.sky_color = { r: config.sky_color[0], g: config.sky_color[1], b: config.sky_color[2] };
         this.params.ray_near_threshold = config.ray_near_threshold;
         this.params.ray_far_threshold = config.ray_far_threshold;
+        this.params.convergence_check = config.convergence_check;
+        this.params.convergence_threshold = config.convergence_threshold;
     }
 
     private setup_inputs() {
@@ -100,6 +104,14 @@ export class ConfigUI {
                 max: 1000,
                 label: "Far Threshold"
             });
+            rendering_folder.addBinding(this.params, "convergence_check", {
+                label: "Convergence Check"
+            });
+            rendering_folder.addBinding(this.params, "convergence_threshold", {
+                min: 0.0,
+                max: 1000.0,
+                label: "Convergence Threshold"
+            });
 
             // Scene folder
             const scene_folder = this.pane.addFolder({ title: "Scene" });
@@ -134,6 +146,9 @@ export class ConfigUI {
     private update_config_values() {
         const config = this.config_manager.config;
 
+        // Update flags
+        config.convergence_check = this.params.convergence_check;
+
         // Update scalar values
         config.max_bounce = this.params.max_bounce;
         config.camera_fov_y = this.params.camera_fov_y;
@@ -141,6 +156,7 @@ export class ConfigUI {
         config.eps = this.params.eps;
         config.ray_near_threshold = this.params.ray_near_threshold;
         config.ray_far_threshold = this.params.ray_far_threshold;
+        config.convergence_threshold = this.params.convergence_threshold;
 
         // Update vec3 values from Point3d/Color controllers
         config.camera_eye[0] = this.params.camera_eye.x;

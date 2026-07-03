@@ -10,6 +10,8 @@ export interface Config {
     sky_color: vec3;
     ray_near_threshold: number;
     ray_far_threshold: number;
+    convergence_check: boolean;
+    convergence_threshold: number;
 }
 
 export class ConfigManager {
@@ -26,6 +28,8 @@ export class ConfigManager {
             sky_color: vec3.fromValues(0.48, 0.82, 1.0),
             ray_near_threshold: 0.001,
             ray_far_threshold: 100.1, // why .1? if it's 100.0, then `${100.0}` will become "100.0", then WGSL will consider it as i32..
+            convergence_check: true,
+            convergence_threshold: 1.0,
         };
     }
 }
