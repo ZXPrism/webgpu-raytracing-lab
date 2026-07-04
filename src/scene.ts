@@ -1,3 +1,6 @@
+import { create_gpu_storage_buffer } from "./kernel_utils";
+import { ShaderReflector } from "./shader_reflector/shader_reflector";
+
 export interface Scene {
     name: string,
     date: string,
@@ -84,11 +87,9 @@ interface MaterialEntry {
     index: number;
 }
 
-import { create_gpu_storage_buffer } from "./kernel_utils";
 // ====================
 //  Scene loader class
 // ====================
-import { ShaderReflector } from "./shader_reflector/shader_reflector";
 
 export class SceneLoader {
     private _device: GPUDevice;
@@ -118,8 +119,7 @@ export class SceneLoader {
         // ===================
         const spheres: GeometrySphere[] = [];
         const rects: GeometryRect[] = [];
-        const sphere_geometry_to_index = new Map<string, number>();
-        const rect_geometry_to_index = new Map<string, number>();
+        const object_id_to_geometry_id: number[] = [];
 
         // ===========================================
         //  Organize materials with explicit tracking
@@ -134,18 +134,13 @@ export class SceneLoader {
             // Collect unique geometries
             if (obj.geometry_type === "sphere") {
                 const sphere_data = obj.geometry_data as GeometrySphere;
-                const key = JSON.stringify(sphere_data);
-                if (!sphere_geometry_to_index.has(key)) {
-                    sphere_geometry_to_index.set(key, spheres.length);
-                    spheres.push(sphere_data);
-                }
+                object_id_to_geometry_id.push(spheres.length);
+                spheres.push(sphere_data);
+
             } else if (obj.geometry_type === "rect") {
                 const rect_data = obj.geometry_data as GeometryRect;
-                const key = JSON.stringify(rect_data);
-                if (!rect_geometry_to_index.has(key)) {
-                    rect_geometry_to_index.set(key, rects.length);
-                    rects.push(rect_data);
-                }
+                object_id_to_geometry_id.push(rects.length);
+                rects.push(rect_data);
             }
 
             // Collect unique materials with explicit type tracking
@@ -171,16 +166,13 @@ export class SceneLoader {
 
             // Map geometry type to enum using explicit mapping
             let geometry_type_enum: GeometryTypeValue;
-            let geometry_data_id: number;
             if (obj.geometry_type === "sphere") {
                 geometry_type_enum = GEOMETRY_TYPE.SPHERE;
-                const key = JSON.stringify(obj.geometry_data);
-                geometry_data_id = sphere_geometry_to_index.get(key)!;
             } else { // rect
                 geometry_type_enum = GEOMETRY_TYPE.RECT;
-                const key = JSON.stringify(obj.geometry_data);
-                geometry_data_id = rect_geometry_to_index.get(key)!;
             }
+
+            const geometry_data_id = object_id_to_geometry_id[i];
 
             // Get material index
             const material_key = JSON.stringify({ type: obj.material_type, data: obj.material_data });
