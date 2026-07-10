@@ -25,6 +25,11 @@
 - [ ] `260315` Environmental mapping
 - [ ] `260319` Neural graphics
 - [ ] `260703` Pressure test to evaluate if sortings are needed
+- [ ] `260705` Depth of field
+  - depend 260710-Ra
+- [ ] `260707` Dump posed images for SFM and 3DGS experiments
+- [ ] `260710` Editor, to place objects, lights, etc.
+- [ ] `260710` Ray casting based on matrices
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
