@@ -54,3 +54,10 @@ Run `pnpm run deploy`.
 ### Miscs
 
 Do not need to write CHANGELOG, I will keep commit log of main branch clean. Sufficient for this personal project.
+
+
+## References
+- Raytracing: https://raytracing.github.io/
+- SDF: https://iquilezles.org/articles/
+- BVH: https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/
+- PBR: https://pbr-book.org/4ed/contents
