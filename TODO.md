@@ -5,7 +5,7 @@
 - [ ] `260307` More geometries
     - [X] planes
     - [ ] cuboids
-    - [ ] triangles
+    - [X] triangles
     - [ ] `260703` SDF support
 - [ ] `260307` BVH
     - [ ] js impl

@@ -298,7 +298,7 @@ export class Renderer {
         //  scene buffers
         // ===============
 
-        const { object_array_buffer, sphere_array_buffer, rect_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
+        const { object_array_buffer, sphere_array_buffer, rect_array_buffer, triangle_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
 
         // ============
         //  scene info
@@ -354,8 +354,9 @@ export class Renderer {
             .add_buffer("in_object_array", 1, object_array_buffer)
             .add_buffer("in_sphere_array", 2, sphere_array_buffer)
             .add_buffer("in_rect_array", 3, rect_array_buffer)
-            .add_buffer("in_material_array", 4, material_array_buffer)
-            .add_buffer("out_color_buffer", 5, color_buffer)
+            .add_buffer("in_triangle_array", 4, triangle_array_buffer)
+            .add_buffer("in_material_array", 5, material_array_buffer)
+            .add_buffer("out_color_buffer", 6, color_buffer)
             .build(this._hit_test_kernel, 1);
         this._hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 

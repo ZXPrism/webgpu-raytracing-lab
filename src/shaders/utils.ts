@@ -20,6 +20,7 @@ const RAY_NEAR_THRESHOLD = ${config.ray_near_threshold};
 const RAY_FAR_THRESHOLD = ${config.ray_far_threshold};
 const GEOMETRY_TYPE_SPHERE = ${GEOMETRY_TYPE.SPHERE}u;
 const GEOMETRY_TYPE_RECT = ${GEOMETRY_TYPE.RECT}u;
+const GEOMETRY_TYPE_TRIANGLE = ${GEOMETRY_TYPE.TRIANGLE}u;
 const MATERIAL_TYPE_DIFFUSE = ${MATERIAL_TYPE.DIFFUSE}u;
 const MATERIAL_TYPE_METAL = ${MATERIAL_TYPE.METAL}u;
 const MATERIAL_TYPE_GLASS = ${MATERIAL_TYPE.GLASS}u;
@@ -188,6 +189,36 @@ fn hit_test_rect(ray: Ray, rect: Rect) -> f32 {
   if 0.0 <= alpha && alpha <= 1.0 && 0.0 <= beta && beta <= 1.0 {
     return t;
   }
+
+  return -1.0; // if miss, return a negative value
+}
+
+fn hit_test_triangle(ray: Ray, triangle: Triangle) -> f32 {
+  let normal_norm = triangle_get_normal_norm(ray, triangle);
+  let t_denominator = dot(normal_norm, ray.direction_norm);
+  if abs(t_denominator) < EPS {
+    return -1.0;
+  }
+
+  let normal = cross(triangle.u, triangle.v);
+  let s = dot(normal, normal);
+  let w = normal / s;
+  let d = dot(normal_norm, triangle.corner);
+  let t_numerator = d - dot(normal_norm, ray.origin);
+  let t = t_numerator / t_denominator;
+  if t <= 0.0 {
+    return -1.0;
+  }
+
+  let hit_point = get_hit_point(ray, t);
+  let hit_point_rel = hit_point - triangle.corner;
+
+  let alpha = dot(cross(hit_point_rel, triangle.v), w);
+  let beta = dot(cross(triangle.u, hit_point_rel), w);
+  if alpha >= 0.0 && beta >= 0.0 && alpha + beta <= 1.0 {
+    return t;
+  }
+
   return -1.0; // if miss, return a negative value
 }
 
@@ -228,6 +259,11 @@ fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
 
 fn rect_get_normal_norm(ray: Ray, rect: Rect) -> vec3f {
   let normal = normalize(cross(rect.u, rect.v));
+  return select(-normal, normal, dot(ray.direction_norm, normal) <= 0.0);
+}
+
+fn triangle_get_normal_norm(ray: Ray, triangle: Triangle) -> vec3f {
+  let normal = normalize(cross(triangle.u, triangle.v));
   return select(-normal, normal, dot(ray.direction_norm, normal) <= 0.0);
 }
 
