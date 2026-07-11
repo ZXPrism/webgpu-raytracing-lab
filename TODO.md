@@ -12,7 +12,6 @@
     - [ ] wasm impl
 - [ ] `260307` Perf (with limited metrics) for quickly checks
 - [X] `260307` Convergence checks to save power
-  - TODO 0703
 - [ ] `260307` Mixed rendering (with rasterization)
 - [ ] `260307` Picking
 - [ ] `260307` Editing
@@ -26,10 +25,10 @@
 - [ ] `260319` Neural graphics
 - [ ] `260703` Pressure test to evaluate if sortings are needed
 - [ ] `260705` Depth of field
-  - depend 260710-Ra
 - [ ] `260707` Dump posed images for SFM and 3DGS experiments
 - [ ] `260710` Editor, to place objects, lights, etc.
-- [ ] `260710` Ray casting based on matrices
+- [X] `260710` Ray casting based on matrices
+- [X] `260711` Refactor config ui: currently registering a new field is cumbersome
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
