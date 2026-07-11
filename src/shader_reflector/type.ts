@@ -9,6 +9,7 @@ export const ShaderDataTypeSize = {
     vec2f: 8,
     vec3f: 12,
     vec4f: 16,
+    mat4x4f: 64,
 } as const;
 
 export const ShaderDataTypeAlignment = {
@@ -18,6 +19,7 @@ export const ShaderDataTypeAlignment = {
     vec2f: 8,
     vec3f: 16,
     vec4f: 16,
+    mat4x4f: 16,
 } as const satisfies { [K in keyof typeof ShaderDataTypeSize]: number };
 
 export const ShaderDataTypeComponentCount = {
@@ -27,6 +29,7 @@ export const ShaderDataTypeComponentCount = {
     vec2f: 2,
     vec3f: 3,
     vec4f: 4,
+    mat4x4f: 16,
 } as const satisfies { [K in keyof typeof ShaderDataTypeSize]: number };
 
 export const ShaderDataTypePrimitivity = {
@@ -36,6 +39,7 @@ export const ShaderDataTypePrimitivity = {
     vec2f: "float",
     vec3f: "float",
     vec4f: "float",
+    mat4x4f: "float",
 } as const satisfies { [K in keyof typeof ShaderDataTypeSize]: ShaderDataPrimitiveType };
 
 export type ShaderDataType = keyof typeof ShaderDataTypeSize;
@@ -51,4 +55,6 @@ export const MapTypeToShaderDataType = new Map<string, ShaderDataType>([
     ["vec3<f32>", "vec3f"],
     ["vec4f", "vec4f"],
     ["vec4<f32>", "vec4f"],
+    ["mat4x4<f32>", "mat4x4f"],
+    ["mat4x4f", "mat4x4f"]
 ]);

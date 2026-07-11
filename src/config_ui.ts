@@ -1,173 +1,184 @@
 import { EventBus } from "./event_bus";
 import { ConfigManager } from "./config";
+import { vec3 } from "gl-matrix";
 import * as Tweakpane from "tweakpane";
+
+type WidgetType = "slider" | "int-slider" | "toggle" | "position" | "color";
+
+interface FieldDef {
+    key: string;
+    folder: string;
+    label: string;
+    widget: WidgetType;
+    min?: number;
+    max?: number;
+    step?: number;
+}
+
+/** Shape the params object uses for vec3-as-position bindings. */
+type Vec3Params = { x: number; y: number; z: number };
+/** Shape the params object uses for color-picker bindings. */
+type ColorParams = { r: number; g: number; b: number };
+/** All possible value types in the Tweakpane params object. */
+type ParamValue = number | boolean | Vec3Params | ColorParams;
+
+const FIELD_DEFS: FieldDef[] = [
+    // Camera ────────────────────────────────────────────────────────────────
+    { key: "camera_fov_y", folder: "Camera", label: "FOV Y", widget: "slider", min: 0, max: Math.PI },
+    { key: "camera_focal_length", folder: "Camera", label: "Focal Length", widget: "slider", min: 0.1, max: 10 },
+    { key: "camera_eye", folder: "Camera", label: "Eye Position", widget: "position", min: -10, max: 10 },
+    { key: "camera_center", folder: "Camera", label: "Center Position", widget: "position", min: -10, max: 10 },
+
+    // Rendering ─────────────────────────────────────────────────────────────
+    { key: "max_bounce", folder: "Rendering", label: "Max Bounce", widget: "int-slider", min: 1, max: 64 },
+    { key: "eps", folder: "Rendering", label: "EPS", widget: "slider", min: 0.0001, max: 0.01 },
+    { key: "ray_near_threshold", folder: "Rendering", label: "Near Threshold", widget: "slider", min: 0.0001, max: 0.1 },
+    { key: "ray_far_threshold", folder: "Rendering", label: "Far Threshold", widget: "slider", min: 10, max: 1000 },
+    { key: "convergence_check", folder: "Rendering", label: "Convergence Check", widget: "toggle" },
+    { key: "convergence_threshold", folder: "Rendering", label: "Convergence Threshold", widget: "slider", min: 0.0, max: 1000.0 },
+
+    // Scene ─────────────────────────────────────────────────────────────────
+    { key: "sky_color", folder: "Scene", label: "Sky Color", widget: "color" },
+];
+
+// ---------------------------------------------------------------------------
+// ConfigUI
+// ---------------------------------------------------------------------------
 
 export class ConfigUI {
     private pane: Tweakpane.Pane;
     private event_bus: EventBus;
     private config_manager: ConfigManager;
-
-    // Store config values as mutable objects for tweakpane
-    private params = {
-        max_bounce: 0,
-        camera_fov_y: 0,
-        camera_focal_length: 0,
-        camera_eye: { x: 0, y: 0, z: 0 },
-        camera_center: { x: 0, y: 0, z: 0 },
-        eps: 0,
-        sky_color: { r: 0, g: 0, b: 0 },
-        ray_near_threshold: 0,
-        ray_far_threshold: 0,
-        convergence_check: false,
-        convergence_threshold: 0.0,
-    };
+    private params: Record<string, ParamValue>;
 
     constructor(config_manager: ConfigManager, event_bus: EventBus) {
         this.config_manager = config_manager;
         this.event_bus = event_bus;
         this.pane = new Tweakpane.Pane({ title: "Config" });
-
-        // Initialize params from config
-        this.sync_params_from_config();
-
-        this.setup_inputs();
-        this.setup_event_listeners();
+        this.params = this.buildParams();
+        this.setupInputs();
+        this.setupEventListeners();
     }
 
-    private sync_params_from_config() {
-        const config = this.config_manager.config;
-        this.params.max_bounce = config.max_bounce;
-        this.params.camera_fov_y = config.camera_fov_y;
-        this.params.camera_focal_length = config.camera_focal_length;
-        this.params.camera_eye = { x: config.camera_eye[0], y: config.camera_eye[1], z: config.camera_eye[2] };
-        this.params.camera_center = { x: config.camera_center[0], y: config.camera_center[1], z: config.camera_center[2] };
-        this.params.eps = config.eps;
-        this.params.sky_color = { r: config.sky_color[0], g: config.sky_color[1], b: config.sky_color[2] };
-        this.params.ray_near_threshold = config.ray_near_threshold;
-        this.params.ray_far_threshold = config.ray_far_threshold;
-        this.params.convergence_check = config.convergence_check;
-        this.params.convergence_threshold = config.convergence_threshold;
+    /** Build the params object that Tweakpane binds to, seeded from config. */
+    private buildParams(): Record<string, ParamValue> {
+        const config = this.config_manager.config as unknown as Record<string, unknown>;
+        const p: Record<string, ParamValue> = {};
+        for (const def of FIELD_DEFS) {
+            switch (def.widget) {
+                case "position": {
+                    const v = config[def.key] as vec3;
+                    p[def.key] = { x: v[0], y: v[1], z: v[2] };
+                    break;
+                }
+                case "color": {
+                    const v = config[def.key] as vec3;
+                    p[def.key] = { r: v[0], g: v[1], b: v[2] };
+                    break;
+                }
+                default:
+                    p[def.key] = config[def.key] as number | boolean;
+                    break;
+            }
+        }
+        return p;
     }
 
-    private setup_inputs() {
+    /** Create Tweakpane folders and bindings from the field schema. */
+    private setupInputs() {
         try {
-            // Camera folder
-            const camera_folder = this.pane.addFolder({ title: "Camera" });
-
-            camera_folder.addBinding(this.params, "camera_fov_y", {
-                min: 0,
-                max: Math.PI,
-                label: "FOV Y"
-            });
-            camera_folder.addBinding(this.params, "camera_focal_length", {
-                min: 0.1,
-                max: 10,
-                label: "Focal Length"
-            });
-
-            // Use Point3d for camera position (combined XYZ control)
-            camera_folder.addBinding(this.params, "camera_eye", {
-                x: { min: -10, max: 10 },
-                y: { min: -10, max: 10 },
-                z: { min: -10, max: 10 },
-                label: "Eye Position"
-            });
-
-            camera_folder.addBinding(this.params, "camera_center", {
-                x: { min: -10, max: 10 },
-                y: { min: -10, max: 10 },
-                z: { min: -10, max: 10 },
-                label: "Center Position"
-            });
-
-            // Rendering folder
-            const rendering_folder = this.pane.addFolder({ title: "Rendering" });
-
-            rendering_folder.addBinding(this.params, "max_bounce", {
-                min: 1,
-                max: 64,
-                step: 1,
-                label: "Max Bounce"
-            });
-            rendering_folder.addBinding(this.params, "eps", {
-                min: 0.0001,
-                max: 0.01,
-                label: "EPS"
-            });
-            rendering_folder.addBinding(this.params, "ray_near_threshold", {
-                min: 0.0001,
-                max: 0.1,
-                label: "Near Threshold"
-            });
-            rendering_folder.addBinding(this.params, "ray_far_threshold", {
-                min: 10,
-                max: 1000,
-                label: "Far Threshold"
-            });
-            rendering_folder.addBinding(this.params, "convergence_check", {
-                label: "Convergence Check"
-            });
-            rendering_folder.addBinding(this.params, "convergence_threshold", {
-                min: 0.0,
-                max: 1000.0,
-                label: "Convergence Threshold"
-            });
-
-            // Scene folder
-            const scene_folder = this.pane.addFolder({ title: "Scene" });
-
-            // Use color picker for sky color
-            scene_folder.addBinding(this.params, "sky_color", {
-                color: { type: 'float' }, // Use float RGB (0-1 range)
-                label: "Sky Color"
-            });
+            const folderMap = new Map<string, Tweakpane.FolderApi>();
+            for (const def of FIELD_DEFS) {
+                let folder = folderMap.get(def.folder);
+                if (!folder) {
+                    folder = this.pane.addFolder({ title: def.folder });
+                    folderMap.set(def.folder, folder);
+                }
+                this.addBinding(folder, def);
+            }
         } catch (error) {
             console.error("ConfigUI: Error setting up inputs:", error);
         }
     }
 
-    private setup_event_listeners() {
-        let debounce_timer: number | null = null;
+    /** Create a single Tweakpane binding according to the widget type. */
+    private addBinding(folder: Tweakpane.FolderApi, def: FieldDef) {
+        switch (def.widget) {
+            case "slider":
+                folder.addBinding(this.params, def.key, {
+                    min: def.min,
+                    max: def.max,
+                    step: def.step,
+                    label: def.label,
+                });
+                break;
+            case "int-slider":
+                folder.addBinding(this.params, def.key, {
+                    min: def.min,
+                    max: def.max,
+                    step: def.step ?? 1,
+                    label: def.label,
+                });
+                break;
+            case "toggle":
+                folder.addBinding(this.params, def.key, { label: def.label });
+                break;
+            case "position":
+                folder.addBinding(this.params, def.key, {
+                    x: { min: def.min, max: def.max },
+                    y: { min: def.min, max: def.max },
+                    z: { min: def.min, max: def.max },
+                    label: def.label,
+                });
+                break;
+            case "color":
+                folder.addBinding(this.params, def.key, {
+                    color: { type: "float" },
+                    label: def.label,
+                });
+                break;
+        }
+    }
+
+    /** Debounced change listener — writes params back to config and emits. */
+    private setupEventListeners() {
+        let debounceTimer: number | null = null;
 
         this.pane.on("change", () => {
-            this.update_config_values();
+            this.updateConfigValues();
 
-            if (debounce_timer !== null) {
-                clearTimeout(debounce_timer);
+            if (debounceTimer !== null) {
+                clearTimeout(debounceTimer);
             }
 
-            debounce_timer = setTimeout(() => {
+            debounceTimer = setTimeout(() => {
                 this.event_bus.emit("config-changed");
-                debounce_timer = null;
+                debounceTimer = null;
             }, 50);
         });
     }
 
-    private update_config_values() {
-        const config = this.config_manager.config;
-
-        // Update flags
-        config.convergence_check = this.params.convergence_check;
-
-        // Update scalar values
-        config.max_bounce = this.params.max_bounce;
-        config.camera_fov_y = this.params.camera_fov_y;
-        config.camera_focal_length = this.params.camera_focal_length;
-        config.eps = this.params.eps;
-        config.ray_near_threshold = this.params.ray_near_threshold;
-        config.ray_far_threshold = this.params.ray_far_threshold;
-        config.convergence_threshold = this.params.convergence_threshold;
-
-        // Update vec3 values from Point3d/Color controllers
-        config.camera_eye[0] = this.params.camera_eye.x;
-        config.camera_eye[1] = this.params.camera_eye.y;
-        config.camera_eye[2] = this.params.camera_eye.z;
-        config.camera_center[0] = this.params.camera_center.x;
-        config.camera_center[1] = this.params.camera_center.y;
-        config.camera_center[2] = this.params.camera_center.z;
-        config.sky_color[0] = this.params.sky_color.r;
-        config.sky_color[1] = this.params.sky_color.g;
-        config.sky_color[2] = this.params.sky_color.b;
+    /** Copy every field from the Tweakpane params object back to Config. */
+    private updateConfigValues() {
+        const config = this.config_manager.config as unknown as Record<string, unknown>;
+        for (const def of FIELD_DEFS) {
+            const val = this.params[def.key] as ParamValue;
+            switch (def.widget) {
+                case "position": {
+                    const v = val as Vec3Params;
+                    config[def.key] = vec3.fromValues(v.x, v.y, v.z);
+                    break;
+                }
+                case "color": {
+                    const v = val as ColorParams;
+                    config[def.key] = vec3.fromValues(v.r, v.g, v.b);
+                    break;
+                }
+                default:
+                    config[def.key] = val;
+                    break;
+            }
+        }
     }
 
     public cleanup() {

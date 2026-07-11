@@ -18,23 +18,24 @@ fn compute(
   let y = (workgroup_id.y * WG_DIM_Y) + local_id.y;
 
   let scene_info = in_scene_info;
-  let pixel00 = scene_info.pixel00;
-  let viewport_u_base = scene_info.viewport_u_base;
-  let viewport_v_base = scene_info.viewport_v_base;
   let eye = scene_info.eye;
   let width = scene_info.width;
   let height = scene_info.height;
 
-  let ray_array_offset = y * width + x;
+  let ray_array_offset = (y * width) + x;
   if ray_array_offset == 0u {
     out_ray_array_length = width * height;
     out_frame_index++;
   }
 
+  let pixel_offset = rand_unit_square(f32(out_frame_index) * 114514.1919810 + f32(ray_array_offset));
+  let pixel_coord_2d = vec2f(f32(x) + 0.5, f32(y) + 0.5) + pixel_offset;
+  let pixel_coord = vec4f(pixel_coord_2d, 1.0, 1.0);
+  let view_coord = in_scene_info.inv_intrinsics * pixel_coord;
+  let world_coord = in_scene_info.inv_extrinsics * view_coord;
+
   if x < width && y < height {
-    let pixel_offset = vec2f(f32(x), f32(y)) + rand_unit_square(f32(out_frame_index) * 114514.1919810 + f32(ray_array_offset));
-    let target_pixel = pixel00 + ((viewport_u_base * pixel_offset.x) + (viewport_v_base * pixel_offset.y));
-    let direction_norm = normalize(target_pixel - eye);
+    let direction_norm = normalize(world_coord.xyz - eye);
     let primary_ray = Ray(eye, direction_norm, ray_array_offset, vec3f(1.0));
     out_ray_array[ray_array_offset] = primary_ray;
   }

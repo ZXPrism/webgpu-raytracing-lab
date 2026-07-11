@@ -1,3 +1,6 @@
+import { create_gpu_storage_buffer } from "./kernel_utils";
+import { ShaderReflector } from "./shader_reflector/shader_reflector";
+
 export interface Scene {
     name: string,
     date: string,
@@ -5,7 +8,7 @@ export interface Scene {
     objects: SceneObject[]
 }
 
-export type Geometry = "sphere" | "rect";
+export type Geometry = "sphere" | "rect" | "triangle";
 export type Material = "diffuse" | "metal" | "glass";
 
 export interface SceneObject {
@@ -21,6 +24,12 @@ export interface GeometrySphere {
 }
 
 export interface GeometryRect {
+    corner: [number, number, number],
+    u: [number, number, number],
+    v: [number, number, number]
+}
+
+export interface GeometryTriangle {
     corner: [number, number, number],
     u: [number, number, number],
     v: [number, number, number]
@@ -45,7 +54,8 @@ export interface MaterialGlass {
 // =======================
 export const GEOMETRY_TYPE = {
     SPHERE: 0,
-    RECT: 1
+    RECT: 1,
+    TRIANGLE: 2,
 } as const;
 
 export type GeometryTypeValue = typeof GEOMETRY_TYPE[keyof typeof GEOMETRY_TYPE];
@@ -68,6 +78,7 @@ export interface SceneBuffers {
     object_array_buffer: GPUBuffer;
     sphere_array_buffer: GPUBuffer;
     rect_array_buffer: GPUBuffer;
+    triangle_array_buffer: GPUBuffer;
     material_array_buffer: GPUBuffer;
     object_count: number;
     sphere_count: number;
@@ -84,11 +95,9 @@ interface MaterialEntry {
     index: number;
 }
 
-import { create_gpu_storage_buffer } from "./kernel_utils";
 // ====================
 //  Scene loader class
 // ====================
-import { ShaderReflector } from "./shader_reflector/shader_reflector";
 
 export class SceneLoader {
     private _device: GPUDevice;
@@ -118,8 +127,8 @@ export class SceneLoader {
         // ===================
         const spheres: GeometrySphere[] = [];
         const rects: GeometryRect[] = [];
-        const sphere_geometry_to_index = new Map<string, number>();
-        const rect_geometry_to_index = new Map<string, number>();
+        const triangles: GeometryTriangle[] = [];
+        const object_id_to_geometry_id: number[] = [];
 
         // ===========================================
         //  Organize materials with explicit tracking
@@ -134,18 +143,16 @@ export class SceneLoader {
             // Collect unique geometries
             if (obj.geometry_type === "sphere") {
                 const sphere_data = obj.geometry_data as GeometrySphere;
-                const key = JSON.stringify(sphere_data);
-                if (!sphere_geometry_to_index.has(key)) {
-                    sphere_geometry_to_index.set(key, spheres.length);
-                    spheres.push(sphere_data);
-                }
+                object_id_to_geometry_id.push(spheres.length);
+                spheres.push(sphere_data);
             } else if (obj.geometry_type === "rect") {
                 const rect_data = obj.geometry_data as GeometryRect;
-                const key = JSON.stringify(rect_data);
-                if (!rect_geometry_to_index.has(key)) {
-                    rect_geometry_to_index.set(key, rects.length);
-                    rects.push(rect_data);
-                }
+                object_id_to_geometry_id.push(rects.length);
+                rects.push(rect_data);
+            } else if (obj.geometry_type === "triangle") {
+                const triangle_data = obj.geometry_data as GeometryTriangle;
+                object_id_to_geometry_id.push(triangles.length);
+                triangles.push(triangle_data);
             }
 
             // Collect unique materials with explicit type tracking
@@ -170,23 +177,22 @@ export class SceneLoader {
             const obj = scene_data.objects[i];
 
             // Map geometry type to enum using explicit mapping
-            let geometry_type_enum: GeometryTypeValue;
-            let geometry_data_id: number;
+            let geometry_type_enum: GeometryTypeValue | null = null;
             if (obj.geometry_type === "sphere") {
                 geometry_type_enum = GEOMETRY_TYPE.SPHERE;
-                const key = JSON.stringify(obj.geometry_data);
-                geometry_data_id = sphere_geometry_to_index.get(key)!;
-            } else { // rect
+            } else if (obj.geometry_type === "rect") {
                 geometry_type_enum = GEOMETRY_TYPE.RECT;
-                const key = JSON.stringify(obj.geometry_data);
-                geometry_data_id = rect_geometry_to_index.get(key)!;
+            } else if (obj.geometry_type === "triangle") {
+                geometry_type_enum = GEOMETRY_TYPE.TRIANGLE;
             }
+
+            const geometry_data_id = object_id_to_geometry_id[i];
 
             // Get material index
             const material_key = JSON.stringify({ type: obj.material_type, data: obj.material_data });
-            const material_data_id = material_to_index.get(material_key)!;
+            const material_data_id = material_to_index.get(material_key) as number;
 
-            object_array.set_field(i, "geometry_type", geometry_type_enum);
+            object_array.set_field(i, "geometry_type", geometry_type_enum as number);
             object_array.set_field(i, "geometry_data_id", geometry_data_id);
             object_array.set_field(i, "material_data_id", material_data_id);
         }
@@ -208,6 +214,16 @@ export class SceneLoader {
             rect_array.set_field(i, "corner", rects[i].corner);
             rect_array.set_field(i, "u", rects[i].u);
             rect_array.set_field(i, "v", rects[i].v);
+        }
+
+        // =======================
+        //  Create triangle array
+        // =======================
+        const triangle_array = this._shader_reflector.get_struct_array("Triangle", triangles.length);
+        for (let i = 0; i < triangles.length; i++) {
+            triangle_array.set_field(i, "corner", triangles[i].corner);
+            triangle_array.set_field(i, "u", triangles[i].u);
+            triangle_array.set_field(i, "v", triangles[i].v);
         }
 
         // =======================
@@ -251,6 +267,9 @@ export class SceneLoader {
         const rect_array_buffer = create_gpu_storage_buffer(this._device, "rect array", rect_array.data.byteLength);
         this._device.queue.writeBuffer(rect_array_buffer, 0, rect_array.data);
 
+        const triangle_array_buffer = create_gpu_storage_buffer(this._device, "triangle array", triangle_array.data.byteLength);
+        this._device.queue.writeBuffer(triangle_array_buffer, 0, triangle_array.data);
+
         const material_array_buffer = create_gpu_storage_buffer(this._device, "material array", material_array.data.byteLength);
         this._device.queue.writeBuffer(material_array_buffer, 0, material_array.data);
 
@@ -258,6 +277,7 @@ export class SceneLoader {
             object_array_buffer,
             sphere_array_buffer,
             rect_array_buffer,
+            triangle_array_buffer,
             material_array_buffer,
             object_count: scene_data.objects.length,
             sphere_count: spheres.length,

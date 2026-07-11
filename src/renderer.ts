@@ -12,16 +12,18 @@ import { get_shader_hit_test } from "./shaders/hit_test";
 import { filter_kernel_workgroup_size, get_shader_filter } from "./shaders/filter";
 import { get_shader_blit } from "./shaders/blit";
 
-import { vec3 } from "gl-matrix";
+import { vec3, mat4 } from "gl-matrix";
 import { ShaderReflector } from "./shader_reflector/shader_reflector";
 import { EventBus } from "./event_bus";
 import { SceneLoader } from "./scene";
 import type { SceneBuffers } from "./scene";
+//import { build_bvh, BvhNode } from "./bvh";
 
 export class Renderer {
     private _config_manager: ConfigManager;
     private _scene_loader!: SceneLoader;
     private _scene_buffers!: SceneBuffers;
+    //private _bvh_tree: BvhNode | null;
 
     _event_bus!: EventBus;
 
@@ -54,13 +56,15 @@ export class Renderer {
 
     constructor(config_manager: ConfigManager) {
         this._config_manager = config_manager;
+        //this._bvh_tree = null;
     }
 
     public async main() {
         await this.init_webgpu();
         this.init_canvas_size();
-        if (this.pre_init()) {
+        if (await this.pre_init()) {
             this.init_kernels();
+            this.init_bvh();
             await this.init_bind_groups();
             this.init_callbacks();
             this.render();
@@ -116,7 +120,7 @@ export class Renderer {
         console.info("WebGPU initialized successfully 😘");
     }
 
-    public pre_init(): boolean {
+    public async pre_init(): Promise<boolean> {
         // ===============
         //  check configs
         // ===============
@@ -136,10 +140,14 @@ export class Renderer {
         // =============
         //  scene loader
         // =============
-
         this._scene_loader = new SceneLoader(this._device, this._utils_shader_reflector);
+        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/cube_grid_2.json");
 
         return true;
+    }
+
+    public init_bvh() {
+        //this._bvh_tree = build_bvh(this._scene_buffers.object_array);
     }
 
     public prepare_scene_info_data(object_count: number): ArrayBuffer {
@@ -150,60 +158,38 @@ export class Renderer {
         // let camera_right_norm = normalize(cross(camera_gaze_norm, vec3f(0.0, 1.0, 0.0)));
         // let camera_down_norm = cross(camera_gaze_norm, camera_right_norm);
 
-        const camera_aspect_ratio = this._canvas_width / this._canvas_height;
         const config = this._config_manager.config;
 
-        const camera_gaze_norm = vec3.create();
+        const camera_gaze_norm = vec3.create(); // F
         vec3.sub(camera_gaze_norm, config.camera_center, config.camera_eye);
         vec3.normalize(camera_gaze_norm, camera_gaze_norm);
 
-        const camera_right_norm = vec3.create();
+        const camera_right_norm = vec3.create(); // R
         vec3.cross(camera_right_norm, camera_gaze_norm, vec3.fromValues(0.0, 1.0, 0.0));
         vec3.normalize(camera_right_norm, camera_right_norm);
 
-        const camera_down_norm = vec3.create();
+        const camera_down_norm = vec3.create(); // D
         vec3.cross(camera_down_norm, camera_gaze_norm, camera_right_norm);
 
+        const fy = this._canvas_height / (2.0 * Math.tan(config.camera_fov_y / 2.0));
+        const fx = fy;
+        const cx = this._canvas_width / 2.0;
+        const cy = this._canvas_height / 2.0;
+        const intrinsics = mat4.fromValues(
+            fx, 0.0, 0.0, 0.0,
+            0.0, fy, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            cx, cy, 0.0, 1.0,
+        );
+        const inv_intrinsics = mat4.create();
+        mat4.invert(inv_intrinsics, intrinsics);
 
-        // =============================
-        //  viewport (origin: top left)
-        // =============================
-        // let viewport_height = 2.0 * tan(camera_info.fov_y / 2.0) * camera_info.focal_length;
-        // let viewport_width = viewport_height * camera_info.aspect_ratio;
-        // let viewport_u = camera_right_norm * viewport_width;
-        // let viewport_v = camera_down_norm * viewport_height;
-        // let viewport_u_base = viewport_u / f32(width);
-        // let viewport_v_base = viewport_v / f32(height);
-        // let viewport_top_left = camera_info.eye + (camera_gaze_norm * camera_info.focal_length) - (viewport_u + viewport_v) / 2.0;
-        // let pixel00 = viewport_top_left + (0.5 * (viewport_u_base + viewport_v_base)); // default sample point is the center of each pixel
-
-        const viewport_height = 2.0 * Math.tan(config.camera_fov_y / 2.0) * config.camera_focal_length;
-        const viewport_width = viewport_height * camera_aspect_ratio;
-
-        const viewport_u = vec3.create();
-        vec3.scale(viewport_u, camera_right_norm, viewport_width);
-
-        const viewport_v = vec3.create();
-        vec3.scale(viewport_v, camera_down_norm, viewport_height);
-
-        const viewport_u_base = vec3.create();
-        vec3.scale(viewport_u_base, viewport_u, 1.0 / this._canvas_width);
-
-        const viewport_v_base = vec3.create();
-        vec3.scale(viewport_v_base, viewport_v, 1.0 / this._canvas_height);
-
-        const viewport_top_left = vec3.create();
-        const temp = vec3.create();
-        vec3.scale(temp, camera_gaze_norm, config.camera_focal_length);
-        vec3.add(viewport_top_left, config.camera_eye, temp);
-        vec3.add(temp, viewport_u, viewport_v);
-        vec3.scale(temp, temp, 0.5);
-        vec3.sub(viewport_top_left, viewport_top_left, temp);
-
-        const pixel00 = vec3.create();
-        vec3.add(temp, viewport_u_base, viewport_v_base);
-        vec3.scale(temp, temp, 0.5);
-        vec3.add(pixel00, viewport_top_left, temp);
+        const c2w = mat4.fromValues(
+            camera_right_norm[0], camera_right_norm[1], camera_right_norm[2], 0.0,
+            camera_down_norm[0], camera_down_norm[1], camera_down_norm[2], 0.0,
+            camera_gaze_norm[0], camera_gaze_norm[1], camera_gaze_norm[2], 0.0,
+            config.camera_eye[0], config.camera_eye[1], config.camera_eye[2], 1.0,
+        );
 
 
         // =================
@@ -213,11 +199,10 @@ export class Renderer {
 
         const scene_info_struct = this._utils_shader_reflector.get_struct("SceneInfo");
         scene_info_struct
-            .set_field("pixel00", pixel00)
+            .set_field("inv_intrinsics", inv_intrinsics)
+            .set_field("inv_extrinsics", c2w)
             .set_field("width", this._canvas_width)
             .set_field("height", this._canvas_height)
-            .set_field("viewport_u_base", viewport_u_base)
-            .set_field("viewport_v_base", viewport_v_base)
             .set_field("eye", config.camera_eye)
             .set_field("object_count", object_count);
 
@@ -313,8 +298,7 @@ export class Renderer {
         //  scene buffers
         // ===============
 
-        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/cube_grid.json");
-        const { object_array_buffer, sphere_array_buffer, rect_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
+        const { object_array_buffer, sphere_array_buffer, rect_array_buffer, triangle_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
 
         // ============
         //  scene info
@@ -370,10 +354,14 @@ export class Renderer {
             .add_buffer("in_object_array", 1, object_array_buffer)
             .add_buffer("in_sphere_array", 2, sphere_array_buffer)
             .add_buffer("in_rect_array", 3, rect_array_buffer)
-            .add_buffer("in_material_array", 4, material_array_buffer)
-            .add_buffer("out_color_buffer", 5, color_buffer)
+            .add_buffer("in_triangle_array", 4, triangle_array_buffer)
+            .add_buffer("in_material_array", 5, material_array_buffer)
+            .add_buffer("out_color_buffer", 6, color_buffer)
             .build(this._hit_test_kernel, 1);
         this._hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
+
+        // TODO
+        // add BVH
 
         this._filter_kernel_bind_group = new BindGroupBuilder(this._device, "filter kernel bind group")
             .add_buffer("in_scene_info", 0, scene_info_buffer)

@@ -9,8 +9,9 @@ export function get_shader_hit_test(): string {
 @group(1) @binding(1) var<storage, read> in_object_array: array<Object>;
 @group(1) @binding(2) var<storage, read> in_sphere_array: array<Sphere>;
 @group(1) @binding(3) var<storage, read> in_rect_array: array<Rect>;
-@group(1) @binding(4) var<storage, read> in_material_array: array<Material>;
-@group(1) @binding(5) var<storage, read_write> out_color_buffer: array<vec4f>;
+@group(1) @binding(4) var<storage, read> in_triangle_array: array<Triangle>;
+@group(1) @binding(5) var<storage, read> in_material_array: array<Material>;
+@group(1) @binding(6) var<storage, read_write> out_color_buffer: array<vec4f>;
 
 const WG_DIM_X = 128u;
 
@@ -36,8 +37,10 @@ fn compute(
       var t = RAY_FAR_THRESHOLD;
       if object.geometry_type == GEOMETRY_TYPE_SPHERE {
         t = hit_test_sphere(ray, in_sphere_array[object.geometry_data_id]);
-      } else { // rect
+      } else if object.geometry_type == GEOMETRY_TYPE_RECT {
         t = hit_test_rect(ray, in_rect_array[object.geometry_data_id]);
+      } else { // triangle
+        t = hit_test_triangle(ray, in_triangle_array[object.geometry_data_id]);
       }
 
       if t <= RAY_NEAR_THRESHOLD || t >= RAY_FAR_THRESHOLD {
@@ -59,8 +62,10 @@ fn compute(
       var normal_norm = vec3f(0.0);
       if object.geometry_type == GEOMETRY_TYPE_SPHERE {
         normal_norm = sphere_get_normal_norm(ray, in_sphere_array[object.geometry_data_id], hit_point);
-      } else { // rect
+      } else if object.geometry_type == GEOMETRY_TYPE_RECT { // rect
         normal_norm = rect_get_normal_norm(ray, in_rect_array[object.geometry_data_id]);
+      } else { // triangle
+        normal_norm = triangle_get_normal_norm(ray, in_triangle_array[object.geometry_data_id]);
       }
 
       // ===== compute new ray
