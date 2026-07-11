@@ -31,12 +31,11 @@ const MATERIAL_TYPE_GLASS = ${MATERIAL_TYPE.GLASS}u;
 // ===== basic
 
 struct SceneInfo {
-  pixel00: vec3f,
-  width: u32,
-  viewport_u_base: vec3f,
-  height: u32,
-  viewport_v_base: vec3f,
+  inv_intrinsics: mat4x4f,
+  inv_extrinsics: mat4x4f,
   eye: vec3f,
+  width: u32,
+  height: u32,
   object_count: u32,
 }
 

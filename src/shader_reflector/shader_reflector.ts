@@ -58,7 +58,7 @@ export class ShaderReflector {
                 const field_type = MapTypeToShaderDataType.get(match_field[2]);
 
                 if (field_type === undefined) {
-                    console.warn(`ShaderReflector: detected unsupported data type "${field_type}" (field: "${field_name}")`);
+                    console.warn(`ShaderReflector: detected unsupported data type "${field_type}" (field: "${field_name}", type lexeme: "${match_field[2]}")`);
                     console.warn(`ShaderReflector: struct "${struct_name}" won't be reflected`);
                     valid = false;
                     break;
