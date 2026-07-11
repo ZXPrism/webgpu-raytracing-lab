@@ -1,6 +1,6 @@
 # webgpu-raytracing-lab
 
-<img width="3824" height="1828" alt="demo" src="https://github.com/user-attachments/assets/c04982b0-9e01-44ad-828e-cfe48f415606" />
+<img width="3748" height="1844" alt="demo" src="https://github.com/user-attachments/assets/7b54794c-b39a-4ec5-9e07-5ad5be3c1156" />
 
 
 This is my experiment on raytracing based on GPU.
