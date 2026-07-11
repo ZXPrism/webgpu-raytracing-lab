@@ -29,6 +29,7 @@
 - [ ] `260710` Editor, to place objects, lights, etc.
 - [X] `260710` Ray casting based on matrices
 - [X] `260711` Refactor config ui: currently registering a new field is cumbersome
+- [ ] `260711` Camera control
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
