@@ -14,6 +14,10 @@
 - [X] `260307` Convergence checks to save power
 - [ ] `260307` Mixed rendering (with rasterization)
   - [ ] `260712` Wireframes
+    - [ ] Sphere
+    - [X] Rect
+    - [ ] Triangle
+  - [ ] `260718` Raytracing Z-buffering
 - [ ] `260307` Picking
 - [ ] `260307` Editing
 - [ ] `260307` Shader optimizations (with profilers), maybe need some sort to improve locality, or do compressions!

@@ -604,23 +604,25 @@ export class Renderer {
                         command_encoder.popDebugGroup();
                     }
 
-                    command_encoder.pushDebugGroup("wireframe");
-                    {
-                        const wireframe_rect_render_pass = command_encoder.beginRenderPass({
-                            colorAttachments: [
-                                {
-                                    view: this._context.getCurrentTexture().createView(),
-                                    loadOp: "load",
-                                    storeOp: "store",
-                                },
-                            ],
-                        });
-                        wireframe_rect_render_pass.setBindGroup(0, this._wireframe_bind_group.bind_group_object);
-                        wireframe_rect_render_pass.setPipeline(this._wireframe_rect_pipeline);
-                        wireframe_rect_render_pass.draw(5, this._scene_buffers.rect_count);
-                        wireframe_rect_render_pass.end();
+                    if (this._config_manager.config.wireframe) {
+                        command_encoder.pushDebugGroup("wireframe");
+                        {
+                            const wireframe_rect_render_pass = command_encoder.beginRenderPass({
+                                colorAttachments: [
+                                    {
+                                        view: this._context.getCurrentTexture().createView(),
+                                        loadOp: "load",
+                                        storeOp: "store",
+                                    },
+                                ],
+                            });
+                            wireframe_rect_render_pass.setBindGroup(0, this._wireframe_bind_group.bind_group_object);
+                            wireframe_rect_render_pass.setPipeline(this._wireframe_rect_pipeline);
+                            wireframe_rect_render_pass.draw(5, this._scene_buffers.rect_count);
+                            wireframe_rect_render_pass.end();
 
-                        command_encoder.popDebugGroup();
+                            command_encoder.popDebugGroup();
+                        }
                     }
 
                     command_encoder.popDebugGroup();
