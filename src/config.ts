@@ -12,6 +12,7 @@ export interface Config {
     ray_far_threshold: number;
     convergence_check: boolean;
     convergence_threshold: number;
+    wireframe: boolean;
 }
 
 export class ConfigManager {
@@ -30,6 +31,7 @@ export class ConfigManager {
             ray_far_threshold: 100.1, // why .1? if it's 100.0, then `${100.0}` will become "100.0", then WGSL will consider it as i32..
             convergence_check: true,
             convergence_threshold: 1.0,
+            wireframe: false,
         };
     }
 }

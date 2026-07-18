@@ -36,6 +36,7 @@ const FIELD_DEFS: FieldDef[] = [
     { key: "ray_far_threshold", folder: "Rendering", label: "Far Threshold", widget: "slider", min: 10, max: 1000 },
     { key: "convergence_check", folder: "Rendering", label: "Convergence Check", widget: "toggle" },
     { key: "convergence_threshold", folder: "Rendering", label: "Convergence Threshold", widget: "slider", min: 0.0, max: 1000.0 },
+    { key: "wireframe", folder: "Rendering", label: "Wireframe", widget: "toggle" },
 
     // Scene ─────────────────────────────────────────────────────────────────
     { key: "sky_color", folder: "Scene", label: "Sky Color", widget: "color" },

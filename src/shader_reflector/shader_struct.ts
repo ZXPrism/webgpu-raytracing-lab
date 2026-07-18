@@ -176,16 +176,64 @@ export class ShaderStruct {
             Array.from({ length: entry_cnt }, (_, index) => {
                 return {
                     type: this._layout[optimal_entry_index_perm[index]].type,
-                    offset_bytes: - 1
+                    offset_bytes: -1
                 };
             }),
             optimal_size_bytes
         ];
     }
 
-    // todo!
-    // private _get_optimal_layout_impl_dp(): ShaderStructLayoutEntry[] {
-    // }
+    private _get_optimal_layout_impl_dp(): [ShaderStructLayoutEntry[], number] {
+        // LOL the time bomb blows up on 260718 when I tried increasing...
+        // ...the member count of SceneInfo from 6 to 11
+        // and 6! = 720, 11! = 39916800, boom!
+        // Let's try state compression DP!
+        const entry_cnt = this._layout.length;
+
+        const dp = Array.from({ length: 1 << entry_cnt }, () => 0x3f3f3f3f); // dp[mask] = optimal sizes when using members denoted by mask
+        dp[0] = 0;
+
+        const prev = Array.from({ length: 1 << entry_cnt }, () => -1);
+
+        for (let i = 0; i < (1 << entry_cnt); i++) {
+            for (let j = 0; j < entry_cnt; j++) {
+                if (~i >> j & 1) {
+                    const curr_entry_type = this._layout[j].type;
+                    const curr_entry_size = ShaderDataTypeSize[curr_entry_type];
+                    const curr_entry_alignment = ShaderDataTypeAlignment[curr_entry_type];
+                    const candidate = (Math.ceil(dp[i] / curr_entry_alignment) * curr_entry_alignment) + curr_entry_size;
+                    if (candidate < dp[i | (1 << j)]) {
+                        dp[i | (1 << j)] = candidate;
+                        prev[i | (1 << j)] = j;
+                    }
+                }
+            }
+        }
+
+        const max_alignment = this._layout.reduce((m, x) => Math.max(m, ShaderDataTypeAlignment[x.type]), -Infinity);
+        const optimal_size_bytes = Math.ceil(dp.at(-1) as number / max_alignment) * max_alignment;
+
+        const optimal_layout = Array.from({ length: entry_cnt }, (_, index) => {
+            return {
+                type: this._layout[index].type,
+                offset_bytes: -1
+            };
+        });
+        let curr_state = (1 << entry_cnt) - 1;
+        for (let i = entry_cnt - 1; i >= 0; i--) {
+            const curr_selected = prev[curr_state];
+            optimal_layout[i] = {
+                type: this._layout[curr_selected].type,
+                offset_bytes: -1
+            };
+            curr_state &= ~(1 << curr_selected);
+        }
+
+        return [
+            optimal_layout,
+            optimal_size_bytes
+        ];
+    }
 
     public check_optimal_layout() {
         // Find the optimal layout of current struct.
@@ -231,7 +279,7 @@ export class ShaderStruct {
             return is_valid;
         }
 
-        const [optimal_layout, optimal_size_bytes] = this._get_optimal_layout_impl_brute_force();
+        const [optimal_layout, optimal_size_bytes] = this._get_optimal_layout_impl_dp();
 
         if (validate_layout(this._layout, optimal_layout) === false) {
             throw new Error(`ShaderStruct (${this._name}): Bad impl of optimal layout algorithm: layout entry counts mismatch`);
