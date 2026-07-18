@@ -137,51 +137,51 @@ export class ShaderStruct {
         return this;
     }
 
-    private _get_optimal_layout_impl_brute_force(): [ShaderStructLayoutEntry[], number] {
-        // Enumerate all permutations of current layout array
-        const entry_cnt = this._layout.length;
+    // private _get_optimal_layout_impl_brute_force(): [ShaderStructLayoutEntry[], number] {
+    //     // Enumerate all permutations of current layout array
+    //     const entry_cnt = this._layout.length;
 
-        const used = Array.from({ length: entry_cnt }, () => false);
-        const entry_index_perm = Array.from({ length: entry_cnt }, () => -1);
+    //     const used = Array.from({ length: entry_cnt }, () => false);
+    //     const entry_index_perm = Array.from({ length: entry_cnt }, () => -1);
 
-        let optimal_entry_index_perm = Array.from({ length: entry_cnt }, () => -1);
-        let optimal_size_bytes = 0x3f3f3f3f;
+    //     let optimal_entry_index_perm = Array.from({ length: entry_cnt }, () => -1);
+    //     let optimal_size_bytes = 0x3f3f3f3f;
 
-        const dfs = (kth: number) => {
-            if (kth === entry_cnt) {
-                const shader_struct_builder = new ShaderStructBuilder("(I am a dummy used in the optimal layout algo >_<)");
-                for (let i = 0; i < entry_cnt; i++) {
-                    shader_struct_builder.add_field(`dummy field #{i}`, this.layout[entry_index_perm[i]].type);
-                }
+    //     const dfs = (kth: number) => {
+    //         if (kth === entry_cnt) {
+    //             const shader_struct_builder = new ShaderStructBuilder("(I am a dummy used in the optimal layout algo >_<)");
+    //             for (let i = 0; i < entry_cnt; i++) {
+    //                 shader_struct_builder.add_field(`dummy field #{i}`, this.layout[entry_index_perm[i]].type);
+    //             }
 
-                const current_size_bytes = shader_struct_builder.build(true).size_bytes;
-                if (current_size_bytes < optimal_size_bytes) {
-                    optimal_size_bytes = current_size_bytes;
-                    optimal_entry_index_perm = structuredClone(entry_index_perm);
-                }
-                return;
-            }
-            for (let i = 0; i < entry_cnt; i++) {
-                if (used[i] === false) {
-                    used[i] = true;
-                    entry_index_perm[kth] = i;
-                    dfs(kth + 1);
-                    used[i] = false;
-                }
-            }
-        };
-        dfs(0);
+    //             const current_size_bytes = shader_struct_builder.build(true).size_bytes;
+    //             if (current_size_bytes < optimal_size_bytes) {
+    //                 optimal_size_bytes = current_size_bytes;
+    //                 optimal_entry_index_perm = structuredClone(entry_index_perm);
+    //             }
+    //             return;
+    //         }
+    //         for (let i = 0; i < entry_cnt; i++) {
+    //             if (used[i] === false) {
+    //                 used[i] = true;
+    //                 entry_index_perm[kth] = i;
+    //                 dfs(kth + 1);
+    //                 used[i] = false;
+    //             }
+    //         }
+    //     };
+    //     dfs(0);
 
-        return [
-            Array.from({ length: entry_cnt }, (_, index) => {
-                return {
-                    type: this._layout[optimal_entry_index_perm[index]].type,
-                    offset_bytes: -1
-                };
-            }),
-            optimal_size_bytes
-        ];
-    }
+    //     return [
+    //         Array.from({ length: entry_cnt }, (_, index) => {
+    //             return {
+    //                 type: this._layout[optimal_entry_index_perm[index]].type,
+    //                 offset_bytes: -1
+    //             };
+    //         }),
+    //         optimal_size_bytes
+    //     ];
+    // }
 
     private _get_optimal_layout_impl_dp(): [ShaderStructLayoutEntry[], number] {
         // LOL the time bomb blows up on 260718 when I tried increasing...
