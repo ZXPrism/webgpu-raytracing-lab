@@ -83,6 +83,7 @@ export interface SceneBuffers {
     object_count: number;
     sphere_count: number;
     rect_count: number;
+    triangle_count: number;
     material_count: number;
 }
 
@@ -282,6 +283,7 @@ export class SceneLoader {
             object_count: scene_data.objects.length,
             sphere_count: spheres.length,
             rect_count: rects.length,
+            triangle_count: triangles.length,
             material_count: materials.length
         };
     }

@@ -13,6 +13,7 @@
 - [ ] `260307` Perf (with limited metrics) for quickly checks
 - [X] `260307` Convergence checks to save power
 - [ ] `260307` Mixed rendering (with rasterization)
+  - [ ] `260712` Wireframes
 - [ ] `260307` Picking
 - [ ] `260307` Editing
 - [ ] `260307` Shader optimizations (with profilers), maybe need some sort to improve locality, or do compressions!
@@ -30,6 +31,8 @@
 - [X] `260710` Ray casting based on matrices
 - [X] `260711` Refactor config ui: currently registering a new field is cumbersome
 - [ ] `260711` Camera control
+- [ ] `260714` Fix bug when tweaking configs do not trigger re-draw due to convergence check
+- [X] `260718` Optimize optimal shader struct layout computation using state compression DP
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression

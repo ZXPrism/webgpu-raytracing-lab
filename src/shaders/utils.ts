@@ -32,12 +32,17 @@ const MATERIAL_TYPE_GLASS = ${MATERIAL_TYPE.GLASS}u;
 // ===== basic
 
 struct SceneInfo {
+  intrinsics: mat4x4f,
+  extrinsics: mat4x4f,
   inv_intrinsics: mat4x4f,
   inv_extrinsics: mat4x4f,
   eye: vec3f,
   width: u32,
   height: u32,
   object_count: u32,
+  sphere_count: u32,
+  rect_count: u32,
+  triangle_count: u32,
 }
 
 struct Ray {

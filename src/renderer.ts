@@ -11,6 +11,7 @@ import { get_shader_prep_hit_test } from "./shaders/prep_hit_test";
 import { get_shader_hit_test } from "./shaders/hit_test";
 import { filter_kernel_workgroup_size, get_shader_filter } from "./shaders/filter";
 import { get_shader_blit } from "./shaders/blit";
+import { get_shader_wireframe_rect } from "./shaders/wireframe";
 
 import { vec3, mat4 } from "gl-matrix";
 import { ShaderReflector } from "./shader_reflector/shader_reflector";
@@ -51,6 +52,11 @@ export class Renderer {
 
     _blit_pipeline!: GPURenderPipeline;
     _blit_bind_group!: BindGroup;
+
+    _wireframe_sphere_pipeline!: GPURenderPipeline;
+    _wireframe_rect_pipeline!: GPURenderPipeline;
+    _wireframe_triangle_pipeline!: GPURenderPipeline;
+    _wireframe_bind_group!: BindGroup;
 
     _utils_shader_reflector!: ShaderReflector;
 
@@ -150,7 +156,12 @@ export class Renderer {
         //this._bvh_tree = build_bvh(this._scene_buffers.object_array);
     }
 
-    public prepare_scene_info_data(object_count: number): ArrayBuffer {
+    public prepare_scene_info_data(
+        object_count: number,
+        sphere_count: number,
+        rect_count: number,
+        triangle_count: number,
+    ): ArrayBuffer {
         // ========
         //  camera
         // ========
@@ -178,8 +189,8 @@ export class Renderer {
         const intrinsics = mat4.fromValues(
             fx, 0.0, 0.0, 0.0,
             0.0, fy, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            cx, cy, 0.0, 1.0,
+            cx, cy, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
         );
         const inv_intrinsics = mat4.create();
         mat4.invert(inv_intrinsics, intrinsics);
@@ -190,6 +201,8 @@ export class Renderer {
             camera_gaze_norm[0], camera_gaze_norm[1], camera_gaze_norm[2], 0.0,
             config.camera_eye[0], config.camera_eye[1], config.camera_eye[2], 1.0,
         );
+        const w2c = mat4.create();
+        mat4.invert(w2c, c2w);
 
 
         // =================
@@ -199,12 +212,17 @@ export class Renderer {
 
         const scene_info_struct = this._utils_shader_reflector.get_struct("SceneInfo");
         scene_info_struct
+            .set_field("intrinsics", intrinsics)
+            .set_field("extrinsics", w2c)
             .set_field("inv_intrinsics", inv_intrinsics)
             .set_field("inv_extrinsics", c2w)
             .set_field("width", this._canvas_width)
             .set_field("height", this._canvas_height)
             .set_field("eye", config.camera_eye)
-            .set_field("object_count", object_count);
+            .set_field("object_count", object_count)
+            .set_field("sphere_count", sphere_count)
+            .set_field("rect_count", rect_count)
+            .set_field("triangle_count", triangle_count);
 
         return scene_info_struct.data;
     }
@@ -267,6 +285,7 @@ export class Renderer {
             bindGroupLayouts: [blit_bind_group_layout]
         });
         this._blit_pipeline = this._device.createRenderPipeline({
+            label: "blit pipeline",
             layout: blit_pipeline_layout,
             vertex: {
                 module: this._device.createShaderModule({
@@ -291,6 +310,67 @@ export class Renderer {
             },
         });
 
+        const wireframe_bind_group_layout = this._device.createBindGroupLayout({
+            entries: [
+                { // var<uniform> in_scene_info: SceneInfo
+                    binding: 0,
+                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+                    buffer: {
+                        type: "uniform"
+                    }
+                },
+                { // var<storage, read> in_sphere_array: array<Sphere>
+                    binding: 1,
+                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+                    buffer: {
+                        type: "read-only-storage"
+                    }
+                },
+                { // var<storage, read> in_rect_array: array<Rect>
+                    binding: 2,
+                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+                    buffer: {
+                        type: "read-only-storage"
+                    }
+                },
+                { // var<storage, read> in_triangle_array: array<Triangle>
+                    binding: 3,
+                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+                    buffer: {
+                        type: "read-only-storage"
+                    }
+                }
+            ]
+        });
+        const wireframe_pipeline_layout = this._device.createPipelineLayout({
+            bindGroupLayouts: [wireframe_bind_group_layout]
+        });
+        this._wireframe_rect_pipeline = this._device.createRenderPipeline({
+            label: "wireframe rect pipeline",
+            layout: wireframe_pipeline_layout,
+            vertex: {
+                module: this._device.createShaderModule({
+                    code: shader_utils + get_shader_wireframe_rect(),
+                }),
+                entryPoint: "vertex"
+            },
+            fragment: {
+                module: this._device.createShaderModule({
+                    code: shader_utils + get_shader_wireframe_rect(),
+                }),
+                entryPoint: "fragment",
+                targets: [
+                    {
+                        format: this._presentation_format,
+                        writeMask: GPUColorWrite.ALL
+                    }
+                ]
+            },
+            primitive: {
+                topology: "line-strip"
+            },
+        });
+
     }
 
     public async init_bind_groups() {
@@ -298,13 +378,28 @@ export class Renderer {
         //  scene buffers
         // ===============
 
-        const { object_array_buffer, sphere_array_buffer, rect_array_buffer, triangle_array_buffer, material_array_buffer, object_count } = this._scene_buffers;
+        const {
+            object_array_buffer,
+            sphere_array_buffer,
+            rect_array_buffer,
+            triangle_array_buffer,
+            material_array_buffer,
+            object_count,
+            sphere_count,
+            rect_count,
+            triangle_count,
+        } = this._scene_buffers;
 
         // ============
         //  scene info
         // ============
 
-        const scene_info_data = this.prepare_scene_info_data(object_count);
+        const scene_info_data = this.prepare_scene_info_data(
+            object_count,
+            sphere_count,
+            rect_count,
+            triangle_count,
+        );
         const scene_info_buffer = create_gpu_uniform_buffer(this._device, "scene info", scene_info_data.byteLength);
         this._device.queue.writeBuffer(scene_info_buffer, 0, scene_info_data);
 
@@ -375,6 +470,13 @@ export class Renderer {
             .add_buffer("in_scene_info", 0, scene_info_buffer)
             .add_buffer("in_filtered_color_buffer", 1, this._filter_kernel_bind_group.get_buffer("out_filtered_color_buffer"))
             .build_raw(this._blit_pipeline);
+
+        this._wireframe_bind_group = new BindGroupBuilder(this._device, "wireframe bind group")
+            .add_buffer("in_scene_info", 0, scene_info_buffer)
+            .add_buffer("in_sphere_array", 1, sphere_array_buffer)
+            .add_buffer("in_rect_array", 2, rect_array_buffer)
+            .add_buffer("in_triangle_array", 3, triangle_array_buffer)
+            .build_raw(this._wireframe_rect_pipeline);
     }
 
     public init_callbacks() {
@@ -489,8 +591,8 @@ export class Renderer {
                                 {
                                     view: this._context.getCurrentTexture().createView(),
                                     clearValue: { r: 0, g: 0, b: 0, a: 1 },
-                                    loadOp: 'clear' as GPULoadOp,
-                                    storeOp: 'store' as GPUStoreOp,
+                                    loadOp: "clear",
+                                    storeOp: "store",
                                 },
                             ],
                         });
@@ -498,6 +600,25 @@ export class Renderer {
                         blit_render_pass.setPipeline(this._blit_pipeline);
                         blit_render_pass.draw(4, 1);
                         blit_render_pass.end();
+
+                        command_encoder.popDebugGroup();
+                    }
+
+                    command_encoder.pushDebugGroup("wireframe");
+                    {
+                        const wireframe_rect_render_pass = command_encoder.beginRenderPass({
+                            colorAttachments: [
+                                {
+                                    view: this._context.getCurrentTexture().createView(),
+                                    loadOp: "load",
+                                    storeOp: "store",
+                                },
+                            ],
+                        });
+                        wireframe_rect_render_pass.setBindGroup(0, this._wireframe_bind_group.bind_group_object);
+                        wireframe_rect_render_pass.setPipeline(this._wireframe_rect_pipeline);
+                        wireframe_rect_render_pass.draw(5, this._scene_buffers.rect_count);
+                        wireframe_rect_render_pass.end();
 
                         command_encoder.popDebugGroup();
                     }
