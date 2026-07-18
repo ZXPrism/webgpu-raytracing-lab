@@ -30,7 +30,6 @@ fn vertex(
     vs_output.position = vec4f(rect.corner + rect.v, 1.0);
   }
 
-  let camera_position = in_scene_info.extrinsics * vs_output.position;
   vs_output.position = vp * vs_output.position;
 
   let z = vs_output.position.z;
