@@ -37,6 +37,8 @@
 - [ ] `260711` Camera control
 - [ ] `260714` Fix bug when tweaking configs do not trigger re-draw due to convergence check
 - [X] `260718` Optimize optimal shader struct layout computation using state compression DP
+- [ ] `260718` Lazy rebuild: currently, any config change will force rebuilding all kernels & pipelines, this is inefficient
+- [ ] `260718` Atmosphere scattering
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
