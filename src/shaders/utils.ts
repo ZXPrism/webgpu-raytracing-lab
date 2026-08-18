@@ -1,6 +1,7 @@
 import type { Config } from "../config";
 import { constant_pi } from "../config";
 import { GEOMETRY_TYPE, MATERIAL_TYPE } from "../scene";
+import { encoded_to_linear } from "../utils";
 
 export function get_shader_utils(config: Config): string {
   return /* wgsl */`
@@ -15,7 +16,10 @@ const PI = ${constant_pi};
 // LESSON (260307): always set color in linear space.
 // but most tools give us srgb-encoded values.
 // so do the conversion first.
-const SKY_COLOR = vec3f(${config.sky_color});
+// LESSON (260818)
+// it's cumbersome to convert manually, let's set a new rule:
+// always provide external colors in encoded space
+const SKY_COLOR = vec3f(${encoded_to_linear(config.sky_color)});
 const RAY_NEAR_THRESHOLD = ${config.ray_near_threshold};
 const RAY_FAR_THRESHOLD = ${config.ray_far_threshold};
 const GEOMETRY_TYPE_SPHERE = ${GEOMETRY_TYPE.SPHERE}u;

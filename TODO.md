@@ -39,10 +39,12 @@
 - [X] `260718` Optimize optimal shader struct layout computation using state compression DP
 - [ ] `260718` Lazy rebuild: currently, any config change will force rebuilding all kernels & pipelines, this is inefficient
 - [ ] `260718` Atmosphere scattering
+- [ ] `260718` Determine a better way to handle normals (currenly all face outwards)
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
 - [ ] `260307` Gallery
+  - [ ] `260718` Grass Block
 - [ ] `260314` Docs
 
 ## Miscs
