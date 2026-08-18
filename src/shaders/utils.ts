@@ -54,6 +54,7 @@ struct Ray {
   direction_norm: vec3f,
   pixel_offset: u32,
   weight: vec3f,
+  //rng_state: u32,
 }
 
 struct IndirectArgs {
