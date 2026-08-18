@@ -25,6 +25,10 @@
 - [ ] `260308` ShaderReflector: generate shader structs bind codes, so that we can have IntelliSense!
 - [ ] `260308` BindGroupBuilder: provide wrappers to (create then) add {storage,uniform} buffer, do not expose GPUBufferUsage flags
 - [ ] `260314` Randomization overhaul. Evaluate current randomness (may be some freq analysis?)
+  - `260818` AI analysis
+    - `f32(in_frame_index) * 114514.1919810 + f32(ray_array_offset)` can lead to degenerated result when `in_frame_index` is too large because of loss of precision
+    - current rng is not so pseudo; rng state should progress per ray per operation
+    - rather than depends on "random" thread scheduling
 - [ ] `260315` Graph node editor similar to Blender
 - [ ] `260315` Environmental mapping
 - [ ] `260319` Neural graphics

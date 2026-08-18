@@ -51,10 +51,11 @@ struct SceneInfo {
 
 struct Ray {
   origin: vec3f,
+  recursion_depth: u32,
   direction_norm: vec3f,
   pixel_offset: u32,
   weight: vec3f,
-  //rng_state: u32,
+  rng_state: u32,
 }
 
 struct IndirectArgs {
@@ -109,41 +110,48 @@ struct Material { // see scene.ts for clearer interface
 //  random
 // ========
 
-var<private> seed_bias = 0.0;
+// Overhauled on 260818
 
-// from: https://marktension.nl/blog/my_favorite_wgsl_random_func_so_far/
-fn rand(seed: f32) -> f32 {
-  var x = bitcast<u32>(seed_bias * 233.33 + seed);
+fn rng_init(pixel_offset: u32, frame_index: u32) -> u32 {
+  let frame_hash = pcg_hash(frame_index + 0x9e3779b9u);
+  return pcg_hash(pixel_offset ^ frame_hash);
+}
 
-  // A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm for u32.
-  x += (x << 10u);
-  x ^= (x >> 6u);
-  x += (x << 3u);
-  x ^= (x >> 11u);
-  x += (x << 15u);
+fn pcg_hash(input: u32) -> u32 {
+  let state = input * 747796405u + 2891336453u;
+  let word =
+    ((state >> ((state >> 28u) + 4u)) ^ state)
+    * 277803737u;
 
-  // Construct a float with half-open range [0:1] using low 23 bits.
-  let ieee_mantissa = 0x007FFFFFu;   // binary32 mantissa bitmask
-  let ieee_one = 0x3F800000u;        // 1.0 in IEEE binary32
-  x &= ieee_mantissa;                // Keep only mantissa bits (fractional part)
-  x |= ieee_one;                     // Add fractional part to 1.0
+  return (word >> 22u) ^ word;
+}
 
-  let res = bitcast<f32>(x);         // Range [1:2]
-  seed_bias = res - 1.0;             // Range [0:1]
-  return seed_bias;
+fn rng_next_u32(rng_state: ptr<function, u32>) -> u32 {
+  let state = (*rng_state) * 747796405u + 2891336453u;
+  *rng_state = state;
+
+  let word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+
+  return (word >> 22u) ^ word;
+}
+
+fn rng_next_f32(rng_state: ptr<function, u32>) -> f32 {
+  // Keep the upper 24 random bits so conversion is exactly representable
+  // and the result remains in [0, 1).
+  let value = rng_next_u32(rng_state) >> 8u;
+  return f32(value) * (1.0 / 16777216.0);
 }
 
 // uniform [-0.5, 0.5]^2
-fn rand_unit_square(seed: f32) -> vec2f {
-  let x = rand(seed);
-  return vec2f(x, rand(x)) - 0.5;
+fn rand_unit_square(rng_state: ptr<function, u32>) -> vec2f {
+  return vec2f(rng_next_f32(rng_state), rng_next_f32(rng_state)) - 0.5;
 }
 
 // NOTE: uniform on the unit sphere's shell (not uniform inside the the unit sphere volume)
 // That is, the result is always an unit vector
-fn rand_unit_sphere_shell(seed: f32) -> vec3f {
-  let y = 2.0 * rand(seed) - 1.0;
-  let phi = 2.0 * PI * rand(seed + 1.0);
+fn rand_unit_sphere_shell(rng_state: ptr<function, u32>) -> vec3f {
+  let y = 2.0 * rng_next_f32(rng_state) - 1.0;
+  let phi = 2.0 * PI * rng_next_f32(rng_state);
   let r = sqrt(1.0 - y * y);
   return vec3f(r * cos(phi), y, r * sin(phi));
 }
@@ -283,18 +291,18 @@ fn triangle_get_normal_norm(ray: Ray, triangle: Triangle) -> vec3f {
 // NOTE: each function returns new ray's direction, which should be normalized (here)
 // callers should always expect to get a noramlized ray direction
 
-fn evaluate_diffuse(normal_norm: vec3f, seed: f32) -> vec3f {
+fn evaluate_diffuse(normal_norm: vec3f, rng_state: ptr<function, u32>) -> vec3f {
   // TODO: check if this is lambertian, need a proof
-  let res_ray_direction = normal_norm + rand_unit_sphere_shell(seed);
+  let res_ray_direction = normal_norm + rand_unit_sphere_shell(rng_state);
   return normalize(select(-res_ray_direction, res_ray_direction, dot(res_ray_direction, normal_norm) >= 0.0));
 }
 
-fn evaluate_metal(normal_norm: vec3f, in_ray_direction: vec3f, fuzziness: f32, seed: f32) -> vec3f {
+fn evaluate_metal(normal_norm: vec3f, in_ray_direction: vec3f, fuzziness: f32, rng_state: ptr<function, u32>) -> vec3f {
   let res_ray_direction = reflect(in_ray_direction, normal_norm);
-  return normalize(normalize(res_ray_direction) + (fuzziness * rand_unit_sphere_shell(seed)));
+  return normalize(normalize(res_ray_direction) + (fuzziness * rand_unit_sphere_shell(rng_state)));
 }
 
-fn evaluate_glass(normal_norm: vec3f, in_ray_direction_norm: vec3f, refraction_index: f32, seed: f32) -> vec3f {
+fn evaluate_glass(normal_norm: vec3f, in_ray_direction_norm: vec3f, refraction_index: f32, rng_state: ptr<function, u32>) -> vec3f {
   let entering = dot(in_ray_direction_norm, normal_norm) <= 0.0;
   let co_norm = select(-normal_norm, normal_norm, entering);
   let eta = select(refraction_index, 1.0 / refraction_index, entering);
@@ -305,7 +313,7 @@ fn evaluate_glass(normal_norm: vec3f, in_ray_direction_norm: vec3f, refraction_i
 
   let refracted = refract(in_ray_direction_norm, co_norm, eta);
 
-  if all(refracted == vec3f(0.0)) || fresnel > rand(seed) {
+  if all(refracted == vec3f(0.0)) || fresnel > rng_next_f32(rng_state) {
     return reflect(in_ray_direction_norm, normal_norm);
   } else {
     return refracted;

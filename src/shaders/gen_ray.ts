@@ -27,7 +27,9 @@ fn compute(
     out_ray_array_length = width * height;
   }
 
-  let pixel_offset = rand_unit_square(f32(in_frame_index) * 114514.1919810 + f32(ray_array_offset));
+  var rng_state = rng_init(ray_array_offset, in_frame_index);
+
+  let pixel_offset = rand_unit_square(&rng_state);
   let pixel_coord_2d = vec2f(f32(x) + 0.5, f32(y) + 0.5) + pixel_offset;
   let pixel_coord = vec4f(pixel_coord_2d, 1.0, 1.0);
   let view_coord = in_scene_info.inv_intrinsics * pixel_coord;
@@ -35,7 +37,7 @@ fn compute(
 
   if x < width && y < height {
     let direction_norm = normalize(world_coord.xyz - eye);
-    let primary_ray = Ray(eye, direction_norm, ray_array_offset, vec3f(1.0));
+    let primary_ray = Ray(eye, 0u, direction_norm, ray_array_offset, vec3f(1.0), rng_state);
     out_ray_array[ray_array_offset] = primary_ray;
   }
 }

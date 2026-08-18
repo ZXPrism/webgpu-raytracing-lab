@@ -26,6 +26,8 @@ fn compute(
   if id < in_ray_array_length {
     let ray = in_ray_array[id];
 
+    var rng_state = ray.rng_state;
+
     var min_t = 1e10;
     var hit_object_id = -1;
 
@@ -74,16 +76,16 @@ fn compute(
 
       var new_ray_direction_norm = vec3f(0.0);
       if material_type == MATERIAL_TYPE_DIFFUSE {
-        new_ray_direction_norm = evaluate_diffuse(normal_norm, f32(write_idx) * min_t);
-        out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), new_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
+        new_ray_direction_norm = evaluate_diffuse(normal_norm, &rng_state);
+        out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), ray.recursion_depth + 1u, new_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo, rng_state);
       } else if material_type == MATERIAL_TYPE_METAL {
-        new_ray_direction_norm = evaluate_metal(normal_norm, ray.direction_norm, material.fuzziness, f32(write_idx) * min_t);
-        out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), new_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo);
+        new_ray_direction_norm = evaluate_metal(normal_norm, ray.direction_norm, material.fuzziness, &rng_state);
+        out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), ray.recursion_depth + 1u, new_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo, rng_state);
       } else { // glass
         let entering = dot(ray.direction_norm, normal_norm) <= 0.0;
         let offset_dir = select(normal_norm, -normal_norm, entering);
-        new_ray_direction_norm = evaluate_glass(normal_norm, ray.direction_norm, material.refraction_index, f32(write_idx) * min_t);
-        out_ray_array[write_idx] = Ray(hit_point + (EPS * offset_dir), new_ray_direction_norm, ray.pixel_offset, ray.weight);
+        new_ray_direction_norm = evaluate_glass(normal_norm, ray.direction_norm, material.refraction_index, &rng_state);
+        out_ray_array[write_idx] = Ray(hit_point + (EPS * offset_dir), ray.recursion_depth + 1u, new_ray_direction_norm, ray.pixel_offset, ray.weight, rng_state);
         // LESSON (260314) we almost always need some bias to improve numerical stability..
       }
     } else {
