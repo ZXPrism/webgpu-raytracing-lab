@@ -3,7 +3,7 @@ export const filter_kernel_workgroup_size = [128, 1, 1];
 export function get_shader_filter(): string {
   return /* wgsl */`
 @group(0) @binding(0) var<uniform> in_scene_info: SceneInfo;
-@group(0) @binding(1) var<storage, read> in_frame_index: u32;
+@group(0) @binding(1) var<uniform> in_frame_index: u32;
 @group(0) @binding(2) var<storage, read> in_color_buffer: array<vec4f>;
 @group(0) @binding(3) var<storage, read_write> out_filtered_color_buffer: array<vec4f>;
 @group(0) @binding(4) var<storage, read_write> out_render_diff_per_workgroup: array<f32>;

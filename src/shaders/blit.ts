@@ -1,4 +1,6 @@
-export function get_shader_blit(): string {
+import type { Config } from "../config";
+
+export function get_shader_blit(config: Config): string {
   return /* wgsl */`
 @group(0) @binding(0) var<uniform> in_scene_info: SceneInfo;
 @group(0) @binding(1) var<storage, read> in_filtered_color_buffer: array<vec4f>;
@@ -18,22 +20,31 @@ fn vertex(@builtin(vertex_index) vertex_index: u32) -> VSOutput {
   return vs_output;
 }
 
+fn aces(in_color: vec3f) -> vec3f {
+  return clamp((in_color.rgb * (2.51 * in_color.rgb + vec3f(0.03)))
+    / (in_color.rgb * (2.43 * in_color.rgb + vec3f(0.59)) + vec3f(0.14)),
+    vec3f(0.0), vec3f(1.0));
+}
+
 @fragment
 fn fragment(@builtin(position) position: vec4f) -> @location(0) vec4f {
   let width = in_scene_info.width;
   let pixel_offset = u32(position.y) * width + u32(position.x);
-  let linear_color = in_filtered_color_buffer[pixel_offset];
+  let linear_color = in_filtered_color_buffer[pixel_offset].rgb;
+
+  let exposed_color = linear_color * exp2(${config.ev_correction});
+  let tone_mapped = aces(exposed_color);
+
+  // 260818: after failed attempts for 3 times, I finally get what is gamma correction!
+  // Yay!
   let cutoff = 0.0031308;
   let srgb = select(
-    1.055 * pow(linear_color.rgb, vec3f(1.0/2.4)) - 0.055,
-    12.92 * linear_color.rgb,
-    linear_color.rgb < vec3f(cutoff)
+    1.055 * pow(tone_mapped, vec3f(1.0/2.4)) - 0.055,
+    12.92 * tone_mapped,
+    tone_mapped < vec3f(cutoff)
   );
 
-  let tone_mapped = (linear_color.rgb * (2.51 * linear_color.rgb + vec3f(0.03)))
-    / (linear_color.rgb * (2.43 * linear_color.rgb + vec3f(0.59)) + vec3f(0.14));
-
-  return vec4f(tone_mapped, linear_color.a);
+  return vec4f(srgb, 1.0);
 }
 `;
 }

@@ -37,6 +37,8 @@ const FIELD_DEFS: FieldDef[] = [
     { key: "convergence_check", folder: "Rendering", label: "Convergence Check", widget: "toggle" },
     { key: "convergence_threshold", folder: "Rendering", label: "Convergence Threshold", widget: "slider", min: 0.0, max: 1000.0 },
     { key: "wireframe", folder: "Rendering", label: "Wireframe", widget: "toggle" },
+    { key: "roulette_start_depth", folder: "Rendering", label: "Roulette Start Depth", widget: "int-slider", min: 1, max: 64 },
+    { key: "ev_correction", folder: "Rendering", label: "EV Correction", widget: "int-slider", min: -3, max: 3 },
 
     // Scene ─────────────────────────────────────────────────────────────────
     { key: "sky_color", folder: "Scene", label: "Sky Color", widget: "color" },

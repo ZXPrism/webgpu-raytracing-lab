@@ -98,3 +98,14 @@ export function create_gpu_storage_buffer_u32(device: GPUDevice, bufferName: str
 
     return gpu_buffer;
 }
+
+// helper to create a gpu uniform buffer containing one single u32
+export function create_gpu_uniform_buffer_u32(device: GPUDevice, bufferName: string, value_u32: number): GPUBuffer {
+    const gpu_buffer = create_gpu_buffer(device, bufferName, GPUBufferUsage.UNIFORM, 4);
+
+    const buffer = new Uint32Array(1);
+    buffer[0] = value_u32;
+    device.queue.writeBuffer(gpu_buffer, 0, buffer.buffer);
+
+    return gpu_buffer;
+}

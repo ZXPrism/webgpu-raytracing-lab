@@ -13,6 +13,8 @@ export interface Config {
     convergence_check: boolean;
     convergence_threshold: number;
     wireframe: boolean;
+    roulette_start_depth: number;
+    ev_correction: number;
 }
 
 export class ConfigManager {
@@ -26,12 +28,14 @@ export class ConfigManager {
             camera_eye: vec3.fromValues(4.97, 4.97, 3.47),
             camera_center: vec3.fromValues(0.0, 0.0, 0.0),
             eps: 0.001,
-            sky_color: vec3.fromValues(0.48, 0.82, 1.0),
+            sky_color: vec3.fromValues(0.7, 0.7, 0.7),
             ray_near_threshold: 0.001,
             ray_far_threshold: 100.1, // why .1? if it's 100.0, then `${100.0}` will become "100.0", then WGSL will consider it as i32..
             convergence_check: true,
             convergence_threshold: 1.0,
             wireframe: false,
+            roulette_start_depth: 10,
+            ev_correction: 0,
         };
     }
 }

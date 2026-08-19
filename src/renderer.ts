@@ -2,7 +2,7 @@ import type { BindGroup } from "./bind_group";
 import type { Kernel } from "./kernel";
 import { KernelBuilder } from "./kernel_builder";
 import { BindGroupBuilder } from "./bind_group_builder";
-import { create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_storage_buffer_u32, create_gpu_uniform_buffer, read_gpu_buffer_f32 } from "./kernel_utils";
+import { create_gpu_indirect_buffer, create_gpu_storage_buffer, create_gpu_uniform_buffer, create_gpu_uniform_buffer_u32, read_gpu_buffer_f32 } from "./kernel_utils";
 import { ConfigManager } from "./config";
 
 import { get_shader_utils } from "./shaders/utils";
@@ -36,6 +36,7 @@ export class Renderer {
     _pixel_cnt!: number;
     _filter_kernel_dispatch_x!: number;
     _render_diff!: number;
+    _frame_index!: number;
 
     _gen_ray_kernel!: Kernel;
     _gen_ray_kernel_bind_group!: BindGroup;
@@ -62,6 +63,8 @@ export class Renderer {
 
     constructor(config_manager: ConfigManager) {
         this._config_manager = config_manager;
+        this._render_diff = Infinity;
+        this._frame_index = 1;
         //this._bvh_tree = null;
     }
 
@@ -240,7 +243,6 @@ export class Renderer {
         this._canvas_height = canvas.height;
         this._pixel_cnt = this._canvas_width * this._canvas_height;
         this._filter_kernel_dispatch_x = Math.ceil(this._pixel_cnt / filter_kernel_workgroup_size[0]);
-        this._render_diff = Infinity;
     }
 
     public init_kernels() {
@@ -256,7 +258,7 @@ export class Renderer {
         this._prep_hit_test_kernel = new KernelBuilder(this._device, "prep hit test kernel", shader_utils + get_shader_prep_hit_test(), "compute")
             .build();
 
-        this._hit_test_kernel = new KernelBuilder(this._device, "hit test kernel", shader_utils + get_shader_hit_test(), "compute")
+        this._hit_test_kernel = new KernelBuilder(this._device, "hit test kernel", shader_utils + get_shader_hit_test(config), "compute")
             .build();
 
 
@@ -289,13 +291,13 @@ export class Renderer {
             layout: blit_pipeline_layout,
             vertex: {
                 module: this._device.createShaderModule({
-                    code: shader_utils + get_shader_blit(),
+                    code: shader_utils + get_shader_blit(config),
                 }),
                 entryPoint: "vertex"
             },
             fragment: {
                 module: this._device.createShaderModule({
-                    code: shader_utils + get_shader_blit(),
+                    code: shader_utils + get_shader_blit(config),
                 }),
                 entryPoint: "fragment",
                 targets: [
@@ -412,12 +414,12 @@ export class Renderer {
         const ray_array_length_pong = create_gpu_storage_buffer(this._device, "ray array length pong", 4);
         const ray_array_pong = create_gpu_storage_buffer(this._device, "ray array pong", elem_size_struct_ray * this._canvas_width * this._canvas_height);
 
-        const frame_index_buffer = create_gpu_storage_buffer_u32(this._device, "frame index", 0);
+        const frame_index_buffer = create_gpu_uniform_buffer_u32(this._device, "frame index", 0);
         this._gen_ray_kernel_bind_group = new BindGroupBuilder(this._device, "gen ray kernel bind group")
             .add_buffer("in_scene_info", 0, scene_info_buffer)
             .add_buffer("out_ray_array_length", 1, ray_array_length_ping)
             .add_buffer("out_ray_array", 2, ray_array_ping)
-            .add_buffer("out_frame_index", 3, frame_index_buffer)
+            .add_buffer("in_frame_index", 3, frame_index_buffer)
             .build(this._gen_ray_kernel);
 
         const prep_hit_test_kernel_bind_group_ping = new BindGroupBuilder(this._device, "prep hit test kernel bind group ping")
@@ -460,7 +462,7 @@ export class Renderer {
 
         this._filter_kernel_bind_group = new BindGroupBuilder(this._device, "filter kernel bind group")
             .add_buffer("in_scene_info", 0, scene_info_buffer)
-            .add_buffer("in_frame_index", 1, this._gen_ray_kernel_bind_group.get_buffer("out_frame_index"))
+            .add_buffer("in_frame_index", 1, frame_index_buffer)
             .add_buffer("in_color_buffer", 2, color_buffer)
             .create_then_add_buffer("out_filtered_color_buffer", 3, GPUBufferUsage.STORAGE, 16 * this._canvas_width * this._canvas_height)
             .create_then_add_buffer("out_render_diff_per_workgroup", 4, GPUBufferUsage.STORAGE, 4 * this._filter_kernel_dispatch_x)
@@ -482,12 +484,14 @@ export class Renderer {
     public init_callbacks() {
         this._event_bus.listen("canvas-size-changed", () => {
             this._render_diff = Infinity;
+            this._frame_index = 1;
             this.init_canvas_size();
             this.init_bind_groups();
         });
 
         this._event_bus.listen("config-changed", () => {
             this._render_diff = Infinity;
+            this._frame_index = 1;
             this.init_kernels();
             this.init_bind_groups();
         });
@@ -544,7 +548,12 @@ export class Renderer {
 
             const command_encoder = this._device.createCommandEncoder();
             {
+                const frame_index_buffer = new Uint32Array(1);
+                frame_index_buffer[0] = this._frame_index;
+                this._device.queue.writeBuffer(this._filter_kernel_bind_group.get_buffer("in_frame_index"), 0, frame_index_buffer);
                 command_encoder.clearBuffer(this._filter_kernel_bind_group.get_buffer("in_color_buffer"));
+
+                this._frame_index++;
 
                 command_encoder.pushDebugGroup("frame");
                 {
