@@ -13,6 +13,8 @@ export interface Config {
     convergence_check: boolean;
     convergence_threshold: number;
     wireframe: boolean;
+    roulette_start_depth: number;
+    ev_correction: number;
 }
 
 export class ConfigManager {
@@ -32,6 +34,8 @@ export class ConfigManager {
             convergence_check: true,
             convergence_threshold: 1.0,
             wireframe: false,
+            roulette_start_depth: 10,
+            ev_correction: 0,
         };
     }
 }

@@ -1,4 +1,6 @@
-export function get_shader_hit_test(): string {
+import type { Config } from "../config";
+
+export function get_shader_hit_test(config: Config): string {
   return /* wgsl */`
 @group(0) @binding(0) var<storage, read> in_ray_array_length: u32;
 @group(0) @binding(1) var<storage, read> in_ray_array: array<Ray>;
@@ -56,7 +58,6 @@ fn compute(
     }
 
     if hit_object_id >= 0 {
-      let write_idx = atomicAdd(&out_ray_array_length, 1u);
       let hit_point = get_hit_point(ray, min_t);
       let object = in_object_array[hit_object_id];
 
@@ -74,19 +75,55 @@ fn compute(
       let material = in_material_array[object.material_data_id];
       let material_type = material._type;
 
-      var new_ray_direction_norm = vec3f(0.0);
+      var next_origin = hit_point;
+      var next_weight = ray.weight;
+
+      var next_direction_norm = vec3f(0.0);
       if material_type == MATERIAL_TYPE_DIFFUSE {
-        new_ray_direction_norm = evaluate_diffuse(normal_norm, &rng_state);
-        out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), ray.recursion_depth + 1u, new_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo, rng_state);
+        next_direction_norm = evaluate_diffuse(normal_norm, &rng_state);
+
+        next_origin += EPS * normal_norm;
+        next_weight *= material.albedo;
+
       } else if material_type == MATERIAL_TYPE_METAL {
-        new_ray_direction_norm = evaluate_metal(normal_norm, ray.direction_norm, material.fuzziness, &rng_state);
-        out_ray_array[write_idx] = Ray(hit_point + (EPS * normal_norm), ray.recursion_depth + 1u, new_ray_direction_norm, ray.pixel_offset, ray.weight * material.albedo, rng_state);
+        next_direction_norm = evaluate_metal(normal_norm, ray.direction_norm, material.fuzziness, &rng_state);
+
+        next_origin += EPS * normal_norm;
+        next_weight *= material.albedo;
+
       } else { // glass
         let entering = dot(ray.direction_norm, normal_norm) <= 0.0;
         let offset_dir = select(normal_norm, -normal_norm, entering);
-        new_ray_direction_norm = evaluate_glass(normal_norm, ray.direction_norm, material.refraction_index, &rng_state);
-        out_ray_array[write_idx] = Ray(hit_point + (EPS * offset_dir), ray.recursion_depth + 1u, new_ray_direction_norm, ray.pixel_offset, ray.weight, rng_state);
+        next_direction_norm = evaluate_glass(normal_norm, ray.direction_norm, material.refraction_index, &rng_state);
+
         // LESSON (260314) we almost always need some bias to improve numerical stability..
+        next_origin += EPS * offset_dir;
+      }
+
+      // Russian Roulette
+      var survive = true;
+      let next_depth = ray.recursion_depth + 1u;
+      if next_depth >= ${config.roulette_start_depth} {
+        let importance = max(
+          next_weight.r,
+          max(next_weight.g, next_weight.b)
+        );
+
+        if importance <= EPS {
+          survive = false;
+        } else {
+          let survival_prob = clamp(importance, 0.05, 1.0);
+          if rng_next_f32(&rng_state) >= survival_prob {
+            survive = false;
+          } else {
+            next_weight /= survival_prob;
+          }
+        }
+      }
+
+      if survive {
+        let write_idx = atomicAdd(&out_ray_array_length, 1u);
+        out_ray_array[write_idx] = Ray(next_origin, next_depth, next_direction_norm, ray.pixel_offset, next_weight, rng_state);
       }
     } else {
       out_color_buffer[ray.pixel_offset] += vec4f(SKY_COLOR * ray.weight, 1.0);

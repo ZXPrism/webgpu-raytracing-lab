@@ -258,7 +258,7 @@ export class Renderer {
         this._prep_hit_test_kernel = new KernelBuilder(this._device, "prep hit test kernel", shader_utils + get_shader_prep_hit_test(), "compute")
             .build();
 
-        this._hit_test_kernel = new KernelBuilder(this._device, "hit test kernel", shader_utils + get_shader_hit_test(), "compute")
+        this._hit_test_kernel = new KernelBuilder(this._device, "hit test kernel", shader_utils + get_shader_hit_test(config), "compute")
             .build();
 
 
@@ -291,13 +291,13 @@ export class Renderer {
             layout: blit_pipeline_layout,
             vertex: {
                 module: this._device.createShaderModule({
-                    code: shader_utils + get_shader_blit(),
+                    code: shader_utils + get_shader_blit(config),
                 }),
                 entryPoint: "vertex"
             },
             fragment: {
                 module: this._device.createShaderModule({
-                    code: shader_utils + get_shader_blit(),
+                    code: shader_utils + get_shader_blit(config),
                 }),
                 entryPoint: "fragment",
                 targets: [

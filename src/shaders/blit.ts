@@ -1,4 +1,6 @@
-export function get_shader_blit(): string {
+import type { Config } from "../config";
+
+export function get_shader_blit(config: Config): string {
   return /* wgsl */`
 @group(0) @binding(0) var<uniform> in_scene_info: SceneInfo;
 @group(0) @binding(1) var<storage, read> in_filtered_color_buffer: array<vec4f>;
@@ -30,7 +32,7 @@ fn fragment(@builtin(position) position: vec4f) -> @location(0) vec4f {
   let pixel_offset = u32(position.y) * width + u32(position.x);
   let linear_color = in_filtered_color_buffer[pixel_offset].rgb;
 
-  let exposed_color = linear_color * exp2(0);
+  let exposed_color = linear_color * exp2(${config.ev_correction});
   let tone_mapped = aces(exposed_color);
 
   // 260818: after failed attempts for 3 times, I finally get what is gamma correction!
