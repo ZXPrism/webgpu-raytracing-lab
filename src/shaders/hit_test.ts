@@ -71,10 +71,16 @@ fn compute(
         normal_norm = triangle_get_normal_norm(ray, in_triangle_array[object.geometry_data_id]);
       }
 
-      // ===== compute new ray
       let material = in_material_array[object.material_data_id];
       let material_type = material._type;
 
+      // ===== emission
+      out_color_buffer[ray.pixel_offset] += vec4f(
+        ray.weight * material.emission,
+        0.0
+      );
+
+      // ===== compute new ray
       var next_origin = hit_point;
       var next_weight = ray.weight;
 
@@ -101,17 +107,17 @@ fn compute(
       }
 
       // Russian Roulette
-      var survive = true;
-      let next_depth = ray.recursion_depth + 1u;
-      if next_depth >= ${config.roulette_start_depth} {
-        let importance = max(
-          next_weight.r,
-          max(next_weight.g, next_weight.b)
-        );
 
-        if importance <= EPS {
-          survive = false;
-        } else {
+      var survive = true;
+
+      let next_depth = ray.recursion_depth + 1u;
+      let importance = max(
+            next_weight.r,
+            max(next_weight.g, next_weight.b)
+      );
+
+      if importance > EPS {
+        if next_depth >= ${config.roulette_start_depth} {
           let survival_prob = clamp(importance, 0.05, 1.0);
           if rng_next_f32(&rng_state) >= survival_prob {
             survive = false;
@@ -119,11 +125,11 @@ fn compute(
             next_weight /= survival_prob;
           }
         }
-      }
 
-      if survive {
-        let write_idx = atomicAdd(&out_ray_array_length, 1u);
-        out_ray_array[write_idx] = Ray(next_origin, next_depth, next_direction_norm, ray.pixel_offset, next_weight, rng_state);
+        if survive {
+          let write_idx = atomicAdd(&out_ray_array_length, 1u);
+          out_ray_array[write_idx] = Ray(next_origin, next_depth, next_direction_norm, ray.pixel_offset, next_weight, rng_state);
+        }
       }
     } else {
       out_color_buffer[ray.pixel_offset] += vec4f(SKY_COLOR * ray.weight, 1.0);

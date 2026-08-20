@@ -1,0 +1,1088 @@
+{
+  "name": "Cornell Box (Official Geometry)",
+  "date": "2026-08-20",
+  "version": "1.1",
+  "source": "https://bowers.cornell.edu/computer-graphics/data",
+  "objects": [
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.524334,
+          -2,
+          2.808876
+        ],
+        "u": [
+          2.306552,
+          0,
+          -3.30362
+        ],
+        "v": [
+          -1.035316,
+          0,
+          -5.636876
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.524334,
+          -2,
+          2.808876
+        ],
+        "u": [
+          -1.035316,
+          0,
+          -5.636876
+        ],
+        "v": [
+          -3.328516,
+          0,
+          -2.352379
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.510982,
+          2,
+          2.828
+        ],
+        "u": [
+          -3.341868,
+          0,
+          -2.333256
+        ],
+        "v": [
+          -1.095344,
+          0,
+          -2.658188
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.510982,
+          2,
+          2.828
+        ],
+        "u": [
+          -1.095344,
+          0,
+          -2.658188
+        ],
+        "v": [
+          -0.467848,
+          0,
+          -2.220077
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -2.830886,
+          2,
+          0.494744
+        ],
+        "u": [
+          2.319904,
+          0,
+          -3.322744
+        ],
+        "v": [
+          2.788947,
+          0,
+          -1.101833
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -2.830886,
+          2,
+          0.494744
+        ],
+        "u": [
+          2.788947,
+          0,
+          -1.101833
+        ],
+        "v": [
+          2.246524,
+          0,
+          -0.324932
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.510982,
+          2,
+          -2.828
+        ],
+        "u": [
+          3.341868,
+          0,
+          2.333256
+        ],
+        "v": [
+          1.09654,
+          0,
+          2.659023
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.510982,
+          2,
+          -2.828
+        ],
+        "u": [
+          1.09654,
+          0,
+          2.659023
+        ],
+        "v": [
+          0.469043,
+          0,
+          2.220911
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          2.830886,
+          2,
+          -0.494744
+        ],
+        "u": [
+          -2.319904,
+          0,
+          3.322744
+        ],
+        "v": [
+          -2.787752,
+          0,
+          1.102667
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          2.830886,
+          2,
+          -0.494744
+        ],
+        "u": [
+          -2.787752,
+          0,
+          1.102667
+        ],
+        "v": [
+          -2.245328,
+          0,
+          0.325767
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -2.804182,
+          -2,
+          0.456497
+        ],
+        "u": [
+          2.2932,
+          0,
+          -3.284497
+        ],
+        "v": [
+          2.2932,
+          4,
+          -3.284497
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -2.804182,
+          -2,
+          0.456497
+        ],
+        "u": [
+          2.2932,
+          4,
+          -3.284497
+        ],
+        "v": [
+          -0.026704,
+          4,
+          0.038247
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.510982,
+          -2,
+          -2.828
+        ],
+        "u": [
+          3.341868,
+          0,
+          2.333256
+        ],
+        "v": [
+          3.341868,
+          4,
+          2.333256
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.14,
+          0.45,
+          0.091
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.510982,
+          -2,
+          -2.828
+        ],
+        "u": [
+          3.341868,
+          4,
+          2.333256
+        ],
+        "v": [
+          0,
+          4,
+          0
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.14,
+          0.45,
+          0.091
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.524334,
+          -2,
+          2.808876
+        ],
+        "u": [
+          -3.328516,
+          0,
+          -2.352379
+        ],
+        "v": [
+          -3.35522,
+          4,
+          -2.314132
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.63,
+          0.065,
+          0.05
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.524334,
+          -2,
+          2.808876
+        ],
+        "u": [
+          -3.35522,
+          4,
+          -2.314132
+        ],
+        "v": [
+          -0.013352,
+          4,
+          0.019124
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.63,
+          0.065,
+          0.05
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.043134,
+          2,
+          0.607923
+        ],
+        "u": [
+          -0.627496,
+          0,
+          -0.438111
+        ],
+        "v": [
+          -0.085073,
+          0,
+          -1.215012
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0,
+          0,
+          0
+        ],
+        "emission": {
+          "color": [
+            1,
+            0.82,
+            0.62
+          ],
+          "strength": 12
+        }
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.043134,
+          2,
+          0.607923
+        ],
+        "u": [
+          -0.085073,
+          0,
+          -1.215012
+        ],
+        "v": [
+          0.542424,
+          0,
+          -0.7769
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0,
+          0,
+          0
+        ],
+        "emission": {
+          "color": [
+            1,
+            0.82,
+            0.62
+          ],
+          "strength": 12
+        }
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          1.900012,
+          -0.797376,
+          0.010945
+        ],
+        "u": [
+          -0.755906,
+          0,
+          -0.954454
+        ],
+        "v": [
+          -1.696039,
+          0,
+          -0.206328
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          1.900012,
+          -0.797376,
+          0.010945
+        ],
+        "u": [
+          -1.696039,
+          0,
+          -0.206328
+        ],
+        "v": [
+          -0.96043,
+          0,
+          0.751733
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.939582,
+          -2,
+          0.762678
+        ],
+        "u": [
+          0,
+          1.202624,
+          0
+        ],
+        "v": [
+          -0.735609,
+          1.202624,
+          -0.958061
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.939582,
+          -2,
+          0.762678
+        ],
+        "u": [
+          -0.735609,
+          1.202624,
+          -0.958061
+        ],
+        "v": [
+          -0.735609,
+          0,
+          -0.958061
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          1.900012,
+          -2,
+          0.010945
+        ],
+        "u": [
+          0,
+          1.202624,
+          0
+        ],
+        "v": [
+          -0.96043,
+          1.202624,
+          0.751733
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          1.900012,
+          -2,
+          0.010945
+        ],
+        "u": [
+          -0.96043,
+          1.202624,
+          0.751733
+        ],
+        "v": [
+          -0.96043,
+          0,
+          0.751733
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          1.144106,
+          -2,
+          -0.943509
+        ],
+        "u": [
+          0,
+          1.202624,
+          0
+        ],
+        "v": [
+          0.755906,
+          1.202624,
+          0.954454
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          1.144106,
+          -2,
+          -0.943509
+        ],
+        "u": [
+          0.755906,
+          1.202624,
+          0.954454
+        ],
+        "v": [
+          0.755906,
+          0,
+          0.954454
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.203973,
+          -2,
+          -0.195383
+        ],
+        "u": [
+          0,
+          1.202624,
+          0
+        ],
+        "v": [
+          0.940133,
+          1.202624,
+          -0.748126
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.203973,
+          -2,
+          -0.195383
+        ],
+        "u": [
+          0.940133,
+          1.202624,
+          -0.748126
+        ],
+        "v": [
+          0.940133,
+          0,
+          -0.748126
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.410188,
+          0.405248,
+          1.002566
+        ],
+        "u": [
+          0.366421,
+          0,
+          -1.148685
+        ],
+        "v": [
+          -0.794216,
+          0,
+          -1.523451
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.410188,
+          0.405248,
+          1.002566
+        ],
+        "u": [
+          -0.794216,
+          0,
+          -1.523451
+        ],
+        "v": [
+          -1.154661,
+          0,
+          -0.370594
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.410188,
+          -2,
+          1.002566
+        ],
+        "u": [
+          0,
+          2.405248,
+          0
+        ],
+        "v": [
+          -1.154661,
+          2.405248,
+          -0.370594
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.410188,
+          -2,
+          1.002566
+        ],
+        "u": [
+          -1.154661,
+          2.405248,
+          -0.370594
+        ],
+        "v": [
+          -1.154661,
+          0,
+          -0.370594
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -1.564849,
+          -2,
+          0.631972
+        ],
+        "u": [
+          0,
+          2.405248,
+          0
+        ],
+        "v": [
+          0.360445,
+          2.405248,
+          -1.152857
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -1.564849,
+          -2,
+          0.631972
+        ],
+        "u": [
+          0.360445,
+          2.405248,
+          -1.152857
+        ],
+        "v": [
+          0.360445,
+          0,
+          -1.152857
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -1.204404,
+          -2,
+          -0.520885
+        ],
+        "u": [
+          0,
+          2.405248,
+          0
+        ],
+        "v": [
+          1.160637,
+          2.405248,
+          0.374766
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -1.204404,
+          -2,
+          -0.520885
+        ],
+        "u": [
+          1.160637,
+          2.405248,
+          0.374766
+        ],
+        "v": [
+          1.160637,
+          0,
+          0.374766
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.043767,
+          -2,
+          -0.146119
+        ],
+        "u": [
+          0,
+          2.405248,
+          0
+        ],
+        "v": [
+          -0.366421,
+          2.405248,
+          1.148685
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.043767,
+          -2,
+          -0.146119
+        ],
+        "u": [
+          -0.366421,
+          2.405248,
+          1.148685
+        ],
+        "v": [
+          -0.366421,
+          0,
+          1.148685
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.73,
+          0.73,
+          0.73
+        ]
+      }
+    }
+  ]
+}

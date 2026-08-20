@@ -35,16 +35,23 @@ export interface GeometryTriangle {
     v: [number, number, number]
 }
 
-export interface MaterialDiffuse {
+export interface EmissionProps {
+    emission?: {
+        color: [number, number, number],
+        strength: number,
+    }
+}
+
+export interface MaterialDiffuse extends EmissionProps {
     albedo: [number, number, number]
 }
 
-export interface MaterialMetal {
+export interface MaterialMetal extends EmissionProps {
     albedo: [number, number, number],
     fuzziness: number
 }
 
-export interface MaterialGlass {
+export interface MaterialGlass extends EmissionProps {
     albedo: [number, number, number]
     refraction_index: number,
 }
@@ -253,6 +260,17 @@ export class SceneLoader {
                 material_array.set_field(i, "_type", material_type_enum);
                 material_array.set_field(i, "albedo", data.albedo);
                 material_array.set_field(i, "refraction_index", data.refraction_index);
+            }
+
+            const emission_data = mat.data.emission;
+            if (emission_data) {
+                material_array.set_field(i, "emission", [
+                    emission_data.color[0] * emission_data.strength,
+                    emission_data.color[1] * emission_data.strength,
+                    emission_data.color[2] * emission_data.strength,
+                ]);
+            } else {
+                material_array.set_field(i, "emission", [0.0, 0.0, 0.0]);
             }
         }
 

@@ -102,6 +102,7 @@ struct Triangle { // type = 3
 struct Material { // see scene.ts for clearer interface
   albedo: vec3f,
   fuzziness: f32,
+  emission: vec3f,
   refraction_index: f32,
   _type: u32, // type is a reserved keyword, so have to use _type
 }
