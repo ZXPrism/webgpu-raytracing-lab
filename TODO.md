@@ -44,6 +44,7 @@
 - [ ] `260718` Lazy rebuild: currently, any config change will force rebuilding all kernels & pipelines, this is inefficient
 - [ ] `260718` Atmosphere scattering
 - [ ] `260718` Determine a better way to handle normals (currenly all face outwards)
+- [ ] `260820` Support mesh loading
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression
