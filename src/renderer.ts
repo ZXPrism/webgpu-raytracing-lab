@@ -149,7 +149,7 @@ export class Renderer {
         //  scene loader
         // =============
         this._scene_loader = new SceneLoader(this._device, this._utils_shader_reflector);
-        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/glass_pyramid_emissive_core.json");
+        this._scene_buffers = await this._scene_loader.load_from_json("./demo_scenes/cornell_box.json");
 
         return true;
     }

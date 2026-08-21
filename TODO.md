@@ -43,8 +43,11 @@
 - [X] `260718` Optimize optimal shader struct layout computation using state compression DP
 - [ ] `260718` Lazy rebuild: currently, any config change will force rebuilding all kernels & pipelines, this is inefficient
 - [ ] `260718` Atmosphere scattering
-- [ ] `260718` Determine a better way to handle normals (currenly all face outwards)
+- [X] `260718` Determine a better way to handle normals (currenly all face outwards)
 - [ ] `260820` Support mesh loading
+- [ ] `260821` Support texture
+- [ ] `260821` Resolve glass plane ambiguity
+- [ ] `260821` Config position slider needs an explicit step param, or the behavior will be weird, some step is 0.1, some step is 0.01
 
 ## Aux
 - [ ] `260307` Scene representation & serialization & regression

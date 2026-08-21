@@ -205,14 +205,17 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 // ============
 // NOTE: all returned normals should be normalized
 
+fn get_facing_normal_norm(ray: Ray, geometric_normal_norm: vec3f) -> vec3f {
+  return select(-geometric_normal_norm, geometric_normal_norm, dot(ray.direction_norm, geometric_normal_norm) <= 0.0);
+}
+
 fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
   return delta / sphere.radius;
 }
 
 fn triangle_get_normal_norm(ray: Ray, triangle: Triangle) -> vec3f {
-  let normal = normalize(cross(triangle.u, triangle.v));
-  return select(-normal, normal, dot(ray.direction_norm, normal) <= 0.0);
+  return normalize(cross(triangle.u, triangle.v));
 }
 
 // ===================

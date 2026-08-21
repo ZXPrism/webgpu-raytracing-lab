@@ -65,6 +65,7 @@ fn compute(
       } else { // triangle
         normal_norm = triangle_get_normal_norm(ray, in_triangle_array[object.geometry_data_id]);
       }
+      let facing_normal_norm = get_facing_normal_norm(ray, normal_norm);
 
       let material = in_material_array[object.material_data_id];
       let material_type = material._type;
@@ -81,24 +82,26 @@ fn compute(
 
       var next_direction_norm = vec3f(0.0);
       if material_type == MATERIAL_TYPE_DIFFUSE {
-        next_direction_norm = evaluate_diffuse(normal_norm, &rng_state);
+        next_direction_norm = evaluate_diffuse(facing_normal_norm, &rng_state);
 
-        next_origin += EPS * normal_norm;
+        next_origin += EPS * facing_normal_norm;
         next_weight *= material.albedo;
 
       } else if material_type == MATERIAL_TYPE_METAL {
-        next_direction_norm = evaluate_metal(normal_norm, ray.direction_norm, material.fuzziness, &rng_state);
+        next_direction_norm = evaluate_metal(facing_normal_norm, ray.direction_norm, material.fuzziness, &rng_state);
 
-        next_origin += EPS * normal_norm;
+        next_origin += EPS * facing_normal_norm;
         next_weight *= material.albedo;
 
       } else { // glass
-        let entering = dot(ray.direction_norm, normal_norm) <= 0.0;
-        let offset_dir = select(normal_norm, -normal_norm, entering);
         next_direction_norm = evaluate_glass(normal_norm, ray.direction_norm, material.refraction_index, &rng_state);
 
         // LESSON (260314) we almost always need some bias to improve numerical stability..
-        next_origin += EPS * offset_dir;
+        next_origin += EPS * select(
+          -facing_normal_norm,
+          facing_normal_norm,
+          dot(facing_normal_norm, next_direction_norm) >= 0.0
+        );
       }
 
       // Russian Roulette
