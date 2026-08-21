@@ -23,7 +23,6 @@ const SKY_COLOR = vec3f(${encoded_to_linear(config.sky_color)});
 const RAY_NEAR_THRESHOLD = ${config.ray_near_threshold};
 const RAY_FAR_THRESHOLD = ${config.ray_far_threshold};
 const GEOMETRY_TYPE_SPHERE = ${GEOMETRY_TYPE.SPHERE}u;
-const GEOMETRY_TYPE_RECT = ${GEOMETRY_TYPE.RECT}u;
 const GEOMETRY_TYPE_TRIANGLE = ${GEOMETRY_TYPE.TRIANGLE}u;
 const MATERIAL_TYPE_DIFFUSE = ${MATERIAL_TYPE.DIFFUSE}u;
 const MATERIAL_TYPE_METAL = ${MATERIAL_TYPE.METAL}u;
@@ -45,7 +44,6 @@ struct SceneInfo {
   height: u32,
   object_count: u32,
   sphere_count: u32,
-  rect_count: u32,
   triangle_count: u32,
 }
 
@@ -72,26 +70,12 @@ struct Object {
 
 // ===== geometry
 
-struct Sphere { // type = 0
+struct Sphere {
   center: vec3f,
   radius: f32,
 }
 
-// both faces should have normal point outwards
-struct Rect { // type = 1
-  corner: vec3f,
-  u: vec3f,
-  v: vec3f,
-}
-
-struct Parallelepiped { // type = 2
-  corner: vec3f,
-  u: vec3f,
-  v: vec3f,
-  w: vec3f,
-}
-
-struct Triangle { // type = 3
+struct Triangle {
   corner: vec3f,
   u: vec3f,
   v: vec3f,
@@ -183,35 +167,6 @@ fn hit_test_sphere(ray: Ray, sphere: Sphere) -> f32 {
   return -1.0; // if miss, return a negative value
 }
 
-fn hit_test_rect(ray: Ray, rect: Rect) -> f32 {
-  let normal_norm = rect_get_normal_norm(ray, rect);
-  let t_denominator = dot(normal_norm, ray.direction_norm);
-  if abs(t_denominator) < EPS {
-    return -1.0;
-  }
-
-  let normal = cross(rect.u, rect.v);
-  let s = dot(normal, normal);
-  let w = normal / s;
-  let d = dot(normal_norm, rect.corner);
-  let t_numerator = d - dot(normal_norm, ray.origin);
-  let t = t_numerator / t_denominator;
-  if t <= 0.0 {
-    return -1.0;
-  }
-
-  let hit_point = get_hit_point(ray, t);
-  let hit_point_rel = hit_point - rect.corner;
-
-  let alpha = dot(cross(hit_point_rel, rect.v), w);
-  let beta = dot(cross(rect.u, hit_point_rel), w);
-  if 0.0 <= alpha && alpha <= 1.0 && 0.0 <= beta && beta <= 1.0 {
-    return t;
-  }
-
-  return -1.0; // if miss, return a negative value
-}
-
 fn hit_test_triangle(ray: Ray, triangle: Triangle) -> f32 {
   let normal_norm = triangle_get_normal_norm(ray, triangle);
   let t_denominator = dot(normal_norm, ray.direction_norm);
@@ -241,27 +196,6 @@ fn hit_test_triangle(ray: Ray, triangle: Triangle) -> f32 {
   return -1.0; // if miss, return a negative value
 }
 
-// hack: just to temporarily render a checkerboard
-// will be removed in the future
-fn hit_test_rect_alpha_beta(ray: Ray, rect: Rect) -> vec2f {
-  let normal_norm = rect_get_normal_norm(ray, rect);
-  let t_denominator = dot(normal_norm, ray.direction_norm);
-
-  let normal = cross(rect.u, rect.v);
-  let s = dot(normal, normal);
-  let w = normal / s;
-  let d = dot(normal_norm, rect.corner);
-  let t_numerator = d - dot(normal_norm, ray.origin);
-  let t = t_numerator / t_denominator;
-
-  let hit_point = get_hit_point(ray, t);
-  let hit_point_rel = hit_point - rect.corner;
-
-  let alpha = dot(cross(hit_point_rel, rect.v), w);
-  let beta = dot(cross(rect.u, hit_point_rel), w);
-  return vec2f(alpha, beta);
-}
-
 fn get_hit_point(ray: Ray, t: f32) -> vec3f {
   return ray.origin + (ray.direction_norm * t);
 }
@@ -274,11 +208,6 @@ fn get_hit_point(ray: Ray, t: f32) -> vec3f {
 fn sphere_get_normal_norm(ray: Ray, sphere: Sphere, hit_point: vec3f) -> vec3f {
   let delta = hit_point - sphere.center;
   return delta / sphere.radius;
-}
-
-fn rect_get_normal_norm(ray: Ray, rect: Rect) -> vec3f {
-  let normal = normalize(cross(rect.u, rect.v));
-  return select(-normal, normal, dot(ray.direction_norm, normal) <= 0.0);
 }
 
 fn triangle_get_normal_norm(ray: Ray, triangle: Triangle) -> vec3f {
