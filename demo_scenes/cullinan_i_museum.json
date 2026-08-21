@@ -1,0 +1,4134 @@
+{
+  "name": "Cullinan I - Museum Display",
+  "date": "2026-08-22",
+  "version": "1.0",
+  "source": {
+    "physical_dimensions_mm": [
+      58.9,
+      45.4,
+      27.7
+    ],
+    "facet_reference": "Texas Faceters' Guild Project 2000, p. 18; Tom R. Barbour replica modified by F. M. Holbrook",
+    "geometry_note": "Replica facet construction rescaled to the documented Cullinan I physical envelope; the original stone's cutter model is not publicly available."
+  },
+  "objects": [
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.016703,
+          1.85,
+          -0.011
+        ],
+        "u": [
+          -0.20328,
+          -0.392857,
+          0.308677
+        ],
+        "v": [
+          -0.169873,
+          -0.392857,
+          0.330677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.016703,
+          1.85,
+          -0.011
+        ],
+        "u": [
+          -0.169873,
+          -0.392857,
+          0.330677
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.219983,
+          1.457143,
+          0.297677
+        ],
+        "u": [
+          -0.165165,
+          -0.464286,
+          0.2508
+        ],
+        "v": [
+          -0.131758,
+          -0.464286,
+          0.2728
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.219983,
+          1.457143,
+          0.297677
+        ],
+        "u": [
+          -0.131758,
+          -0.464286,
+          0.2728
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.385148,
+          0.992857,
+          0.548477
+        ],
+        "u": [
+          -0.15246,
+          -0.535714,
+          0.231508
+        ],
+        "v": [
+          -0.119053,
+          -0.535714,
+          0.253508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.385148,
+          0.992857,
+          0.548477
+        ],
+        "u": [
+          -0.119053,
+          -0.535714,
+          0.253508
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.537608,
+          0.457143,
+          0.779985
+        ],
+        "u": [
+          -0.114345,
+          -0.571429,
+          0.173631
+        ],
+        "v": [
+          -0.080938,
+          -0.571429,
+          0.195631
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.537608,
+          0.457143,
+          0.779985
+        ],
+        "u": [
+          -0.080938,
+          -0.571429,
+          0.195631
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.651953,
+          -0.114286,
+          0.953616
+        ],
+        "u": [
+          0.038115,
+          -0.428571,
+          -0.057877
+        ],
+        "v": [
+          0.071522,
+          -0.428571,
+          -0.035877
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.651953,
+          -0.114286,
+          0.953616
+        ],
+        "u": [
+          0.071522,
+          -0.428571,
+          -0.035877
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.613838,
+          -0.542857,
+          0.895739
+        ],
+        "u": [
+          0.165165,
+          -0.339286,
+          -0.2508
+        ],
+        "v": [
+          0.198572,
+          -0.339286,
+          -0.2288
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.613838,
+          -0.542857,
+          0.895739
+        ],
+        "u": [
+          0.198572,
+          -0.339286,
+          -0.2288
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.448673,
+          -0.882143,
+          0.644939
+        ],
+        "u": [
+          0.20328,
+          -0.196429,
+          -0.308677
+        ],
+        "v": [
+          0.236687,
+          -0.196429,
+          -0.286677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.448673,
+          -0.882143,
+          0.644939
+        ],
+        "u": [
+          0.236687,
+          -0.196429,
+          -0.286677
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.245393,
+          -1.078571,
+          0.336262
+        ],
+        "u": [
+          0.22869,
+          -0.071429,
+          -0.347262
+        ],
+        "v": [
+          0.262097,
+          -0.071429,
+          -0.325262
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.245393,
+          -1.078571,
+          0.336262
+        ],
+        "u": [
+          0.262097,
+          -0.071429,
+          -0.325262
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.016703,
+          -1.15,
+          -0.011
+        ],
+        "u": [
+          0.22869,
+          0.071429,
+          -0.347262
+        ],
+        "v": [
+          0.262097,
+          0.071429,
+          -0.325262
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.016703,
+          -1.15,
+          -0.011
+        ],
+        "u": [
+          0.262097,
+          0.071429,
+          -0.325262
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.211987,
+          -1.078571,
+          -0.358262
+        ],
+        "u": [
+          0.20328,
+          0.196429,
+          -0.308677
+        ],
+        "v": [
+          0.236687,
+          0.196429,
+          -0.286677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.211987,
+          -1.078571,
+          -0.358262
+        ],
+        "u": [
+          0.236687,
+          0.196429,
+          -0.286677
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.415267,
+          -0.882143,
+          -0.666939
+        ],
+        "u": [
+          0.165165,
+          0.339286,
+          -0.2508
+        ],
+        "v": [
+          0.198572,
+          0.339286,
+          -0.2288
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.415267,
+          -0.882143,
+          -0.666939
+        ],
+        "u": [
+          0.198572,
+          0.339286,
+          -0.2288
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.580432,
+          -0.542857,
+          -0.917739
+        ],
+        "u": [
+          0.038115,
+          0.428571,
+          -0.057877
+        ],
+        "v": [
+          0.071522,
+          0.428571,
+          -0.035877
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.580432,
+          -0.542857,
+          -0.917739
+        ],
+        "u": [
+          0.071522,
+          0.428571,
+          -0.035877
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.618547,
+          -0.114286,
+          -0.975616
+        ],
+        "u": [
+          -0.114345,
+          0.571429,
+          0.173631
+        ],
+        "v": [
+          -0.080938,
+          0.571429,
+          0.195631
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.618547,
+          -0.114286,
+          -0.975616
+        ],
+        "u": [
+          -0.080938,
+          0.571429,
+          0.195631
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.504202,
+          0.457143,
+          -0.801985
+        ],
+        "u": [
+          -0.15246,
+          0.535714,
+          0.231508
+        ],
+        "v": [
+          -0.119053,
+          0.535714,
+          0.253508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.504202,
+          0.457143,
+          -0.801985
+        ],
+        "u": [
+          -0.119053,
+          0.535714,
+          0.253508
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.351742,
+          0.992857,
+          -0.570477
+        ],
+        "u": [
+          -0.165165,
+          0.464286,
+          0.2508
+        ],
+        "v": [
+          -0.131758,
+          0.464286,
+          0.2728
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.351742,
+          0.992857,
+          -0.570477
+        ],
+        "u": [
+          -0.131758,
+          0.464286,
+          0.2728
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.186577,
+          1.457143,
+          -0.319677
+        ],
+        "u": [
+          -0.20328,
+          0.392857,
+          0.308677
+        ],
+        "v": [
+          -0.169873,
+          0.392857,
+          0.330677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.186577,
+          1.457143,
+          -0.319677
+        ],
+        "u": [
+          -0.169873,
+          0.392857,
+          0.330677
+        ],
+        "v": [
+          0.033407,
+          0,
+          0.022
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.016703,
+          1.85,
+          0.011
+        ],
+        "u": [
+          -0.20328,
+          -0.392857,
+          0.308677
+        ],
+        "v": [
+          -0.010262,
+          -0.581071,
+          0.342855
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.016703,
+          1.85,
+          0.011
+        ],
+        "u": [
+          -0.010262,
+          -0.581071,
+          0.342855
+        ],
+        "v": [
+          0.15033,
+          -0.255,
+          0.099
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.186577,
+          1.457143,
+          0.319677
+        ],
+        "u": [
+          -0.165165,
+          -0.464286,
+          0.2508
+        ],
+        "v": [
+          0.062538,
+          -0.573571,
+          0.23231
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.186577,
+          1.457143,
+          0.319677
+        ],
+        "u": [
+          0.062538,
+          -0.573571,
+          0.23231
+        ],
+        "v": [
+          0.193019,
+          -0.188214,
+          0.034178
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.351742,
+          0.992857,
+          0.570477
+        ],
+        "u": [
+          -0.15246,
+          -0.535714,
+          0.231508
+        ],
+        "v": [
+          0.10726,
+          -0.553929,
+          0.164401
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.351742,
+          0.992857,
+          0.570477
+        ],
+        "u": [
+          0.10726,
+          -0.553929,
+          0.164401
+        ],
+        "v": [
+          0.227703,
+          -0.109286,
+          -0.01849
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.504202,
+          0.457143,
+          0.801985
+        ],
+        "u": [
+          -0.114345,
+          -0.571429,
+          0.173631
+        ],
+        "v": [
+          0.169387,
+          -0.4925,
+          0.070062
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.504202,
+          0.457143,
+          0.801985
+        ],
+        "u": [
+          0.169387,
+          -0.4925,
+          0.070062
+        ],
+        "v": [
+          0.25972,
+          -0.018214,
+          -0.067107
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.618547,
+          -0.114286,
+          0.975616
+        ],
+        "u": [
+          0.038115,
+          -0.428571,
+          -0.057877
+        ],
+        "v": [
+          0.313843,
+          -0.276786,
+          -0.149292
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.618547,
+          -0.114286,
+          0.975616
+        ],
+        "u": [
+          0.313843,
+          -0.276786,
+          -0.149292
+        ],
+        "v": [
+          0.283732,
+          0.078929,
+          -0.103569
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.580432,
+          -0.542857,
+          0.917739
+        ],
+        "u": [
+          0.165165,
+          -0.339286,
+          -0.2508
+        ],
+        "v": [
+          0.406208,
+          -0.129821,
+          -0.289547
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.580432,
+          -0.542857,
+          0.917739
+        ],
+        "u": [
+          0.406208,
+          -0.129821,
+          -0.289547
+        ],
+        "v": [
+          0.275728,
+          0.151786,
+          -0.091415
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.415267,
+          -0.882143,
+          0.666939
+        ],
+        "u": [
+          0.20328,
+          -0.196429,
+          -0.308677
+        ],
+        "v": [
+          0.401635,
+          0.046429,
+          -0.282602
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.415267,
+          -0.882143,
+          0.666939
+        ],
+        "u": [
+          0.401635,
+          0.046429,
+          -0.282602
+        ],
+        "v": [
+          0.241043,
+          0.209464,
+          -0.038747
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.211987,
+          -1.078571,
+          0.358262
+        ],
+        "u": [
+          0.22869,
+          -0.071429,
+          -0.347262
+        ],
+        "v": [
+          0.37902,
+          0.183571,
+          -0.248262
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.211987,
+          -1.078571,
+          0.358262
+        ],
+        "u": [
+          0.37902,
+          0.183571,
+          -0.248262
+        ],
+        "v": [
+          0.198355,
+          0.242857,
+          0.026075
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.016703,
+          -1.15,
+          0.011
+        ],
+        "u": [
+          0.22869,
+          0.071429,
+          -0.347262
+        ],
+        "v": [
+          0.330995,
+          0.314286,
+          -0.175337
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.016703,
+          -1.15,
+          0.011
+        ],
+        "u": [
+          0.330995,
+          0.314286,
+          -0.175337
+        ],
+        "v": [
+          0.15033,
+          0.255,
+          0.099
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.245393,
+          -1.078571,
+          -0.336262
+        ],
+        "u": [
+          0.20328,
+          0.196429,
+          -0.308677
+        ],
+        "v": [
+          0.262896,
+          0.405893,
+          -0.07193
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.245393,
+          -1.078571,
+          -0.336262
+        ],
+        "u": [
+          0.262896,
+          0.405893,
+          -0.07193
+        ],
+        "v": [
+          0.102305,
+          0.242857,
+          0.171925
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.448673,
+          -0.882143,
+          -0.644939
+        ],
+        "u": [
+          0.165165,
+          0.339286,
+          -0.2508
+        ],
+        "v": [
+          0.190096,
+          0.491071,
+          0.038615
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.448673,
+          -0.882143,
+          -0.644939
+        ],
+        "u": [
+          0.190096,
+          0.491071,
+          0.038615
+        ],
+        "v": [
+          0.059616,
+          0.209464,
+          0.236747
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.613838,
+          -0.542857,
+          -0.895739
+        ],
+        "u": [
+          0.038115,
+          0.428571,
+          -0.057877
+        ],
+        "v": [
+          0.055042,
+          0.5075,
+          0.243692
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.613838,
+          -0.542857,
+          -0.895739
+        ],
+        "u": [
+          0.055042,
+          0.5075,
+          0.243692
+        ],
+        "v": [
+          0.024931,
+          0.151786,
+          0.289415
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.651953,
+          -0.114286,
+          -0.953616
+        ],
+        "u": [
+          -0.114345,
+          0.571429,
+          0.173631
+        ],
+        "v": [
+          -0.073405,
+          0.553214,
+          0.438738
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.651953,
+          -0.114286,
+          -0.953616
+        ],
+        "u": [
+          -0.073405,
+          0.553214,
+          0.438738
+        ],
+        "v": [
+          0.016927,
+          0.078929,
+          0.301569
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.537608,
+          0.457143,
+          -0.779985
+        ],
+        "u": [
+          -0.15246,
+          0.535714,
+          0.231508
+        ],
+        "v": [
+          -0.079504,
+          0.426429,
+          0.447998
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.537608,
+          0.457143,
+          -0.779985
+        ],
+        "u": [
+          -0.079504,
+          0.426429,
+          0.447998
+        ],
+        "v": [
+          0.04094,
+          -0.018214,
+          0.265107
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.385148,
+          0.992857,
+          -0.548477
+        ],
+        "u": [
+          -0.165165,
+          0.464286,
+          0.2508
+        ],
+        "v": [
+          -0.057524,
+          0.276071,
+          0.414622
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.385148,
+          0.992857,
+          -0.548477
+        ],
+        "u": [
+          -0.057524,
+          0.276071,
+          0.414622
+        ],
+        "v": [
+          0.072956,
+          -0.109286,
+          0.21649
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.219983,
+          1.457143,
+          -0.297677
+        ],
+        "u": [
+          -0.20328,
+          0.392857,
+          0.308677
+        ],
+        "v": [
+          -0.05295,
+          0.137857,
+          0.407677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.219983,
+          1.457143,
+          -0.297677
+        ],
+        "u": [
+          -0.05295,
+          0.137857,
+          0.407677
+        ],
+        "v": [
+          0.107641,
+          -0.188214,
+          0.163822
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.167033,
+          1.595,
+          0.11
+        ],
+        "u": [
+          -0.160591,
+          -0.326071,
+          0.243855
+        ],
+        "v": [
+          0.250549,
+          -0.195,
+          0.165
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.006442,
+          1.268929,
+          0.353855
+        ],
+        "u": [
+          0.21218,
+          -0.468929,
+          0.223263
+        ],
+        "v": [
+          0.411141,
+          0.131071,
+          -0.078855
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.006442,
+          1.268929,
+          0.353855
+        ],
+        "u": [
+          -0.13048,
+          -0.385357,
+          0.198132
+        ],
+        "v": [
+          0.21218,
+          -0.468929,
+          0.223263
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.124039,
+          0.883571,
+          0.551987
+        ],
+        "u": [
+          -0.120443,
+          -0.444643,
+          0.182891
+        ],
+        "v": [
+          0.342661,
+          -0.083571,
+          0.025131
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.244482,
+          0.438929,
+          0.734878
+        ],
+        "u": [
+          0.319029,
+          -0.413929,
+          0.061014
+        ],
+        "v": [
+          0.463104,
+          0.361071,
+          -0.15776
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.244482,
+          0.438929,
+          0.734878
+        ],
+        "u": [
+          -0.090333,
+          -0.474286,
+          0.137168
+        ],
+        "v": [
+          0.319029,
+          -0.413929,
+          0.061014
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.334815,
+          -0.035357,
+          0.872046
+        ],
+        "u": [
+          0.030111,
+          -0.355714,
+          -0.045723
+        ],
+        "v": [
+          0.409362,
+          0.060357,
+          -0.076154
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.304704,
+          -0.391071,
+          0.826324
+        ],
+        "u": [
+          0.489022,
+          -0.121429,
+          -0.197117
+        ],
+        "v": [
+          0.379251,
+          0.416071,
+          -0.030431
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.304704,
+          -0.391071,
+          0.826324
+        ],
+        "u": [
+          0.13048,
+          -0.281607,
+          -0.198132
+        ],
+        "v": [
+          0.489022,
+          -0.121429,
+          -0.197117
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.174223,
+          -0.672679,
+          0.628191
+        ],
+        "u": [
+          0.160591,
+          -0.163036,
+          -0.243855
+        ],
+        "v": [
+          0.358542,
+          0.160179,
+          0.001015
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.013632,
+          -0.835714,
+          0.384337
+        ],
+        "u": [
+          0.431215,
+          0.135714,
+          -0.109337
+        ],
+        "v": [
+          0.197951,
+          0.323214,
+          0.24487
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.013632,
+          -0.835714,
+          0.384337
+        ],
+        "u": [
+          0.180665,
+          -0.059286,
+          -0.274337
+        ],
+        "v": [
+          0.431215,
+          0.135714,
+          -0.109337
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.167033,
+          -0.895,
+          0.11
+        ],
+        "u": [
+          0.180665,
+          0.059286,
+          -0.274337
+        ],
+        "v": [
+          0.250549,
+          0.195,
+          0.165
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.347698,
+          -0.835714,
+          -0.164337
+        ],
+        "u": [
+          0.303148,
+          0.323214,
+          0.08513
+        ],
+        "v": [
+          0.069884,
+          0.135714,
+          0.439337
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.347698,
+          -0.835714,
+          -0.164337
+        ],
+        "u": [
+          0.160591,
+          0.163036,
+          -0.243855
+        ],
+        "v": [
+          0.303148,
+          0.323214,
+          0.08513
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.508289,
+          -0.672679,
+          -0.408191
+        ],
+        "u": [
+          0.13048,
+          0.281607,
+          -0.198132
+        ],
+        "v": [
+          0.142557,
+          0.160179,
+          0.328985
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.63877,
+          -0.391071,
+          -0.606324
+        ],
+        "u": [
+          0.121848,
+          0.416071,
+          0.360431
+        ],
+        "v": [
+          0.012077,
+          -0.121429,
+          0.527117
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.63877,
+          -0.391071,
+          -0.606324
+        ],
+        "u": [
+          0.030111,
+          0.355714,
+          -0.045723
+        ],
+        "v": [
+          0.121848,
+          0.416071,
+          0.360431
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.668881,
+          -0.035357,
+          -0.652046
+        ],
+        "u": [
+          -0.090333,
+          0.474286,
+          0.137168
+        ],
+        "v": [
+          0.091737,
+          0.060357,
+          0.406154
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.578548,
+          0.438929,
+          -0.514878
+        ],
+        "u": [
+          0.037995,
+          0.361071,
+          0.48776
+        ],
+        "v": [
+          0.18207,
+          -0.413929,
+          0.268986
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.578548,
+          0.438929,
+          -0.514878
+        ],
+        "u": [
+          -0.120443,
+          0.444643,
+          0.182891
+        ],
+        "v": [
+          0.037995,
+          0.361071,
+          0.48776
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.458105,
+          0.883571,
+          -0.331987
+        ],
+        "u": [
+          -0.13048,
+          0.385357,
+          0.198132
+        ],
+        "v": [
+          0.158438,
+          -0.083571,
+          0.304869
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.327624,
+          1.268929,
+          -0.133855
+        ],
+        "u": [
+          0.089958,
+          0.131071,
+          0.408855
+        ],
+        "v": [
+          0.288919,
+          -0.468929,
+          0.106737
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.327624,
+          1.268929,
+          -0.133855
+        ],
+        "u": [
+          -0.160591,
+          0.326071,
+          0.243855
+        ],
+        "v": [
+          0.089958,
+          0.131071,
+          0.408855
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          0,
+          1.234375,
+          0
+        ],
+        "v": [
+          -0.19896,
+          0.634375,
+          0.302118
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          -0.19896,
+          0.634375,
+          0.302118
+        ],
+        "v": [
+          -0.343035,
+          -0.140625,
+          0.520892
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          -0.343035,
+          -0.140625,
+          0.520892
+        ],
+        "v": [
+          -0.233264,
+          -0.678125,
+          0.354207
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          -0.233264,
+          -0.678125,
+          0.354207
+        ],
+        "v": [
+          0,
+          -0.865625,
+          0
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          0,
+          -0.865625,
+          0
+        ],
+        "v": [
+          0.233264,
+          -0.678125,
+          -0.354207
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          0.233264,
+          -0.678125,
+          -0.354207
+        ],
+        "v": [
+          0.343035,
+          -0.140625,
+          -0.520892
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          0.343035,
+          -0.140625,
+          -0.520892
+        ],
+        "v": [
+          0.19896,
+          0.634375,
+          -0.302118
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.417583,
+          0.165625,
+          0.275
+        ],
+        "u": [
+          0.19896,
+          0.634375,
+          -0.302118
+        ],
+        "v": [
+          0,
+          1.234375,
+          0
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.016703,
+          1.85,
+          -0.011
+        ],
+        "u": [
+          -0.400879,
+          -0.495,
+          -0.264
+        ],
+        "v": [
+          -0.20328,
+          -0.392857,
+          0.308677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.219983,
+          1.457143,
+          0.297677
+        ],
+        "u": [
+          -0.197599,
+          -0.102143,
+          -0.572677
+        ],
+        "v": [
+          -0.42972,
+          -0.676429,
+          -0.220206
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.219983,
+          1.457143,
+          0.297677
+        ],
+        "u": [
+          -0.42972,
+          -0.676429,
+          -0.220206
+        ],
+        "v": [
+          -0.165165,
+          -0.464286,
+          0.2508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.385148,
+          0.992857,
+          0.548477
+        ],
+        "u": [
+          -0.264555,
+          -0.212143,
+          -0.471007
+        ],
+        "v": [
+          -0.15246,
+          -0.535714,
+          0.231508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.537608,
+          0.457143,
+          0.779985
+        ],
+        "u": [
+          -0.112095,
+          0.323571,
+          -0.702514
+        ],
+        "v": [
+          -0.280182,
+          -0.418214,
+          -0.447277
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.537608,
+          0.457143,
+          0.779985
+        ],
+        "u": [
+          -0.280182,
+          -0.418214,
+          -0.447277
+        ],
+        "v": [
+          -0.114345,
+          -0.571429,
+          0.173631
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.651953,
+          -0.114286,
+          0.953616
+        ],
+        "u": [
+          -0.165837,
+          0.153214,
+          -0.620908
+        ],
+        "v": [
+          0.038115,
+          -0.428571,
+          -0.057877
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.613838,
+          -0.542857,
+          0.895739
+        ],
+        "u": [
+          -0.203952,
+          0.581786,
+          -0.563031
+        ],
+        "v": [
+          -0.075885,
+          0.067321,
+          -0.757497
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.613838,
+          -0.542857,
+          0.895739
+        ],
+        "u": [
+          -0.075885,
+          0.067321,
+          -0.757497
+        ],
+        "v": [
+          0.165165,
+          -0.339286,
+          -0.2508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.448673,
+          -0.882143,
+          0.644939
+        ],
+        "u": [
+          -0.24105,
+          0.406607,
+          -0.506697
+        ],
+        "v": [
+          0.20328,
+          -0.196429,
+          -0.308677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.245393,
+          -1.078571,
+          0.336262
+        ],
+        "u": [
+          -0.44433,
+          0.603036,
+          -0.19802
+        ],
+        "v": [
+          -0.172189,
+          0.423571,
+          -0.611262
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.245393,
+          -1.078571,
+          0.336262
+        ],
+        "u": [
+          -0.172189,
+          0.423571,
+          -0.611262
+        ],
+        "v": [
+          0.22869,
+          -0.071429,
+          -0.347262
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.016703,
+          -1.15,
+          -0.011
+        ],
+        "u": [
+          -0.400879,
+          0.495,
+          -0.264
+        ],
+        "v": [
+          0.22869,
+          0.071429,
+          -0.347262
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.211987,
+          -1.078571,
+          -0.358262
+        ],
+        "u": [
+          -0.629569,
+          0.423571,
+          0.083262
+        ],
+        "v": [
+          -0.357428,
+          0.603036,
+          -0.32998
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.211987,
+          -1.078571,
+          -0.358262
+        ],
+        "u": [
+          -0.357428,
+          0.603036,
+          -0.32998
+        ],
+        "v": [
+          0.20328,
+          0.196429,
+          -0.308677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.415267,
+          -0.882143,
+          -0.666939
+        ],
+        "u": [
+          -0.560708,
+          0.406607,
+          -0.021303
+        ],
+        "v": [
+          0.165165,
+          0.339286,
+          -0.2508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.580432,
+          -0.542857,
+          -0.917739
+        ],
+        "u": [
+          -0.725873,
+          0.067321,
+          0.229497
+        ],
+        "v": [
+          -0.597807,
+          0.581786,
+          0.035031
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.580432,
+          -0.542857,
+          -0.917739
+        ],
+        "u": [
+          -0.597807,
+          0.581786,
+          0.035031
+        ],
+        "v": [
+          0.038115,
+          0.428571,
+          -0.057877
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.618547,
+          -0.114286,
+          -0.975616
+        ],
+        "u": [
+          -0.635922,
+          0.153214,
+          0.092908
+        ],
+        "v": [
+          -0.114345,
+          0.571429,
+          0.173631
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.504202,
+          0.457143,
+          -0.801985
+        ],
+        "u": [
+          -0.521577,
+          -0.418214,
+          -0.080723
+        ],
+        "v": [
+          -0.689664,
+          0.323571,
+          0.174514
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.504202,
+          0.457143,
+          -0.801985
+        ],
+        "u": [
+          -0.689664,
+          0.323571,
+          0.174514
+        ],
+        "v": [
+          -0.15246,
+          0.535714,
+          0.231508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.351742,
+          0.992857,
+          -0.570477
+        ],
+        "u": [
+          -0.537204,
+          -0.212143,
+          -0.056993
+        ],
+        "v": [
+          -0.165165,
+          0.464286,
+          0.2508
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.186577,
+          1.457143,
+          -0.319677
+        ],
+        "u": [
+          -0.372039,
+          -0.676429,
+          -0.307794
+        ],
+        "v": [
+          -0.604159,
+          -0.102143,
+          0.044677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          0.186577,
+          1.457143,
+          -0.319677
+        ],
+        "u": [
+          -0.604159,
+          -0.102143,
+          0.044677
+        ],
+        "v": [
+          -0.20328,
+          0.392857,
+          0.308677
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.417583,
+          1.355,
+          -0.275
+        ],
+        "u": [
+          -0.309011,
+          -0.855,
+          -0.2035
+        ],
+        "v": [
+          -0.23212,
+          -0.574286,
+          0.352471
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.649703,
+          0.780714,
+          0.077471
+        ],
+        "u": [
+          -0.076891,
+          -0.280714,
+          -0.555971
+        ],
+        "v": [
+          -0.127711,
+          -0.477143,
+          -0.478801
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.649703,
+          0.780714,
+          0.077471
+        ],
+        "u": [
+          -0.127711,
+          -0.477143,
+          -0.478801
+        ],
+        "v": [
+          -0.168087,
+          -0.741786,
+          0.255237
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.81779,
+          0.038929,
+          0.332708
+        ],
+        "u": [
+          0.040376,
+          0.264643,
+          -0.734039
+        ],
+        "v": [
+          0.128066,
+          -0.514464,
+          -0.194466
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.689724,
+          -0.475536,
+          0.138241
+        ],
+        "u": [
+          -0.08769,
+          0.779107,
+          -0.539572
+        ],
+        "v": [
+          -0.03687,
+          0.675536,
+          -0.616741
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.689724,
+          -0.475536,
+          0.138241
+        ],
+        "u": [
+          -0.03687,
+          0.675536,
+          -0.616741
+        ],
+        "v": [
+          0.272141,
+          -0.179464,
+          -0.413241
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.417583,
+          -0.655,
+          -0.275
+        ],
+        "u": [
+          -0.309011,
+          0.855,
+          -0.2035
+        ],
+        "v": [
+          0.272141,
+          0.179464,
+          -0.413241
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.145441,
+          -0.475536,
+          -0.688241
+        ],
+        "u": [
+          -0.581152,
+          0.675536,
+          0.209741
+        ],
+        "v": [
+          -0.530332,
+          0.779107,
+          0.132572
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.145441,
+          -0.475536,
+          -0.688241
+        ],
+        "u": [
+          -0.530332,
+          0.779107,
+          0.132572
+        ],
+        "v": [
+          0.128066,
+          0.514464,
+          -0.194466
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.017375,
+          0.038929,
+          -0.882708
+        ],
+        "u": [
+          -0.658399,
+          0.264643,
+          0.327039
+        ],
+        "v": [
+          -0.168087,
+          0.741786,
+          0.255237
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.185462,
+          0.780714,
+          -0.627471
+        ],
+        "u": [
+          -0.490311,
+          -0.477143,
+          0.071801
+        ],
+        "v": [
+          -0.541131,
+          -0.280714,
+          0.148971
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.185462,
+          0.780714,
+          -0.627471
+        ],
+        "u": [
+          -0.541131,
+          -0.280714,
+          0.148971
+        ],
+        "v": [
+          -0.23212,
+          0.574286,
+          0.352471
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.726594,
+          0.5,
+          -0.4785
+        ],
+        "u": [
+          0,
+          -0.3,
+          0
+        ],
+        "v": [
+          -0.05082,
+          -0.196429,
+          0.077169
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "triangle",
+      "geometry_data": {
+        "corner": [
+          -0.726594,
+          0.5,
+          -0.4785
+        ],
+        "u": [
+          0.05082,
+          -0.196429,
+          -0.077169
+        ],
+        "v": [
+          0,
+          -0.3,
+          0
+        ]
+      },
+      "material_type": "glass",
+      "material_data": {
+        "albedo": [
+          0.998,
+          0.999,
+          1
+        ],
+        "refraction_index": 2.417
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          -8,
+          -1.8,
+          -8
+        ],
+        "u": [
+          16,
+          0,
+          0
+        ],
+        "v": [
+          0,
+          0,
+          16
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.055,
+          0.06,
+          0.075
+        ]
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          -2,
+          -1.15,
+          -1.5
+        ],
+        "u": [
+          4,
+          0,
+          0
+        ],
+        "v": [
+          0,
+          0,
+          3
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.025,
+          0.028,
+          0.035
+        ]
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          -2,
+          -1.8,
+          -1.5
+        ],
+        "u": [
+          0,
+          0.65,
+          0
+        ],
+        "v": [
+          4,
+          0,
+          0
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.035,
+          0.038,
+          0.048
+        ]
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          2,
+          -1.8,
+          -1.5
+        ],
+        "u": [
+          0,
+          0.65,
+          0
+        ],
+        "v": [
+          0,
+          0,
+          3
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.03,
+          0.033,
+          0.042
+        ]
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          2,
+          -1.8,
+          1.5
+        ],
+        "u": [
+          0,
+          0.65,
+          0
+        ],
+        "v": [
+          -4,
+          0,
+          0
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.03,
+          0.033,
+          0.042
+        ]
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          -2,
+          -1.8,
+          1.5
+        ],
+        "u": [
+          0,
+          0.65,
+          0
+        ],
+        "v": [
+          0,
+          0,
+          -3
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.03,
+          0.033,
+          0.042
+        ]
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          -7.058,
+          -2.3,
+          2.5359900000000004
+        ],
+        "u": [
+          6.6000000000000005,
+          0,
+          -10.021980000000001
+        ],
+        "v": [
+          0,
+          6,
+          0
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0.075,
+          0.08,
+          0.105
+        ]
+      }
+    },
+    {
+      "geometry_type": "rect",
+      "geometry_data": {
+        "corner": [
+          -1.8,
+          4.2,
+          -1.5
+        ],
+        "u": [
+          3.6,
+          0,
+          0
+        ],
+        "v": [
+          0,
+          0,
+          3
+        ]
+      },
+      "material_type": "diffuse",
+      "material_data": {
+        "albedo": [
+          0,
+          0,
+          0
+        ],
+        "emission": {
+          "color": [
+            1,
+            0.82,
+            0.62
+          ],
+          "strength": 22
+        }
+      }
+    }
+  ]
+}
