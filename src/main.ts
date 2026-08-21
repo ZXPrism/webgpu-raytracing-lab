@@ -32,6 +32,7 @@ window.addEventListener("error", (event) => {
         event.error || event.message,
         event.error?.stack
     );
+    throw event.error;
 });
 
 // Global promise rejection handler
@@ -62,6 +63,7 @@ async function init() {
             error instanceof Error ? error : String(error),
             error instanceof Error ? error.stack : undefined
         );
+        throw error;
     }
 }
 

@@ -11,7 +11,7 @@ import { get_shader_prep_hit_test } from "./shaders/prep_hit_test";
 import { get_shader_hit_test } from "./shaders/hit_test";
 import { filter_kernel_workgroup_size, get_shader_filter } from "./shaders/filter";
 import { get_shader_blit } from "./shaders/blit";
-import { get_shader_wireframe_rect } from "./shaders/wireframe";
+import { get_shader_wireframe_triangle } from "./shaders/wireframe";
 
 import { vec3, mat4 } from "gl-matrix";
 import { ShaderReflector } from "./shader_reflector/shader_reflector";
@@ -55,7 +55,6 @@ export class Renderer {
     _blit_bind_group!: BindGroup;
 
     _wireframe_sphere_pipeline!: GPURenderPipeline;
-    _wireframe_rect_pipeline!: GPURenderPipeline;
     _wireframe_triangle_pipeline!: GPURenderPipeline;
     _wireframe_bind_group!: BindGroup;
 
@@ -162,7 +161,6 @@ export class Renderer {
     public prepare_scene_info_data(
         object_count: number,
         sphere_count: number,
-        rect_count: number,
         triangle_count: number,
     ): ArrayBuffer {
         // ========
@@ -224,7 +222,6 @@ export class Renderer {
             .set_field("eye", config.camera_eye)
             .set_field("object_count", object_count)
             .set_field("sphere_count", sphere_count)
-            .set_field("rect_count", rect_count)
             .set_field("triangle_count", triangle_count);
 
         return scene_info_struct.data;
@@ -328,15 +325,8 @@ export class Renderer {
                         type: "read-only-storage"
                     }
                 },
-                { // var<storage, read> in_rect_array: array<Rect>
-                    binding: 2,
-                    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-                    buffer: {
-                        type: "read-only-storage"
-                    }
-                },
                 { // var<storage, read> in_triangle_array: array<Triangle>
-                    binding: 3,
+                    binding: 2,
                     visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
                     buffer: {
                         type: "read-only-storage"
@@ -347,18 +337,18 @@ export class Renderer {
         const wireframe_pipeline_layout = this._device.createPipelineLayout({
             bindGroupLayouts: [wireframe_bind_group_layout]
         });
-        this._wireframe_rect_pipeline = this._device.createRenderPipeline({
+        this._wireframe_triangle_pipeline = this._device.createRenderPipeline({
             label: "wireframe rect pipeline",
             layout: wireframe_pipeline_layout,
             vertex: {
                 module: this._device.createShaderModule({
-                    code: shader_utils + get_shader_wireframe_rect(),
+                    code: shader_utils + get_shader_wireframe_triangle(),
                 }),
                 entryPoint: "vertex"
             },
             fragment: {
                 module: this._device.createShaderModule({
-                    code: shader_utils + get_shader_wireframe_rect(),
+                    code: shader_utils + get_shader_wireframe_triangle(),
                 }),
                 entryPoint: "fragment",
                 targets: [
@@ -372,7 +362,6 @@ export class Renderer {
                 topology: "line-strip"
             },
         });
-
     }
 
     public async init_bind_groups() {
@@ -383,12 +372,10 @@ export class Renderer {
         const {
             object_array_buffer,
             sphere_array_buffer,
-            rect_array_buffer,
             triangle_array_buffer,
             material_array_buffer,
             object_count,
             sphere_count,
-            rect_count,
             triangle_count,
         } = this._scene_buffers;
 
@@ -399,7 +386,6 @@ export class Renderer {
         const scene_info_data = this.prepare_scene_info_data(
             object_count,
             sphere_count,
-            rect_count,
             triangle_count,
         );
         const scene_info_buffer = create_gpu_uniform_buffer(this._device, "scene info", scene_info_data.byteLength);
@@ -450,10 +436,9 @@ export class Renderer {
             .add_buffer("in_scene_info", 0, scene_info_buffer)
             .add_buffer("in_object_array", 1, object_array_buffer)
             .add_buffer("in_sphere_array", 2, sphere_array_buffer)
-            .add_buffer("in_rect_array", 3, rect_array_buffer)
-            .add_buffer("in_triangle_array", 4, triangle_array_buffer)
-            .add_buffer("in_material_array", 5, material_array_buffer)
-            .add_buffer("out_color_buffer", 6, color_buffer)
+            .add_buffer("in_triangle_array", 3, triangle_array_buffer)
+            .add_buffer("in_material_array", 4, material_array_buffer)
+            .add_buffer("out_color_buffer", 5, color_buffer)
             .build(this._hit_test_kernel, 1);
         this._hit_test_kernel_bind_group_pingpong = [hit_test_kernel_bind_group_ping, hit_test_kernel_bind_group_pong];
 
@@ -476,9 +461,8 @@ export class Renderer {
         this._wireframe_bind_group = new BindGroupBuilder(this._device, "wireframe bind group")
             .add_buffer("in_scene_info", 0, scene_info_buffer)
             .add_buffer("in_sphere_array", 1, sphere_array_buffer)
-            .add_buffer("in_rect_array", 2, rect_array_buffer)
-            .add_buffer("in_triangle_array", 3, triangle_array_buffer)
-            .build_raw(this._wireframe_rect_pipeline);
+            .add_buffer("in_triangle_array", 2, triangle_array_buffer)
+            .build_raw(this._wireframe_triangle_pipeline);
     }
 
     public init_callbacks() {
@@ -616,7 +600,7 @@ export class Renderer {
                     if (this._config_manager.config.wireframe) {
                         command_encoder.pushDebugGroup("wireframe");
                         {
-                            const wireframe_rect_render_pass = command_encoder.beginRenderPass({
+                            const wireframe_triangle_render_pass = command_encoder.beginRenderPass({
                                 colorAttachments: [
                                     {
                                         view: this._context.getCurrentTexture().createView(),
@@ -625,10 +609,10 @@ export class Renderer {
                                     },
                                 ],
                             });
-                            wireframe_rect_render_pass.setBindGroup(0, this._wireframe_bind_group.bind_group_object);
-                            wireframe_rect_render_pass.setPipeline(this._wireframe_rect_pipeline);
-                            wireframe_rect_render_pass.draw(5, this._scene_buffers.rect_count);
-                            wireframe_rect_render_pass.end();
+                            wireframe_triangle_render_pass.setBindGroup(0, this._wireframe_bind_group.bind_group_object);
+                            wireframe_triangle_render_pass.setPipeline(this._wireframe_triangle_pipeline);
+                            wireframe_triangle_render_pass.draw(4, this._scene_buffers.triangle_count);
+                            wireframe_triangle_render_pass.end();
 
                             command_encoder.popDebugGroup();
                         }
