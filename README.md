@@ -1,7 +1,6 @@
 # webgpu-raytracing-lab
 
-<img width="3748" height="1844" alt="demo" src="https://github.com/user-attachments/assets/7b54794c-b39a-4ec5-9e07-5ad5be3c1156" />
-
+<img width="3748" height="1844" alt="demo" src="https://github.com/user-attachments/assets/9e2b0b9c-3ca5-462f-8733-209a56ba4861" />
 
 This is my experiment on raytracing based on GPU.
 
@@ -32,6 +31,18 @@ In one frame:
 2. hit test for `config_max_bounce` times
 3. filter using previous frame's output (running average)
 4. blit to screen
+
+## Gallery
+<img width="3748" height="1844" alt="0c0c38adcbef7609fd8fdc9b68dda3cc7dd99e22" src="https://github.com/user-attachments/assets/0179f848-7321-48dd-8685-8bb32d8f1505" />
+
+<img width="3748" height="1844" alt="8cac9deef01f3a29ce3885cadf25bc315d607c3e" src="https://github.com/user-attachments/assets/023c91ab-fd1b-4fad-ad23-791e73458b69" />
+
+<img width="3748" height="1844" alt="e525ee1190ef76c67f3eab2fdb16fdfaae51673a" src="https://github.com/user-attachments/assets/455d091f-7cab-4a30-9f3e-039d848d2bfd" />
+
+<img width="3748" height="1844" alt="a9148313632762d08ed6f4bbe6ec08fa533dc6c6" src="https://github.com/user-attachments/assets/3d53c834-9c38-44f1-bdaf-36d8bcd83438" />
+
+<img width="3748" height="1844" alt="8273af1ea8d3fd1fbe74f13e764e251f94ca5fa9" src="https://github.com/user-attachments/assets/9825b018-629b-4362-8d81-2d8cd121c682" />
+
 
 ## Style / Contribution Guide (DRAFT)
 - NEVER use non-null assertion (!)
