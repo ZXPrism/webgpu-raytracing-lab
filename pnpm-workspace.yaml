@@ -1,2 +1,5 @@
-onlyBuiltDependencies:
-  - esbuild
+# pnpm >= 11 replaced `onlyBuiltDependencies` with `allowBuilds`; the old key is
+# silently ignored, which makes `pnpm install` fail with ERR_PNPM_IGNORED_BUILDS
+# and leaves esbuild unbuilt (vite and vitest both need it).
+allowBuilds:
+  esbuild: true
