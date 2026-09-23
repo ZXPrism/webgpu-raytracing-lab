@@ -5,8 +5,6 @@ import { encoded_to_linear } from "../utils";
 
 export function get_shader_utils(config: Config): string {
   return /* wgsl */`
-enable subgroups;
-
 // ===========
 //  constants
 // ===========

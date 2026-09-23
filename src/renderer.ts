@@ -20,6 +20,14 @@ import { SceneLoader } from "./scene";
 import type { SceneBuffers } from "./scene";
 //import { build_bvh, BvhNode } from "./bvh";
 
+const REQUESTED_LIMITS = [
+    "maxBufferSize",
+    "maxStorageBufferBindingSize",
+    "maxComputeInvocationsPerWorkgroup",
+    "maxComputeWorkgroupSizeX",
+    "maxStorageBuffersPerShaderStage",
+] as const satisfies readonly (keyof GPUSupportedLimits)[];
+
 export class Renderer {
     private _config_manager: ConfigManager;
     private _scene_loader!: SceneLoader;
@@ -85,15 +93,16 @@ export class Renderer {
             throw new Error("Failed to request WebGPU adapter. Your browser may not support WebGPU.");
         }
 
+        const required_limits: Record<string, number> = {};
+        for (const limit_name of REQUESTED_LIMITS) {
+            const limit_value = adapter.limits[limit_name];
+            if (typeof limit_value === "number" && Number.isFinite(limit_value)) {
+                required_limits[limit_name] = limit_value;
+            }
+        }
+
         const device = await adapter.requestDevice({
-            requiredLimits: {
-                maxBufferSize: adapter.limits.maxBufferSize,
-                maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
-                maxComputeInvocationsPerWorkgroup: adapter.limits.maxComputeInvocationsPerWorkgroup,
-                maxComputeWorkgroupSizeX: adapter.limits.maxComputeWorkgroupSizeX,
-                maxStorageBuffersPerShaderStage: adapter.limits.maxStorageBuffersPerShaderStage
-            },
-            requiredFeatures: ["subgroups"] as const,
+            requiredLimits: required_limits,
         });
         if (device === null) {
             throw new Error("Failed to request WebGPU device.");
